@@ -65,7 +65,7 @@ else
   __error_exit "There was an error getting TIMESERIES_INGEST_URI..." "$buildBasicAppLogDir"
 fi
 
-if TIMESERIES_QUERY_URI=$(cf env $TEMP_APP | grep -m 100 uri | grep time-series | awk -F"\"" '{print $4}'); then
+if TIMESERIES_QUERY_URI=$(cf env $TEMP_APP | grep -m 100 uri | grep datapoints | awk -F"\"" '{print $4}'); then
   if [[ "$TIMESERIES_QUERY_URI" == "" ]] ; then
     __error_exit "The TimeSeries Query URI was not found for \"$1\"..." "$buildBasicAppLogDir"
   fi
