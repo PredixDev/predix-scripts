@@ -53,13 +53,13 @@ ASSET_DESCRIPTION="device1"
 ###############################
 
 # GITHUB repo to pull predix-nodejs-starter
-GIT_PREDIX_NODEJS_STARTER_URL="https://github.build.ge.com/adoption/predix-nodejs-starter.git"
+GIT_PREDIX_NODEJS_STARTER_URL="https://github.com/PredixDev/predix-nodejs-starter.git"
 
-GIT_PREDIX_WINDDATA_SERVICE_URL="https://github.build.ge.com/adoption/winddata-timeseries-service.git"
+GIT_PREDIX_WINDDATA_SERVICE_URL="https://github.com/PredixDev/winddata-timeseries-service.git"
 
 # Name for the temp_app application
 TEMP_APP="$INSTANCE_PREPENDER-hello-world"
-TEMP_APP_GIT_HUB_URL="https://github.build.ge.com/adoption/Predix-HelloWorld-WebApp.git"
+TEMP_APP_GIT_HUB_URL="https://github.com/PredixDev/Predix-HelloWorld-WebApp.git"
 
 ############### UAA Configurations ###############
 
@@ -103,4 +103,4 @@ ENABLE_MODBUS_SIMULATOR="true"
 
 #Device Specific Connection info
 DEVICE_SPECIFIC_GITHUB_REPO_NAME="predix-machine-template-adapter-edison"
-MACHINE_TEMPLATES_GITHUB_REPO_URL="https://github.build.ge.com/adoption/predix-machine-templates.git"
+MACHINE_TEMPLATES_GITHUB_REPO_URL="https://github.com/PredixDev/predix-machine-templates.git"
