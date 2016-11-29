@@ -70,7 +70,7 @@ else
   # The name of the UAA service you are binding to - default already set
   UAA_SERVICE_NAME="predix-uaa"
   # Name of the UAA plan (eg: Free) - default already set
-  UAA_PLAN="Tiered"
+  UAA_PLAN="Free"
 fi
 
 # Name of your UAA instance - default already set
@@ -82,7 +82,7 @@ UAA_INSTANCE_NAME="$INSTANCE_PREPENDER-uaa"
 TIMESERIES_SERVICE_NAME="predix-timeseries"
 
 #Name of the TimeSeries plan (eg: Free) - default already set
-TIMESERIES_SERVICE_PLAN="Bronze"
+TIMESERIES_SERVICE_PLAN="Free"
 
 #Name of your TimeSeries instance - default already set
 TIMESERIES_INSTANCE_NAME="$INSTANCE_PREPENDER-time-series"
@@ -93,7 +93,7 @@ TIMESERIES_INSTANCE_NAME="$INSTANCE_PREPENDER-time-series"
 ASSET_SERVICE_NAME="predix-asset"
 
 #Name of the Asset plan (eg: Free) - default already set
-ASSET_SERVICE_PLAN="Tiered"
+ASSET_SERVICE_PLAN="Free"
 
 #Name of your Asset instance - default already set
 ASSET_INSTANCE_NAME="$INSTANCE_PREPENDER-asset"
