@@ -63,30 +63,31 @@ echo "FRONTENDAPP_BRANCH    : $FRONTENDAPP_BRANCH"
 echo "QUIET_MODE            : $QUIET_MODE"
 echo "MAVEN_SETTNGS_FILE    : $MAVEN_SETTNGS_FILE"
 
+echo $SKIP_CLOUD
+if [[ $SKIP_CLOUD -ne 1 ]]; then
+    if [[ ( $RUN_CREATE_SERVICES == 0 && $RUN_MACHINE_CONFIG == 0 && $RUN_MACHINE_TRANSFER == 0 && $RUN_DEPLOY_FRONTEND == 0  ) ]]; then
+      __print_out_usage
+      exit
+    fi
+    source "$quickstartRootDir/scripts/variables.sh"
 
+    echo "TEMP_APP : $TEMP_APP"
+    if [[ $RUN_DELETE_SERVICES -eq 1 ]]; then
+      $quickstartRootDir/scripts/cleanup.sh "$TEMP_APP"
+    fi
 
-if [[ ( $RUN_CREATE_SERVICES == 0 && $RUN_MACHINE_CONFIG == 0 && $RUN_MACHINE_TRANSFER == 0 && $RUN_DEPLOY_FRONTEND == 0  ) ]]; then
-  __print_out_usage
-  exit
-fi
-source "$quickstartRootDir/scripts/variables.sh"
+    # Instantiate, configure, and push the following Predix services: Timeseries, Asset, and UAA.
+    if [[ $RUN_CREATE_SERVICES -eq 1 ]]; then
+      $quickstartRootDir/scripts/predix_services_setup.sh "$TEMP_APP"
+    fi
 
-echo "TEMP_APP : $TEMP_APP"
-if [[ $RUN_DELETE_SERVICES -eq 1 ]]; then
-  $quickstartRootDir/scripts/cleanup.sh "$TEMP_APP"
-fi
-
-# Instantiate, configure, and push the following Predix services: Timeseries, Asset, and UAA.
-if [[ $RUN_CREATE_SERVICES -eq 1 ]]; then
-  $quickstartRootDir/scripts/predix_services_setup.sh "$TEMP_APP"
-fi
-
-# Build our application from the 'predix-nodejs-starter' repo, passing it our MS instances
-if [[ $RUN_DEPLOY_FRONTEND -eq 1 ]]; then
-  if [ $RUN_DELETE_SERVICES -eq 1 ] && [ $RUN_CREATE_SERVICES -eq 0]; then
-    $quickstartRootDir/scripts/predix_services_setup.sh "$TEMP_APP"
-  fi
-  $quickstartRootDir/scripts/build-basic-app.sh "$TEMP_APP"
+    # Build our application from the 'predix-nodejs-starter' repo, passing it our MS instances
+    if [[ $RUN_DEPLOY_FRONTEND -eq 1 ]]; then
+      if [ $RUN_DELETE_SERVICES -eq 1 ] && [ $RUN_CREATE_SERVICES -eq 0]; then
+        $quickstartRootDir/scripts/predix_services_setup.sh "$TEMP_APP"
+      fi
+      $quickstartRootDir/scripts/build-basic-app.sh "$TEMP_APP"
+    fi
 fi
 
 # Build Predix Machine container using properties from Predix Services Created above

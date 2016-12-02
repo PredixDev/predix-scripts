@@ -28,6 +28,7 @@ RUN_MACHINE_CONFIG=0
 RUN_COMPILE_REPO=0
 RUN_MACHINE_TRANSFER=0
 RUN_DEPLOY_FRONTEND=0
+SKIP_CLOUD=0
 FRONTENDAPP_BRANCH="master"
 
 QUIET_MODE=0
@@ -54,6 +55,9 @@ while :; do
           RUN_COMPILE_REPO=1
           RUN_MACHINE_TRANSFER=1
           RUN_DEPLOY_FRONTEND=1
+          ;;
+        -sc)
+          SKIP_CLOUD=1
           ;;
         -tu|--training-uaa)
           USE_TRAINING_UAA=1
@@ -162,6 +166,7 @@ export RUN_DEPLOY_FRONTEND
 export FRONTENDAPP_BRANCH
 export MAVEN_SETTNGS_FILE
 export QUIET_MODE
+export SKIP_CLOUD
 
 if [ -z "$PRINTED_VARIABLES" ]; then
   __append_new_head_log "Global variables available for use" "#" "$quickstartLogDir"
