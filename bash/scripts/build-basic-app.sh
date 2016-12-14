@@ -147,7 +147,8 @@ if [[ "$USE_WINDDATA_SERVICE" == "1" ]]; then
   __find_and_replace "{timeSeriesService}" "$TIMESERIES_INSTANCE_NAME" "manifest.yml" "$buildBasicAppLogDir"
   __find_and_replace "predix_asset_name : .*" "predix_asset_name: $ASSET_INSTANCE_NAME" "manifest.yml" "$buildBasicAppLogDir"
   __find_and_replace "{assetService}" "$ASSET_INSTANCE_NAME" "manifest.yml" "$buildBasicAppLogDir"
-  __find_and_replace "predix_oauth_clientId : .*" "predix_oauthClientId: $MYGENERICS_SECRET" "manifest.yml" "$buildBasicAppLogDir"
+  #__find_and_replace "predix_oauth_clientId : .*" "predix_oauthClientId: $MYGENERICS_SECRET" "manifest.yml" "$buildBasicAppLogDir"
+  __find_and_replace "predix_oauth_clientId : .*" "predix_oauthClientId: $UAA_CLIENTID_GENERIC:$UAA_CLIENTID_GENERIC_SECRET" "manifest.yml" "$buildBasicAppLogDir"
   oauthRestHost=$(echo $uaaURL | awk -F"/" '{print $3}')
   __find_and_replace "trustedIssuerIdsRegexPattern : .*" "trustedIssuerIdsRegexPattern: ^https://(.*\\.)?${oauthRestHost}/oauth/token$" "manifest.yml" "$buildBasicAppLogDir"
 
