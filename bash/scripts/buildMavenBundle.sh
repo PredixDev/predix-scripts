@@ -28,7 +28,7 @@ MACHINE_BUNDLE="$PROJECT_ARTIFACT_ID-$PROJECT_VERSION.jar"
 #echo "SOLUTION_INI : $SOLUTION_INI"
 #sed "s\#MACHINE_BUNDLE_JAR\#${MACHINE_BUNDLE}\#" config/solution.ini > "$MACHINE_HOME/machine/bin/vms/solution.ini"
 echo "sed \"s/{MACHINE_BUNDLE_JAR}/$MACHINE_BUNDLE/g\" config/solution.ini > \"$MACHINE_HOME/machine/bin/vms/solution.ini\""
-sed \"s/{MACHINE_BUNDLE_JAR}/$MACHINE_BUNDLE/g\" config/solution.ini > \"$MACHINE_HOME/machine/bin/vms/solution.ini\"
+sed "s/{MACHINE_BUNDLE_JAR}/$MACHINE_BUNDLE/g" config/solution.ini > $MACHINE_HOME/machine/bin/vms/solution.ini
 #sed -i -e "s#<name>{MACHINE_BUNDLE_JAR}</name>#<name>$MACHINE_BUNDLE</name>#" config/solution.ini
 #cp config/solution.ini $MACHINE_HOME/machine/bin/vms/solution.ini
 __echo_run cp target/$MACHINE_BUNDLE "$MACHINE_HOME/machine/bundles"
