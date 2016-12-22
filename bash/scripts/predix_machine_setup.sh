@@ -113,7 +113,7 @@ if [ "$3" == "1" ]; then
 			TARGETDEVICEUSER=""
 			read -p "Enter the IP Address of your device(press enter if you want to copy to different directory on the host)> " TARGETDEVICEIP
 			TARGETDEVICEIP=${TARGETDEVICEIP:localhost}
-			if [ "$TARGETDEVICEIP" != "localhost" ]; then
+			if [ "$TARGETDEVICEIP" != "" ] && [ "$TARGETDEVICEIP" != "localhost" ]; then
 				read -p "Enter the Username on your device> " TARGETDEVICEUSER
 				echo "scp PredixMachineContainer.tar.gz $TARGETDEVICEUSER@$TARGETDEVICEIP:PredixMachineContainer.tar.gz"
 				scp PredixMachineContainer.tar.gz $TARGETDEVICEUSER@$TARGETDEVICEIP:PredixMachineContainer.tar.gz
