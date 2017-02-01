@@ -54,7 +54,7 @@ ASSET_DESCRIPTION="device1"
 
 # Name for the temp_app application
 TEMP_APP="$INSTANCE_PREPENDER-hello-world"
-TEMP_APP_GIT_HUB_URL="https://github.build.ge.com/adoption/Predix-HelloWorld-WebApp.git"
+TEMP_APP_GIT_HUB_URL="https://github.com/PredixDev/Predix-HelloWorld-WebApp.git"
 TEMP_APP_GIT_HUB_VERSION="1.0.0"
 ############### UAA Configurations ###############
 

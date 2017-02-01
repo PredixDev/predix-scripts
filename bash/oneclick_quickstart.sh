@@ -25,9 +25,9 @@ echo "BRANCH                : $BRANCH"
 echo "QUICKSTART_ARGS       : $QUICKSTART_ARGS"
 
 
-SETUP_MAC="https://github.build.ge.com/adoption/local-setup/$BRANCH/setup-mac.sh"
+SETUP_MAC="https://github.com/PredixDev/local-setup/$BRANCH/setup-mac.sh"
 PREDIX_SCRIPT_DIR_NAME=predix-scripts
-PREDIX_SCRIPT_REPO=https://github.build.ge.com/adoption/$PREDIX_SCRIPT_DIR_NAME.git
+PREDIX_SCRIPT_REPO=https://github.com/PredixDev/$PREDIX_SCRIPT_DIR_NAME.git
 
 function check_internet() {
   set +e
