@@ -1,0 +1,13 @@
+{
+  "name": "Predix Scripts",
+  "version": "1.0.3",
+  "private": true,
+  "dependencies": {
+    "local-setup": "https://github.build.ge.com/adoption/local-setup.git#1.0.0",
+    "winddata-timeseries-service": "https://github.build.ge.com/adoption/winddata-timeseries-service.git#1.0.0",
+    "predix-nodejs-starter": "https://github.build.ge.com/adoption/predix-nodejs-starter.git#v1.0.1",
+    "Predix-HelloWorld-WebApp": "https://github.build.ge.com/adoption/Predix-HelloWorld-WebApp.git#1.0.0",
+    "predix-machine-templates": "https://github.build.ge.com/adoption/predix-machine-templates.git#master"
+  },
+  "author": "rishabhtulsian,swapnavad,susheelchoudhari"
+}
