@@ -14,7 +14,7 @@ while (( "$#" )); do
     BRANCH=$2
     shift
     shift
-  else 
+  else
     QUICKSTART_ARGS="$QUICKSTART_ARGS $1 "
     shift
   fi
@@ -25,7 +25,7 @@ echo "BRANCH                : $BRANCH"
 echo "QUICKSTART_ARGS       : $QUICKSTART_ARGS"
 
 
-SETUP_MAC="https://github.com/PredixDev/local-setup/$BRANCH/setup-mac.sh"
+SETUP_MAC=https://raw.githubusercontent.com/PredixDev/local-setup/$BRANCH/setup-mac.sh
 PREDIX_SCRIPT_DIR_NAME=predix-scripts
 PREDIX_SCRIPT_REPO=https://github.com/PredixDev/$PREDIX_SCRIPT_DIR_NAME.git
 
@@ -46,7 +46,7 @@ function check_internet() {
 
 function run_setup() {
   check_internet
-  bash <(curl -s -L "$SETUP_MAC") --git --cf --nodejs --maven
+  bash <(curl -s -L $SETUP_MAC) --git --cf --nodejs --maven
 }
 
 function git_clone_repo() {
