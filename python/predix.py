@@ -399,7 +399,7 @@ def getVcapJsonForPredixBoot (config):
     predixBootEnv = subprocess.check_output(["cf", "env" ,config.predixbootAppName])
     systemProvidedVars=predixBootEnv.decode('utf-8').split('System-Provided:')[1].split('No user-defined env variables have been set')[0]
     config.formattedJson = "[" + systemProvidedVars.replace("\n","").replace("'","").replace("}{","},{") + "]"
-    #print ("formattedJson=" + config.formattedJson)
+    print ("formattedJson=" + config.formattedJson)
 
 def addUAAUser(config, userId , password, email,adminToken):
 
@@ -519,7 +519,7 @@ def createBindPredixACSService(config, rmdAcsName):
 	#statementStatus  = subprocess.call(acsJsonrequest, shell=True)
 	#if statementStatus == 1 :
 	#	sys.exit("Error creating an ACS service instance")
-	createService(config.predixAcsService,acsJsonrequest)
+	createService(rmdAcsName,acsJsonrequest)
 
 	statementStatus  = subprocess.call("cf bs "+config.predixbootAppName +" " + rmdAcsName , shell=True)
 	if statementStatus == 1 :
@@ -749,7 +749,7 @@ def createAsssetInstance(config,rmdPredixAssetName ,predixAssetName ):
 
 		request = "cf cs "+predixAssetName+" "+config.predixAssetServicePlan +" "+rmdPredixAssetName+ " -c "+ '"'+os.path.join(os.getcwd(),asset_payload_filename)+'"'
 		print ("Creating Service cmd "+request)
-		createService(predixAssetName,request)
+		createService(rmdPredixAssetName,request)
 		#statementStatus  = subprocess.call(request, shell=True)
 		#if statementStatus == 1 :
 			#sys.exit("Error creating a assset service instance")
@@ -765,7 +765,7 @@ def createTimeSeriesInstance(config,rmdPredixTimeSeriesName,predixTimeSeriesName
 
 	tsJsonrequest = "cf cs "+predixTimeSeriesName+" "+config.predixTimeSeriesServicePlan +" "+rmdPredixTimeSeriesName+ " -c "+ '"'+os.path.join(os.getcwd(),timeSeries_payload_filename)+'"'
 	print ("Creating Service cmd "+tsJsonrequest)
-	createService(predixTimeSeriesName,tsJsonrequest)
+	createService(rmdPredixTimeSeriesName,tsJsonrequest)
 	#statementStatus  = subprocess.call(tsJsonrequest, shell=True)
 	#if statementStatus == 1 :
 	#	sys.exit("Error creating a assset service instance")
@@ -784,7 +784,7 @@ def createAnalyticsRuntimeInstance(config,rmdPredixAnalyticsRuntime, predixAnaly
 
 		request = "cf cs "+predixAnalyticsRuntime+" "+config.predixAnalyticsRuntimePlan +" "+rmdPredixAnalyticsRuntime+ " -c "+ '"'+os.path.join(os.getcwd(),asset_payload_filename)+'"'
 		print ("Creating Service cmd "+request)
-		createService(predixAnalyticsRuntime,request)
+		createService(rmdPredixAnalyticsRuntime,request)
 		#statementStatus  = subprocess.call(request, shell=True)
 		#if statementStatus == 1 :
 			#sys.exit("Error creating a assset service instance")
@@ -803,7 +803,7 @@ def createAnalyticsCatalogInstance(config,rmdPredixAnalyticsCatalog, predixAnaly
 
 		request = "cf cs "+predixAnalyticsCatalog+" "+config.predixAnalyticsCatalogPlan +" "+rmdPredixAnalyticsCatalog+ " -c "+ '"'+os.path.join(os.getcwd(),asset_payload_filename)+'"'
 		print ("Creating Service cmd "+request)
-		createService(config.predixAcsService,request)
+		createService(rmdPredixAnalyticsCatalog,request)
 		#statementStatus  = subprocess.call(request, shell=True)
 		#if statementStatus == 1 :
 			#sys.exit("Error creating a assset service instance")
@@ -812,7 +812,7 @@ def createRabbitMQInstance(config):
 	print("Creating Rabbit MQ instance..")
 	request = "cf cs "+config.predixRabbitMQ+" "+config.predixRabbitMQPlan +" "+config.rmdRabbitMQ
 	print ("Creating Service cmd "+request)
-	createService(config.predixRabbitMQ,request)
+	createService(config.rmdRabbitMQ,request)
 	#statementStatus  = subprocess.call(request, shell=True)
 	#if statementStatus == 1 :
 		#sys.exit("Error creating a assset service instance")
