@@ -21,9 +21,10 @@ if ! [ -d "$predixMachineLogDir" ]; then
 	chmod 744 "$predixMachineLogDir"
 fi
 touch "$predixMachineLogDir/quickstartlog.log"
+#Global variables
+EDGE_MANAGER_HOME="$predixMachineSetupRootDir/../PredixMachine$MACHINE_CONTAINER_TYPE-$MACHINE_VERSION"
 
 # Trap ctrlc and exit if encountered
-
 trap "trap_ctrlc" 2
 __validate_num_arguments 3 $# "\"predix-machine-setup.sh\" expected in order: String of Predix Application used to get VCAP configurations" "$predixMachineLogDir"
 
@@ -65,11 +66,38 @@ if [ "$2" == "1" ]; then
 		__error_exit "There was an error getting TIMESERIES_ZONE_ID..." "$predixMachineLogDir"
 	fi
 
-	echo ""
+	if [[ "$RUN_EDGE_MANAGER_SETUP" == "1" ]]; then
+		echo "Performing Edge Manager Setup"
+		export MACHINE_CONTAINER_TYPE="Prov"
+		rm -rf $EDGE_MANAGER_HOME*
+		"$predixMachineSetupRootDir/create_machine_container.sh"
+		unzip PredixMachine$MACHINE_CONTAINER_TYPE-$MACHINE_VERSION.zip -d $EDGE_MANAGER_HOME
 
-	PREDIX_MACHINE_HOME="$predixMachineSetupRootDir/../PredixMachine"
+		EDGE_DEVICE_SHARED_SECRET=$(python -c "import uuid; print uuid.uuid4();")
+		export EDGE_DEVICE_SHARED_SECRET
+		__append_new_line_log "EDGE_DEVICE_SHARED_SECRET : $EDGE_DEVICE_SHARED_SECRET" "$predixMachineLogDir"
+
+		echo "export SHARED_SECRET=\"$EDGE_DEVICE_SHARED_SECRET\"" > "$EDGE_MANAGER_HOME/machine/bin/predix/setvars.sh"
+		echo "export CAF_SYSTEM_UDI=\"$EDGE_DEVICE_ID\"" >> "$EDGE_MANAGER_HOME/machine/bin/predix/setvars.sh"
+		echo "export EDGE_MANAGER_URL=\"$EDGE_MANAGER_URL\"" >> "$EDGE_MANAGER_HOME/machine/bin/predix/setvars.sh"
+
+		cd $EDGE_MANAGER_HOME
+		zip -rq ../PredixMachine$MACHINE_CONTAINER_TYPE-$MACHINE_VERSION.zip *
+		cd ..
+
+		echo "EDGE_MANAGER_SHARED_CLIENT_SECRET : $EDGE_MANAGER_SHARED_CLIENT_SECRET"
+		EDGE_TOKEN=$(curl -X GET -H "Authorization: Basic c2hhcmVkLXRlbmFudC1hcHAtY2xpZW50Okk1NXpLbUFGMFNfQUdkbA==" -H "Cache-Control: no-cache" -H "Content-Type: application/x-www-form-urlencoded" -H "Postman-Token: 38862dbb-f866-1c62-9719-9e1ee8ea2e14" "https://9274a009-9af1-4c5d-a0bb-dfe07771e29c.predix-uaa.run.asv-pr.ice.predix.io/oauth/token?grant_type=client_credentials&client_id=shared-tenant-app-client" | awk -F"\"" '{print $4}')
+		echo "EDGE_TOKEN : $EDGE_TOKEN"
+		CREATE_DEVICE_RESPONSE=$(curl -X POST -H "Authorization: Bearer $EDGE_TOKEN" -H "Content-Type: application/json" -H "Cache-Control: no-cache" -d "[{\"name\":\"$EDGE_DEVICE_NAME\",\"did\":\"$EDGE_DEVICE_ID\",\"modelID\":\"IntelEdison\",\"sharedSecret\":\"$EDGE_DEVICE_SHARED_SECRET\"}]" "https://shared-tenant.edgemanager.run.asv-pr.ice.predix.io/svc/device/v2/device-mgmt/devices/batch" -w "RESP_CODE:%{http_code}")
+		echo "CREATE_DEVICE_RESPONSE : $CREATE_DEVICE_RESPONSE"
+		RESPONSE_CODE=$(echo $CREATE_DEVICE_RESPONSE | awk -F":" '{print $NF}')
+		echo "RESPONSE_CODE: $RESPONSE_CODE"
+		if [[ "$RESPONSE_CODE" == "200" ]]; then
+			 echo "Device created successfully in Edge Manager"
+		fi
+	fi
+
 	echo "$PREDIX_MACHINE_HOME"
-
 	getRepoURL "predix-machine-templates" MACHINE_TEMPLATES_GITHUB_REPO_URL
 	echo "MACHINE_TEMPLATES_GITHUB_REPO_URL : $MACHINE_TEMPLATES_GITHUB_REPO_URL"
 	getRepoVersion "predix-machine-templates" MACHINE_TEMPLATES_GITHUB_REPO_VERSION
@@ -77,19 +105,16 @@ if [ "$2" == "1" ]; then
 	machineTemplatesRepoName="`echo $MACHINE_TEMPLATES_GITHUB_REPO_URL | awk -F"/" '{print $5}' | awk -F"." '{print $1}'`"
 	echo "machineTemplatesRepoName : $machineTemplatesRepoName"
 	if [[ ( "$MACHINE_TEMPLATES_GITHUB_REPO_URL" != ""  && "$MACHINE_TEMPLATES_GITHUB_REPO_VERSION" != "" ) ]]; then
-		echo "Git URL : $MACHINE_TEMPLATES_GITHUB_REPO_URL"
-		echo "Removing $machineTemplatesRepoName"
-		rm -rf $machineTemplatesRepoName
-		git clone $MACHINE_TEMPLATES_GITHUB_REPO_URL -b $MACHINE_TEMPLATES_GITHUB_REPO_VERSION --depth 1
-
+		if [[ ! -d $machineTemplatesRepoName ]]; then
+			echo "Git URL : $MACHINE_TEMPLATES_GITHUB_REPO_URL"
+			git clone $MACHINE_TEMPLATES_GITHUB_REPO_URL -b $MACHINE_TEMPLATES_GITHUB_REPO_VERSION --depth 1
+		fi
 		#Unzip the original PredixMachine container
-		rm -rf "$PREDIX_MACHINE_HOME"
-		unzip -oq $machineTemplatesRepoName/PredixMachineDebug.zip -d "$PREDIX_MACHINE_HOME"
-
+		#rm -rf "$PREDIX_MACHINE_HOME"
+		if [[ ! -d "$PREDIX_MACHINE_HOME" ]]; then
+			unzip  $machineTemplatesRepoName/PredixMachineDebug.zip -d "$PREDIX_MACHINE_HOME"
+		fi
 		"$predixMachineSetupRootDir/machineconfig.sh" "$trustedIssuerID" "$TIMESERIES_INGEST_URI" "$TIMESERIES_ZONE_ID" "$uaaURL" "$PREDIX_MACHINE_HOME"
-		cp "$predixMachineSetupRootDir/pm_background.sh" "$PREDIX_MACHINE_HOME/machine/bin/predix"
-		echo "Removing $machineTemplatesRepoName"
-		rm -rf $machineTemplatesRepoName
 		__append_new_head_log "Created Predix Machine container!" "-" "$predixMachineLogDir"
 
 		echo "" >> "$SUMMARY_TEXTFILE"
@@ -99,46 +124,54 @@ if [ "$2" == "1" ]; then
 		echo "Created Predix Machine container and updated the property files with UAA and Time Series info" >> "$PREDIX_SERVICES_TEXTFILE"
 	fi
 fi
-
+cd $predixMachineSetupRootDir/..
 if [ "$3" == "1" ]; then
-	__append_new_head_log "Transferring Predix Machine Container" "#" "$predixMachineLogDir"
-	if type tar >/dev/null; then
-		__append_new_line_log "Archiving the configured Predix Machine..." "$predixMachineLogDir"
-		rm -f PredixMachineContainer.tar.gz
-
-		if tar -zcf PredixMachineContainer.tar.gz PredixMachine; then
-			__append_new_line_log "Archived the configured Predix Machine and stored in PredixMachineContainer.tar.gz" "$predixMachineLogDir"
-		else
-			__error_exit "Failed to archive PredixMachine" "$predixMachineLogDir"
-		fi
-
-		if type scp >/dev/null; then
-			TARGETDEVICEIP=""
-			TARGETDEVICEUSER=""
-			read -p "Enter the IP Address of your device(press enter if you want to copy to different directory on the host)> " TARGETDEVICEIP
-			TARGETDEVICEIP=${TARGETDEVICEIP:localhost}
-			if [ "$TARGETDEVICEIP" != "" ] && [ "$TARGETDEVICEIP" != "localhost" ]; then
-				read -p "Enter the Username on your device> " TARGETDEVICEUSER
-				echo "scp PredixMachineContainer.tar.gz $TARGETDEVICEUSER@$TARGETDEVICEIP:PredixMachineContainer.tar.gz"
-				scp PredixMachineContainer.tar.gz $TARGETDEVICEUSER@$TARGETDEVICEIP:PredixMachineContainer.tar.gz
-				__append_new_head_log "Transferred Predix Machine container!" "-" "$predixMachineLogDir"
-			else
-				read -p "Enter the location on your local where you want to copy the Machine tar file(Default directory is $HOME/Predix)> " TARGETDIR
-				TARGETDIR=${TARGETDIR:-$HOME/Predix}
-				echo "Copying Machine container to target directory -> $TARGETDIR"
-
-				if [ ! -e "$TARGETDIR" ]; then
-					echo "$TARGETDIR not present. Creating the target directory now"
-					mkdir -p "$TARGETDIR"
-				fi
-				cp PredixMachineContainer.tar.gz "$TARGETDIR"
-				tar xf PredixMachineContainer.tar.gz -C "$TARGETDIR"
-			fi
-			echo "We built and deployed the Machine Adapter bundle which reads from the Edison API" >> "$PREDIX_SERVICES_TEXTFILE"
-		else
-			__append_new_line_log "scp not found. You must manually copy PredixMachineContainer.tar.gz to the edge device" "$predixMachineLogDir"
-		fi
+	if [[ "$RUN_EDGE_MANAGER_SETUP" == "1" ]]; then
+		__append_new_head_log "Transferring Predix Machine Provision Container" "#" "$predixMachineLogDir"
+		PREDIX_MACHINE_CONTAINER="PredixMachine$MACHINE_CONTAINER_TYPE-$MACHINE_VERSION.zip"
 	else
-		__append_new_line_log "tar not found. You must manually archive PredixMachine and port it to the edge device" "$predixMachineLogDir"
+		__append_new_head_log "Transferring Predix Machine Container" "#" "$predixMachineLogDir"
+		PREDIX_MACHINE_CONTAINER="PredixMachineDebug-$MACHINE_VERSION.zip"
+	fi
+	cd $PREDIX_MACHINE_HOME
+	pwd
+	if [[ "$RUN_EDGE_MANAGER_SETUP" == "1" ]]; then
+		echo "Creating Configuration and Software package"
+		pwd
+		rm -rf $predixMachineSetupRootDir/../WorkshopSoftware.zip
+		rm -rf $predixMachineSetupRootDir/../WorkshopConfiguration.zip
+		zip -r $predixMachineSetupRootDir/../WorkshopConfiguration.zip configuration
+		zip -r $predixMachineSetupRootDir/../WorkshopSoftware.zip machine
+	else
+		rm -rf ../PredixMachineDebug-$MACHINE_VERSION.zip
+		zip -r ../PredixMachineDebug-$MACHINE_VERSION.zip *
+	fi
+	cd ..
+	pwd
+	if type scp >/dev/null; then
+		TARGETDEVICEIP=""
+		TARGETDEVICEUSER=""
+		read -p "Enter the IP Address of your device(press enter if you want to copy to different directory on the host)> " TARGETDEVICEIP
+		TARGETDEVICEIP=${TARGETDEVICEIP:localhost}
+		if [ "$TARGETDEVICEIP" != "" ] && [ "$TARGETDEVICEIP" != "localhost" ]; then
+			read -p "Enter the Username on your device> " TARGETDEVICEUSER
+			echo "scp $PREDIX_MACHINE_CONTAINER $TARGETDEVICEUSER@$TARGETDEVICEIP:$PREDIX_MACHINE_CONTAINER"
+			scp $PREDIX_MACHINE_CONTAINER $TARGETDEVICEUSER@$TARGETDEVICEIP:$PREDIX_MACHINE_CONTAINER
+			__append_new_head_log "Transferred Predix Machine container!" "-" "$predixMachineLogDir"
+		else
+			read -p "Enter the location on your local where you want to copy the Machine tar file(Default directory is $HOME/Predix)> " TARGETDIR
+			TARGETDIR=${TARGETDIR:-$HOME/Predix}
+			echo "Copying Machine container to target directory -> $TARGETDIR"
+
+			if [ ! -e "$TARGETDIR" ]; then
+				echo "$TARGETDIR not present. Creating the target directory now"
+				mkdir -p "$TARGETDIR"
+			fi
+			cp $PREDIX_MACHINE_CONTAINER $TARGETDIR
+		fi
+		echo "We built and deployed the Machine Adapter bundle which reads from the Edison API" >> "$PREDIX_SERVICES_TEXTFILE"
+	else
+		__append_new_line_log "scp not found. You must manually copy PredixMachineContainer.tar.gz to the edge device" "$predixMachineLogDir"
 	fi
 fi
+echo "predix_machine_setup.sh : PREDIX_MACHINE_HOME : $PREDIX_MACHINE_HOME"

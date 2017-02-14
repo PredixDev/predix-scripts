@@ -69,8 +69,11 @@ else
 fi
 
 # Name of your UAA instance - default already set
-UAA_INSTANCE_NAME="$INSTANCE_PREPENDER-uaa"
-
+if [[ -n "$CUSTOM_UAA_INSTANCE" ]]; then
+	UAA_INSTANCE_NAME="$CUSTOM_UAA_INSTANCE"
+else
+	UAA_INSTANCE_NAME="$INSTANCE_PREPENDER-uaa"
+fi
 ############# Predix TimeSeries Configurations ##############
 
 #The name of the TimeSeries service you are binding to - default already set
@@ -111,3 +114,11 @@ ARTIFACT_ID="predixmachinesdk"
 ARTIFACT_TYPE="zip"
 MACHINE_SDK="$ARTIFACT_ID-$MACHINE_VERSION"
 MACHINE_SDK_ZIP="$ARTIFACT_ID-$MACHINE_VERSION.$ARTIFACT_TYPE"
+
+EDGE_MANAGER_URL="https://shared-tenant.edgemanager.run.asv-pr.ice.predix.io"
+EDGE_MANAGER_UAA_URL="https://9274a009-9af1-4c5d-a0bb-dfe07771e29c.predix-uaa.run.asv-pr.ice.predix.io"
+EDGE_MANAGER_SHARED_CLIENT_SECRET="c2hhcmVkLXRlbmFudC1hcHAtY2xpZW50Okk1NXpLbUFGMFNfQUdkbAo="
+EDGE_DEVICE_NAME="$INSTANCE_PREPENDER-workshopedisondevice1"
+EDGE_DEVICE_ID="$INSTANCE_PREPENDER-workshopedisondevice1"
+
+PREDIX_MACHINE_HOME="`pwd`/PredixMachineDebug-$MACHINE_VERSION"

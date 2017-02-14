@@ -92,20 +92,16 @@ def createService(serviceName, serviceRequest):
 	else:
 		statementStatus  = subprocess.call(serviceRequest, shell=True)
 		if statementStatus == 1 :
-			print("I am here 1")
 			print("Error creating a service: " +serviceName)
 			time.sleep(5)  # Delay for 5 seconds
-			print("I am here after sleep 2")
 			statementStatus  = subprocess.call(serviceRequest, shell=True)
 			if statementStatus == 1 :
 				print("Error creating a service: " +serviceName)
 				sys.exit("Error creating a service instance: " +serviceName)
 		else:
 			#does it really exist yet
-			print("I am here 2")
 			if not doesItExist("cf s ", serviceName, 0) :
 				time.sleep(5)
-				print("I am here after sleep 2")
 				createService(serviceName, serviceRequest)
 
 def unbind(applicationName,serviceName):

@@ -22,6 +22,7 @@ fi
 # Reset all variables that might be set
 
 USE_TRAINING_UAA=0
+CUSTOM_UAA_INSTANCE=""
 RUN_DELETE_SERVICES=0
 RUN_CREATE_SERVICES=0
 RUN_MACHINE_CONFIG=0
@@ -46,7 +47,7 @@ while :; do
           ;;
         -i|--instance-appender)       # Takes an option argument, ensuring it has been specified.
           if [ -n "$2" ]; then
-              INSTANCE_PREPENDER=$2
+              INSTANCE_PREPENDER=$(echo $2 | tr 'A-Z' 'a-z')
               shift
           else
               printf 'ERROR: "-i or --instance-appender" requires a non-empty option argument.\n' >&2
@@ -62,6 +63,15 @@ while :; do
           ;;
         -tu|--training-uaa)
           USE_TRAINING_UAA=1
+          ;;
+        -custom-uaa)
+          if [ -n "$2" ]; then
+              CUSTOM_UAA_INSTANCE=$2
+              shift
+          else
+              printf 'ERROR: "-custom-uaa" requires a non-empty option argument.\n' >&2
+              exit 1
+          fi
           ;;
         -ds|--delete-services)
           RUN_DELETE_SERVICES=1
@@ -116,6 +126,9 @@ while :; do
             printf 'ERROR: "-release| -machine-version" requires a non-empty option argument.\n' >&2
             exit 1
           fi
+          ;;
+        -em|--edge-manager)
+          RUN_EDGE_MANAGER_SETUP=1
           ;;
         -wd|--wind-data)       # Takes an option argument, ensuring it has been specified.
           if [ -n "$2" ]; then
@@ -216,13 +229,16 @@ if [[ ( $RUN_CREATE_MACHINE_CONTAINER == 0 || $RUN_PRINT_VCAPS == 1
     fi
   fi
 fi
+MACHINE_VERSION=${MACHINE_VERSION:-16.4.1}
 export INSTANCE_PREPENDER
+export CUSTOM_UAA_INSTANCE
 export USE_TRAINING_UAA
 export RUN_DELETE_SERVICES
 export RUN_CREATE_SERVICES
 export RUN_MACHINE_CONFIG
 export RUN_CREATE_MACHINE_CONTAINER
 export RUN_COMPILE_REPO
+export RUN_EDGE_MANAGER_SETUP
 export RUN_MACHINE_TRANSFER
 export RUN_DEPLOY_FRONTEND
 export BRANCH
@@ -237,10 +253,12 @@ if [[ -z "$PRINTED_VARIABLES" && "$RUN_PRINT_VCAPS" == "0" ]]; then
   __append_new_head_log "Global variables available for use" "#" "$quickstartLogDir"
   __append_new_line_log "INSTANCE_PREPENDER" "$quickstartLogDir"
   __append_new_line_log "USE_TRAINING_UAA" "$quickstartLogDir"
+  __append_new_line_log "CUSTOM_UAA_INSTANCE" "$quickstartLogDir"
   __append_new_line_log "RUN_DELETE_SERVICES" "$quickstartLogDir"
   __append_new_line_log "RUN_CREATE_SERVICES" "$quickstartLogDir"
   __append_new_line_log "RUN_MACHINE_CONFIG" "$quickstartLogDir"
   __append_new_line_log "RUN_CREATE_MACHINE_CONTAINER" "$quickstartLogDir"
+  __append_new_line_log "RUN_EDGE_MANAGER_SETUP" "$quickstartLogDir"
   __append_new_line_log "MACHINE_CONTAINER_TYPE" "$quickstartLogDir"
   __append_new_line_log "RUN_COMPILE_REPO" "$quickstartLogDir"
   __append_new_line_log "RUN_MACHINE_TRANSFER" "$quickstartLogDir"
@@ -251,6 +269,7 @@ if [[ -z "$PRINTED_VARIABLES" && "$RUN_PRINT_VCAPS" == "0" ]]; then
   __append_new_line_log "SKIP_SERVICES" "$quickstartLogDir"
   __append_new_line_log "USE_WINDDATA_SERVICE" "$quickstartLogDir"
   __append_new_line_log "VERIFY_MVN" "$quickstartLogDir"
+  __append_new_line_log "MACHINE_VERSION" "$quickstartLogDir"
   __append_new_head_log "" "" "$quickstartLogDir"
   __append_new_head_log "#" "#" "$quickstartLogDir"
 

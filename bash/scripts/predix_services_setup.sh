@@ -76,7 +76,6 @@ else
 	__error_exit "There was an error getting the UAA URL..." "$predixServicesLogDir"
 fi
 
-
 # Create instance of Predix TimeSeries Service
 __try_create_service $TIMESERIES_SERVICE_NAME $TIMESERIES_SERVICE_PLAN $TIMESERIES_INSTANCE_NAME "{\"trustedIssuerIds\":[\"$trustedIssuerID\"]}" "Predix TimeSeries"
 

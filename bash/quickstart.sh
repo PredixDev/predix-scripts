@@ -62,10 +62,12 @@ source "$quickstartRootDir/readargs.sh"
 if [[ "$RUN_PRINT_VCAPS" == "0" ]]; then
   echo "INSTANCE_PREPENDER            : $INSTANCE_PREPENDER"
   echo "USE_TRAINING_UAA              : $USE_TRAINING_UAA"
+  echo "CUSTOM_UAA_INSTANCE           : $CUSTOM_UAA_INSTANCE"
   echo "RUN_DELETE_SERVICES           : $RUN_DELETE_SERVICES"
   echo "RUN_CREATE_SERVICES           : $RUN_CREATE_SERVICES"
   echo "RUN_MACHINE_CONFIG            : $RUN_MACHINE_CONFIG"
   echo "RUN_CREATE_MACHINE_CONTAINER  : $RUN_CREATE_MACHINE_CONTAINER"
+  echo "RUN_EDGE_MANAGER_SETUP        : $RUN_EDGE_MANAGER_SETUP"
   echo "MACHINE_VERSION               : $MACHINE_VERSION"
   echo "MACHINE_CONTAINER_TYPE        : $MACHINE_CONTAINER_TYPE"
   echo "RUN_COMPILE_REPO              : $RUN_COMPILE_REPO"
@@ -78,7 +80,9 @@ if [[ "$RUN_PRINT_VCAPS" == "0" ]]; then
   echo "VERIFY_MVN                    : $VERIFY_MVN"
 fi
 
+
 if [[ $RUN_CREATE_MACHINE_CONTAINER == 1 || $USE_WINDDATA_SERVICE == 1 || $VERIFY_MVN == 1 ]]; then
+  checkmvnsettings $MAVEN_SETTNGS_FILE
   assertmvn
 fi
 
@@ -114,7 +118,6 @@ if [[ $RUN_CREATE_MACHINE_CONTAINER -eq 1 ]]; then
   "$quickstartRootDir/scripts/create_machine_container.sh"
 fi
 # Build Predix Machine container using properties from Predix Services Created above
-echo "RUN_MACHINE_CONFIG : $RUN_MACHINE_CONFIG"
 if [[ $RUN_MACHINE_CONFIG -eq 1 ]] || [[ $RUN_MACHINE_TRANSFER -eq 1 ]]; then
   __echo_run  "$quickstartRootDir/scripts/predix_machine_setup.sh" "$TEMP_APP" "$RUN_MACHINE_CONFIG" "$RUN_MACHINE_TRANSFER"
 fi

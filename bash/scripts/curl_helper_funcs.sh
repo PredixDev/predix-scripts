@@ -45,7 +45,6 @@ function __getUaaAdminToken
   else
     UAA_ADMIN_BASE64=$(echo -ne admin:$UAA_ADMIN_SECRET | base64)
     responseCurl=`curl -X GET "$1/oauth/token?grant_type=client_credentials" -H "Authorization: Basic $UAA_ADMIN_BASE64" -H "Content-Type: application/x-www-form-urlencoded"`
-
     tokenType=$( __jsonval "$responseCurl" "token_type" )
     accessToken=$( __jsonval "$responseCurl" "access_token" )
 
@@ -84,6 +83,7 @@ function checkUaaClient
     __append_new_line_log "Making CURL GET request to get UAA Client ID \"$UAA_CLIENTID_GENERIC\"..." "$CURL_HELPER_LOG_PATH"
 
     local responseCurl=$(curl --write-out %{http_code} --silent --output /dev/null "$1/oauth/clients/$UAA_CLIENTID_GENERIC" -H "Pragma: no-cache" -H "Content-Type: application/json" -H "Cache-Control: no-cache" -H "Authorization: $adminUaaToken")
+    #__append_new_line_log "get uaa client id : $responseCurl"
     if [[ $responseCurl -eq 200 ]]; then
       __append_new_line_log "Client Id found" "$CURL_HELPER_LOG_PATH"
     else

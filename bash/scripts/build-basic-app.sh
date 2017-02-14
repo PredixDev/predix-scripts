@@ -270,6 +270,20 @@ else
   fi
 fi
 
+# Automagically open the application in browser, based on OS
+apphost=$(cf app $FRONT_END_APP_NAME | grep urls: | awk '{print $2;}')
+case "$(uname -s)" in
+   Darwin)
+     # OSX
+     open https://$apphost
+     ;;
+
+   CYGWIN*|MINGW32*|MINGW64*|MSYS*)
+     # Windows
+     start "" https://$apphost
+     ;;
+esac
+
 # Generate the build-basic-app-summary.txt
 cd "$buildBasicAppRootDir/.."
 if [ -f "$BUILD_APP_TEXTFILE" ]
@@ -287,6 +301,8 @@ if __echo_run cf start $FRONT_END_APP_NAME; then
 else
   __error_exit "Couldn't start $FRONT_END_APP_NAME" "$buildBasicAppLogDir"
 fi
+
+
 
 echo ""  >> $SUMMARY_TEXTFILE
 echo "Basic Predix App"  >> $SUMMARY_TEXTFILE

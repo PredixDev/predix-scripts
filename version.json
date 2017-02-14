@@ -1,12 +1,12 @@
 {
   "name": "Predix Scripts",
-  "version": "1.0.4",
+  "version": "1.0.13",
   "private": true,
   "dependencies": {
-    "local-setup": "https://github.com/PredixDev/local-setup.git#1.0.1",
-    "winddata-timeseries-service": "https://github.com/PredixDev/winddata-timeseries-service.git#2.0.10",
-    "predix-nodejs-starter": "https://github.com/PredixDev/predix-nodejs-starter.git#1.0.3",
-    "Predix-HelloWorld-WebApp": "https://github.com/PredixDev/Predix-HelloWorld-WebApp.git#1.0.1",
+    "local-setup": "https://github.com/PredixDev/local-setup.git#1.0.9",
+    "winddata-timeseries-service": "https://github.com/PredixDev/winddata-timeseries-service.git#2.0.11",
+    "predix-nodejs-starter": "https://github.com/PredixDev/predix-nodejs-starter.git#1.0.4",
+    "Predix-HelloWorld-WebApp": "https://github.com/PredixDev/Predix-HelloWorld-WebApp.git#1.0.2",
     "predix-machine-templates": "https://github.com/PredixDev/predix-machine-templates.git#master"
   },
   "author": "rishabhtulsian,swapnavad,susheelchoudhari"

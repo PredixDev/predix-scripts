@@ -55,7 +55,22 @@ if [[ -f $MACHINE_SDK_ZIP ]]; then
     ./GenerateContainers ../../../$ECLIPSE_TAR_FILENAME "-$(echo $MACHINE_CONTAINER_TYPE | tr 'a-z' 'A-Z')"
   fi
   cd "$ROOT_DIR"
-  MACHINE_HOME="$MACHINE_SDK/utilities/containers/PredixMachine-$MACHINE_CONTAINER_TYPE-$MACHINE_VERSION"
+  if [ "$MACHINE_CONTAINER_TYPE" = "Agent" ]; then
+      CONTAINER_NAME="agent"
+  elif [ "$MACHINE_CONTAINER_TYPE" = "Agent_Debug" ]; then
+      CONTAINER_NAME="agent-debug"
+  elif [ "$MACHINE_CONTAINER_TYPE" = "Debug" ]; then
+      CONTAINER_NAME="debug"
+  elif [ "$MACHINE_CONTAINER_TYPE" = "Prov" ]; then
+      CONTAINER_NAME="provision"
+  elif [ "$MACHINE_CONTAINER_TYPE" = "Conn" ]; then
+      CONTAINER_NAME="connectivity"
+  elif [ "$MACHINE_CONTAINER_TYPE" = "Tech" ]; then
+      CONTAINER_NAME"=technician"
+  elif  [ "$MACHINE_CONTAINER_TYPE" = "Default" ]; then
+      CONTAINER_NAME="default"
+  fi
+  MACHINE_HOME="$MACHINE_SDK/utilities/containers/PredixMachine-$CONTAINER_NAME-$MACHINE_VERSION"
   #fetchVCAPSInfo
   #echo "TRUSTED_ISSUER_ID     : $TRUSTED_ISSUER_ID"
   #echo "UAA URL               : $UAA_URL"
@@ -64,7 +79,7 @@ if [[ -f $MACHINE_SDK_ZIP ]]; then
   #echo "ASSET_URL             : $ASSET_URL"
   #echo "ASSET_ZONE_ID         : $ASSET_ZONE_ID"
   #"$createMachineContainterRootDir/machineconfig.sh" "$TRUSTED_ISSUER_ID" "$TIMESERIES_INGEST_URI" "$TIMESERIES_ZONE_ID" "$UAA_URL" "$MACHINE_HOME"
-  cd $MACHINE_SDK/utilities/containers/PredixMachine-$(echo $MACHINE_CONTAINER_TYPE | tr 'A-Z' 'a-z')-$MACHINE_VERSION
+  cd $MACHINE_HOME
   rm -rf ../../../../PredixMachine$MACHINE_CONTAINER_TYPE-$MACHINE_VERSION.zip
   zip -r ../../../../PredixMachine$MACHINE_CONTAINER_TYPE-$MACHINE_VERSION.zip .
   __append_new_line_log "PredixMachine tar ball available at location `pwd`/PredixMachine$MACHINE_CONTAINER_TYPE-$MACHINE_VERSION.zip" "$createMachineContainterLogDir"
