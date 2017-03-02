@@ -204,24 +204,20 @@ fi
 
 # Edit the manifest.yml files
 
-#    a) Modify the name of the applications
+#    Modify the name of the applications
 __find_and_replace "- name: .*" "- name: $FRONT_END_APP_NAME" "manifest.yml" "$buildBasicAppLogDir"
 
-#    b) Modify the learning path
-__find_and_replace "cloudbasics .*" "cloudbasics : false" "server/learningpaths/learningpaths.js" "$buildBasicAppLogDir"
-__find_and_replace "authorization .*" "authorization : true" "server/learningpaths/learningpaths.js" "$buildBasicAppLogDir"
-
-#    c) Add the services to bind to the application
+#    Add the services to bind to the application
 __find_and_replace "\#services:" "services:" "manifest.yml" "$buildBasicAppLogDir"
 __find_and_append_new_line "services:" "- $UAA_INSTANCE_NAME" "manifest.yml" "$buildBasicAppLogDir"
 __find_and_append_new_line "services:" "- $TIMESERIES_INSTANCE_NAME" "manifest.yml" "$buildBasicAppLogDir"
 __find_and_append_new_line "services:" "- $ASSET_INSTANCE_NAME" "manifest.yml" "$buildBasicAppLogDir"
 
-#    d) Set the clientid and base64ClientCredentials
+#    Set the clientid and base64ClientCredentials
 __find_and_replace "\#clientId: .*" "clientId: $UAA_CLIENTID_GENERIC" "manifest.yml" "$buildBasicAppLogDir"
 __find_and_replace "\#base64ClientCredential: .*" "base64ClientCredential: $MYGENERICS_SECRET" "manifest.yml" "$buildBasicAppLogDir"
 
-#    e) Set the timeseries and asset information to query the services
+#    Set the timeseries and asset information to query the services
 __find_and_replace "\#assetMachine: .*" "assetMachine: $ASSET_TYPE" "manifest.yml" "$buildBasicAppLogDir"
 __find_and_replace "\#tagname: .*" "tagname: $ASSET_TAG_NOSPACE" "manifest.yml" "$buildBasicAppLogDir"
 __find_and_replace "\#windServiceURL: .*" "windServiceURL: https://$WINDDATA_SERVICE_URL" "manifest.yml" "$buildBasicAppLogDir"
@@ -239,8 +235,6 @@ __find_and_replace ".*timeseriesURL\":.*" "    \"timeseriesURL\": \"$TIMESERIES_
 if [[ "$USE_WINDDATA_SERVICE" == "1" ]]; then
   __find_and_replace ".*windServiceURL\": .*" "    \"windServiceURL\": \"https://$WINDDATA_SERVICE_URL\"" "server/localConfig.json" "$buildBasicAppLogDir"
 fi
-__find_and_replace ".*cloudbasics\" :.*" "    \"cloudbasics\": false," "server/learningpaths/learningpaths.js" "$buildBasicAppLogDir"
-__find_and_replace ".*authorization\" :.*" "    \"authorization\": true," "server/learningpaths/learningpaths.js" "$buildBasicAppLogDir"
 
 # Edit the secure/secure.html file
 cd secure
