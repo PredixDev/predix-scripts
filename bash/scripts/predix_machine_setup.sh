@@ -100,7 +100,7 @@ if [ "$3" == "1" ]; then
 	__append_new_head_log "Transferring Predix Machine Container" "#" "$predixMachineLogDir"
 	cd $PREDIX_MACHINE_HOME
 	pwd
-	rm -rf ../$MACHINE_CONTAINER_NAME
+	#rm -rf ../$MACHINE_CONTAINER_NAME
 	tar xvfz ../$MACHINE_CONTAINER_NAME *
 	#zip -r ../$MACHINE_CONTAINER_NAME *
 	if [[ "$RUN_EDGE_MANAGER_SETUP" == "1" ]]; then
