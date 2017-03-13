@@ -101,14 +101,17 @@ if [ "$3" == "1" ]; then
 	cd $PREDIX_MACHINE_HOME
 	pwd
 	rm -rf ../$MACHINE_CONTAINER_NAME
-	zip -r ../$MACHINE_CONTAINER_NAME *
+	tar xvfz ../$MACHINE_CONTAINER_NAME *
+	#zip -r ../$MACHINE_CONTAINER_NAME *
 	if [[ "$RUN_EDGE_MANAGER_SETUP" == "1" ]]; then
 		echo "Creating Configuration and Software package"
 		pwd
 		rm -rf $predixMachineSetupRootDir/../WorkshopSoftware.zip
 		rm -rf $predixMachineSetupRootDir/../WorkshopConfiguration.zip
-		zip -r $predixMachineSetupRootDir/../WorkshopConfiguration.zip configuration
-		zip -r $predixMachineSetupRootDir/../WorkshopSoftware.zip machine
+		tar xvfz $predixMachineSetupRootDir/../WorkshopConfiguration.zip configuration
+		tar xvfz $predixMachineSetupRootDir/../WorkshopSoftware.zip machine
+		#zip -r $predixMachineSetupRootDir/../WorkshopConfiguration.zip configuration
+		#zip -r $predixMachineSetupRootDir/../WorkshopSoftware.zip machine
 	fi
 	cd ..
 	pwd
