@@ -100,12 +100,16 @@ if [ "$3" == "1" ]; then
 	__append_new_head_log "Transferring Predix Machine Container" "#" "$predixMachineLogDir"
 	cd $PREDIX_MACHINE_HOME
 	echo "Predix machine container name : "$MACHINE_CONTAINER_NAME
+	echo "here1"
 	pwd
 	rm -rf ../$MACHINE_CONTAINER_NAME
+	ls -l ..
 	pwd
 	echo "$MACHINE_CONTAINER_NAME"
-	
-	tar cvfz $MACHINE_CONTAINER_NAME *
+	echo "about to tar"
+	__append_new_head_log "About to tar" "$predixMachineLogDir"
+	tar cvfz ../$MACHINE_CONTAINER_NAME *
+	echo "tar complete"
 	#zip -r ../$MACHINE_CONTAINER_NAME *
 	if [[ "$RUN_EDGE_MANAGER_SETUP" == "1" ]]; then
 		echo "Creating Configuration and Software package"
