@@ -82,7 +82,7 @@ if [ "$2" == "1" ]; then
 		#Unzip the original PredixMachine container
 		#rm -rf "$PREDIX_MACHINE_HOME"
 		if [[ ! -d "$PREDIX_MACHINE_HOME" ]]; then
-			tar xvfz  $machineTemplatesRepoName/$MACHINE_CONTAINER_NAME -C "$PREDIX_MACHINE_HOME"
+			tar xvfz  $machineTemplatesRepoName/$MACHINE_CONTAINER_NAME 
 		fi
 		"$predixMachineSetupRootDir/machineconfig.sh" "$trustedIssuerID" "$TIMESERIES_INGEST_URI" "$TIMESERIES_ZONE_ID" "$uaaURL" "$PREDIX_MACHINE_HOME"
 		__append_new_head_log "Created Predix Machine container!" "-" "$predixMachineLogDir"
