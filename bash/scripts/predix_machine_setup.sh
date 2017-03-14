@@ -102,7 +102,10 @@ if [ "$3" == "1" ]; then
 	echo "Predix machine container name : "$MACHINE_CONTAINER_NAME
 	pwd
 	rm -rf ../$MACHINE_CONTAINER_NAME
-	tar cvfz ../$MACHINE_CONTAINER_NAME *
+	pwd
+	echo "$MACHINE_CONTAINER_NAME"
+	
+	tar cvfz $MACHINE_CONTAINER_NAME *
 	#zip -r ../$MACHINE_CONTAINER_NAME *
 	if [[ "$RUN_EDGE_MANAGER_SETUP" == "1" ]]; then
 		echo "Creating Configuration and Software package"
