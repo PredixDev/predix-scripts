@@ -83,7 +83,7 @@ __try_create_service $TIMESERIES_SERVICE_NAME $TIMESERIES_SERVICE_PLAN $TIMESERI
 __try_bind $1 $TIMESERIES_INSTANCE_NAME
 
 # Get the Zone ID and URIs from the environment variables (for use when querying and ingesting data)
-if TIMESERIES_ZONE_HEADER_NAME=$(cf env $TEMP_APP | grep -m 100 zone-http-header-name | sed 's/"zone-http-header-name": "//' | sed 's/",//' | tr -d '[[:space:]]'); then
+if TIMESERIES_ZONE_HEADER_NAME=$(cf env $TEMP_APP | grep -m 1 zone-http-header-name | sed 's/"zone-http-header-name": "//' | sed 's/",//' | tr -d '[[:space:]]'); then
 	echo "TIMESERIES_ZONE_HEADER_NAME : $TIMESERIES_ZONE_HEADER_NAME"
 	__append_new_line_log "TIMESERIES_ZONE_HEADER_NAME copied from environmental variables!" "$predixServicesLogDir"
 else
