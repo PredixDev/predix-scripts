@@ -106,8 +106,6 @@ if [ "$3" == "1" ]; then
 	ls -l ..
 	pwd
 	echo "$MACHINE_CONTAINER_NAME"
-	echo "about to tar"
-	__append_new_head_log "About to tar" "$predixMachineLogDir"
 	tar cvfz ../$MACHINE_CONTAINER_NAME *
 	echo "tar complete"
 	#zip -r ../$MACHINE_CONTAINER_NAME *
