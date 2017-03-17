@@ -24,6 +24,7 @@ touch "$predixMachineLogDir/quickstartlog.log"
 #Global variables
 PREDIX_MACHINE_HOME="$predixMachineSetupRootDir/../PredixMachine$MACHINE_CONTAINER_TYPE-$MACHINE_VERSION"
 MACHINE_CONTAINER_NAME="PredixMachine$MACHINE_CONTAINER_TYPE-$MACHINE_VERSION.zip"
+TRANSFER_CONTAINER_NAME="PredixMachine$MACHINE_CONTAINER_TYPE-$MACHINE_VERSION.tar"
 # Trap ctrlc and exit if encountered
 trap "trap_ctrlc" 2
 __validate_num_arguments 3 $# "\"predix-machine-setup.sh\" expected in order: String of Predix Application used to get VCAP configurations" "$predixMachineLogDir"
@@ -99,12 +100,11 @@ if [ "$3" == "1" ]; then
 
 	__append_new_head_log "Transferring Predix Machine Container" "#" "$predixMachineLogDir"
 	cd $PREDIX_MACHINE_HOME
-	echo "Predix machine container name : "$MACHINE_CONTAINER_NAME
+	echo "Predix transfer container name : "$TRANSFER_CONTAINER_NAME
 	pwd
-	rm -rf ../$MACHINE_CONTAINER_NAME
+	rm -rf ../$TRANSFER_CONTAINER_NAME
 	ls -l ..
-	echo "$MACHINE_CONTAINER_NAME"
-	tar cvfz ../$MACHINE_CONTAINER_NAME *
+	tar cvfz ../$TRANSFER_CONTAINER_NAME *
 	echo "tar complete"
 	#zip -r ../$MACHINE_CONTAINER_NAME *
 	if [[ "$RUN_EDGE_MANAGER_SETUP" == "1" ]]; then
@@ -126,8 +126,8 @@ if [ "$3" == "1" ]; then
 		TARGETDEVICEIP=${TARGETDEVICEIP:localhost}
 		if [ "$TARGETDEVICEIP" != "" ] && [ "$TARGETDEVICEIP" != "localhost" ]; then
 			read -p "Enter the Username on your device> " TARGETDEVICEUSER
-			echo "scp $MACHINE_CONTAINER_NAME $TARGETDEVICEUSER@$TARGETDEVICEIP:$MACHINE_CONTAINER_NAME"
-			__echo_run scp $MACHINE_CONTAINER_NAME $TARGETDEVICEUSER@$TARGETDEVICEIP:$MACHINE_CONTAINER_NAME
+			echo "scp $TRANSFER_CONTAINER_NAME $TARGETDEVICEUSER@$TARGETDEVICEIP:$TRANSFER_CONTAINER_NAME"
+			__echo_run scp $TRANSFER_CONTAINER_NAME $TARGETDEVICEUSER@$TARGETDEVICEIP:$TRANSFER_CONTAINER_NAME
 			__append_new_head_log "Transferred Predix Machine container!" "-" "$predixMachineLogDir"
 		else
 			read -p "Enter the location on your local where you want to copy the Machine tar file(Default directory is $HOME/Predix)> " TARGETDIR
@@ -138,7 +138,7 @@ if [ "$3" == "1" ]; then
 				echo "$TARGETDIR not present. Creating the target directory now"
 				mkdir -p "$TARGETDIR"
 			fi
-			__echo_run cp $MACHINE_CONTAINER_NAME $TARGETDIR
+			__echo_run cp $TRANSFER_CONTAINER_NAME $TARGETDIR
 		fi
 		echo "We built and deployed the Machine Adapter bundle which reads from the Edison API" >> "$PREDIX_SERVICES_TEXTFILE"
 	else
