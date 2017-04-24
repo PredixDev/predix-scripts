@@ -84,8 +84,8 @@ function local_read_args() {
         ;;
       -uaa-clientid-secret)
         if [ -n "$2" ]; then
-          UAA_CLIENTID_GENERIC=$(echo $2 | base64 -d | awk -F":" '{print $1}')
-          UAA_CLIENTID_GENERIC_SECRET=$(echo $2 | base64 -d | awk -F":" '{print $2}')
+          UAA_CLIENTID_GENERIC=$(echo $2 | base64 -D | awk -F":" '{print $1}')
+          UAA_CLIENTID_GENERIC_SECRET=$(echo $2 | base64 -D | awk -F":" '{print $2}')
           export UAA_CLIENTID_GENERIC
           export UAA_CLIENTID_GENERIC_SECRET
         else
@@ -203,5 +203,15 @@ if [[ ! -z $DATABUS_TOPICS ]]; then
 #		fi
 #	done
 fi
-
+cd $quickstartRootDir
+cd $PREDIX_MACHINE_HOME/machine/bin/predix
+if [[ -f setvars.sh ]]; then
+	count=$(grep "unset FWSECURITY" setvars.sh | wc -l)
+	if [[ $count -eq 0 ]]; then
+			cat "unset FWSECURITY" >> setvars.sh
+	fi
+else
+	cat "unset FWSECURITY" > setvars.sh
+	chmod 775 setvars.sh
+fi
 echo "Predix Machine configuration updated successfully"
