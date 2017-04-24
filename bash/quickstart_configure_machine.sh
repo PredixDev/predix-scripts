@@ -84,8 +84,8 @@ function local_read_args() {
         ;;
       -uaa-clientid-secret)
         if [ -n "$2" ]; then
-          UAA_CLIENTID_GENERIC=$(echo $2 | base64 -D | awk -F":" '{print $1}')
-          UAA_CLIENTID_GENERIC_SECRET=$(echo $2 | base64 -D | awk -F":" '{print $2}')
+          UAA_CLIENTID_GENERIC=$(echo $2 | base64 -d | awk -F":" '{print $1}')
+          UAA_CLIENTID_GENERIC_SECRET=$(echo $2 | base64 -d | awk -F":" '{print $2}')
           export UAA_CLIENTID_GENERIC
           export UAA_CLIENTID_GENERIC_SECRET
         else
@@ -174,7 +174,7 @@ if [[ ! -z $DATABUS_TOPICS ]]; then
 		TOPIC_ARRAY="$TOPIC_ARRAY \"$topic\",\\"
 	done
 	TOPIC_ARRAY="$TOPIC_ARRAY ]"
-
+	echo "TOPIC_ARRAY : $TOPIC_ARRAY"
 	sed "s#com.ge.dspmicro.machineadapter.databus.subscriptions=.*#com.ge.dspmicro.machineadapter.databus.subscriptions=$TOPIC_ARRAY#" com.ge.dspmicro.machineadapter.databus-0.config > com.ge.dspmicro.machineadapter.databus-0.config.tmp
 	mv com.ge.dspmicro.machineadapter.databus-0.config.tmp com.ge.dspmicro.machineadapter.databus-0.config
 
@@ -184,14 +184,24 @@ if [[ ! -z $DATABUS_TOPICS ]]; then
 	sed "s#com.ge.dspmicro.hoover.spillway.processType=.*#com.ge.dspmicro.hoover.spillway.processType=\"Workshop\"#" com.ge.dspmicro.hoover.spillway-0.config > com.ge.dspmicro.hoover.spillway-0.config.tmp
 	mv com.ge.dspmicro.hoover.spillway-0.config.tmp com.ge.dspmicro.hoover.spillway-0.config
 
-	for topic in $(echo $DATABUS_TOPICS | awk -F"," '{for (i=1;i<=NF;i++)print $i}'); do
-		count=$(grep $topic com.ge.dspmicro.hoover.spillway-0.config | wc -l)
-		if [[ $count -eq 0 ]]; then
-			echo "$topic not found : updating"
-			sed "s#\"OPCUA_Subscription_2.*\"#\"OPCUA_Subscription_2\", \\\ \"$topic\"#" com.ge.dspmicro.hoover.spillway-0.config > com.ge.dspmicro.hoover.spillway-0.config.tmp
-			mv com.ge.dspmicro.hoover.spillway-0.config.tmp com.ge.dspmicro.hoover.spillway-0.config
-		fi
-	done
+	count=$(grep "OPCUA_Subscription_2" com.ge.dspmicro.hoover.spillway-0.config | wc -l)
+	echo "Count $count"
+	if [[ $count -gt 0 ]]; then
+		sed -e '/dataSubscriptions/ {n;N;N;N;N;d;}' com.ge.dspmicro.hoover.spillway-0.config > com.ge.dspmicro.hoover.spillway-0.config.tmp
+		mv com.ge.dspmicro.hoover.spillway-0.config.tmp com.ge.dspmicro.hoover.spillway-0.config
+	fi
+
+	sed "s#com.ge.dspmicro.hoover.spillway.dataSubscriptions=.*#com.ge.dspmicro.hoover.spillway.dataSubscriptions=$TOPIC_ARRAY#" com.ge.dspmicro.hoover.spillway-0.config > com.ge.dspmicro.hoover.spillway-0.config.tmp
+	mv com.ge.dspmicro.hoover.spillway-0.config.tmp com.ge.dspmicro.hoover.spillway-0.config
+
+
+#	for topic in $(echo $DATABUS_TOPICS | awk -F"," '{for (i=1;i<=NF;i++)print $i}'); do
+#		count=$(grep $topic com.ge.dspmicro.hoover.spillway-0.config | wc -l)
+#		if [[ $count -eq 0 ]]; then
+#			echo "$topic not found : updating"
+##			mv com.ge.dspmicro.hoover.spillway-0.config.tmp com.ge.dspmicro.hoover.spillway-0.config
+#		fi
+#	done
 fi
 
 echo "Predix Machine configuration updated successfully"
