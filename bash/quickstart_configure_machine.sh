@@ -208,10 +208,10 @@ cd $PREDIX_MACHINE_HOME/machine/bin/predix
 if [[ -f setvars.sh ]]; then
 	count=$(grep "unset FWSECURITY" setvars.sh | wc -l)
 	if [[ $count -eq 0 ]]; then
-			cat "unset FWSECURITY" >> setvars.sh
+	  echo "unset FWSECURITY" >> setvars.sh
 	fi
 else
-	cat "unset FWSECURITY" > setvars.sh
+	echo "unset FWSECURITY" > setvars.sh
 	chmod 775 setvars.sh
 fi
 echo "Predix Machine configuration updated successfully"
