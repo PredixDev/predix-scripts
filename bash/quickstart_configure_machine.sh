@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-quickstartRootDir="$( pwd )/predix-scripts"
+quickstartRootDir="$( pwd )"
 export quickstartRootDir
 
 #	----------------------------------------------------------------
