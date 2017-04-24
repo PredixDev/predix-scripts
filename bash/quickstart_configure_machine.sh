@@ -84,8 +84,8 @@ function local_read_args() {
         ;;
       -uaa-clientid-secret)
         if [ -n "$2" ]; then
-          UAA_CLIENTID_GENERIC=$(echo $2 | base64 -D | awk -F":" '{print $1}')
-          UAA_CLIENTID_GENERIC_SECRET=$(echo $2 | base64 -D | awk -F":" '{print $2}')
+          UAA_CLIENTID_GENERIC=$(echo $2 | base64 -d | awk -F":" '{print $1}')
+          UAA_CLIENTID_GENERIC_SECRET=$(echo $2 | base64 -d | awk -F":" '{print $2}')
           export UAA_CLIENTID_GENERIC
           export UAA_CLIENTID_GENERIC_SECRET
         else
