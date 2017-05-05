@@ -15,6 +15,7 @@ source "$rootDir/bash/scripts/variables.sh"
 source "$rootDir/bash/scripts/error_handling_funcs.sh"
 source "$rootDir/bash/scripts/files_helper_funcs.sh"
 source "$rootDir/bash/scripts/curl_helper_funcs.sh"
+source "$rootDir/bash/scripts/predix_funcs.sh"
 
 trap "trap_ctrlc" 2
 
@@ -25,7 +26,7 @@ fi
 touch "$logDir/quickstart.log"
 
 # ********************************** MAIN **********************************
-__validate_num_arguments 1 $# "\"build-basic-app.sh\" expected in order: String of Predix Application used to get VCAP configurations" "$logDir"
+__validate_num_arguments 1 $# "\"cloud-basics.sh\" expected in order: none" "$logDir"
 
 __append_new_head_log "Build & Deploy Application" "#" "$logDir"
 
@@ -35,9 +36,6 @@ __append_new_head_log "Build & Deploy Application" "#" "$logDir"
 #			string of app name used to bind to services so we can get VCAP info
 #	----------------------------------------------------------------
 function main() {
-  for ((switchIndex = 0; switchIndex < ${#SWITCH_ARRAY[@]}; switchIndex++))
-  do
-      switch="${SWITCH_ARRAY[$switchIndex]}"
-      runFunctionForBasicApp $1 $switch
-  done
+  source "$rootDir/bash/scripts/cloud-basics-hello-world.sh"
+  cloud-basics-hello-world-main
 }

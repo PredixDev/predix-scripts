@@ -2,7 +2,7 @@
 Quickstart to set up a Predix Application, including Predix Servies, and configure Predix Machine to have an edge device stream data to the Predix Cloud
 
 ## Intro
-Welcome Predix Developers! This product is a reference application for Predix that exposes various micro services for demo, quick setup, and configuration purposes. It has several use cases. One primary one is to push time series data from an edge device, either your local machine or any device such as Raspberry PI/Intel Edison,  to Predix Time Series Service and be viewable via the front-end which uses the Predix Seed. Run the `quickstart` script to setup a instance of time series, UAA, Asset and push a Front-End demo application to Cloud Foundry. This gives a basic idea of how various Predix micro services can be hooked together and configured quickly and easily.
+Welcome Predix Developers! This product is a reference application for Predix that exposes various micro services for demo, quick setup, and configuration purposes. It has several use cases. One primary one is to push time series data from an edge device, either your local machine or any device such as Raspberry PI/Intel Edison,  to Predix Time Series Service and be viewable via the front-end which uses the Predix WebApp Starter. Run the `quickstart` script to setup a instance of time series, UAA, Asset and push a Front-End demo application to Cloud Foundry. This gives a basic idea of how various Predix micro services can be hooked together and configured quickly and easily.
 
 The quickstart will produce 3 logs in a ./log directory. One is a generic log `quickstartlog.log`, another pertains to all things related Predix Service configuration and deployment called `predix-services-summary`, and lastly one that pertains to configuration and deployment of the frontend application called `build-basic-app-summary.txt`.
 
@@ -56,7 +56,7 @@ export https_proxy=$ALL_PROXY
 your edge device.
   1. More Documentation will follow here how to port it over, placeholder for now.
 
-9.	After the script is complete, run the command 'cf apps' to see the list of cloud foundry apps you have created. Within that list the app pushed by the script will have the name set in the variables.sh file. Under the 'urls' heading in that apps' row the url used for the front-end will be available. Navigating to that url will show a time series graph representation of the simulation data displayed using the Predix Seed.
+9.	After the script is complete, run the command 'cf apps' to see the list of cloud foundry apps you have created. Within that list the app pushed by the script will have the name set in the variables.sh file. Under the 'urls' heading in that apps' row the url used for the front-end will be available. Navigating to that url will show a time series graph representation of the simulation data displayed using the Predix Webapp Starter.
 
 Congratulations! You have successfully created your first Predix Application! You are now a Predix Developer!
 

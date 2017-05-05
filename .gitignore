@@ -3,7 +3,12 @@ log
 predix-nodejs-starter
 *Predix-HelloWorld-WebApp
 *hello-world
-PredixMachine/
-PredixMachineContainer.tar.gz
+PredixMachineDebug*
+PredixMachineContainer*
 winddata-timeseries-service
-
+data-exchange-simulator/
+data-exchange-ui/
+data-exchange/
+predix-webapp-starter/
+predix-websocket-server/
+rmd-datasource/

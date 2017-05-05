@@ -11,10 +11,23 @@
 # Leave as is if no proxy
 ALL_PROXY=":8080"
 
-############## Front-end Configurations #############
-# Name for your Frone End Application
-FRONT_END_APP_NAME="$INSTANCE_PREPENDER-nodejs-starter"
+############## Configurations #############
+# Name for your Back End Application
+DATAEXCHANGE_APP_NAME="$INSTANCE_PREPENDER-data-exchange"
+DATA_SIMULATOR_APP_NAME="$INSTANCE_PREPENDER-data-exchange-simulator"
+WEBSOCKET_SERVER_APP_NAME="$INSTANCE_PREPENDER-websocket-server"
 WINDDATA_SERVICE_APP_NAME="$INSTANCE_PREPENDER-winddata-service"
+RMD_DATASOURCE_APP_NAME="$INSTANCE_PREPENDER-rmd-datasource"
+RMD_ORCHESTRATION_APP_NAME="$INSTANCE_PREPENDER-rmd-orchestration"
+RMD_ANALYTICS_APP_NAME="$INSTANCE_PREPENDER-rmd-analytics"
+# Name for your Front End Application
+FRONT_END_NODEJS_STARTER_APP_NAME="$INSTANCE_PREPENDER-nodejs-starter"
+FRONT_END_POLYMER_SEED_APP_NAME="$INSTANCE_PREPENDER-predix-webapp-starter"
+FRONT_END_POLYMER_SEED_UAA_APP_NAME="$INSTANCE_PREPENDER-predix-webapp-starter"
+FRONT_END_POLYMER_SEED_ASSET_APP_NAME="$INSTANCE_PREPENDER-predix-webapp-starter"
+FRONT_END_POLYMER_SEED_TIMESERIES_APP_NAME="$INSTANCE_PREPENDER-predix-webapp-starter"
+FRONT_END_POLYMER_SEED_RMD_APP_NAME="$INSTANCE_PREPENDER-predix-webapp-starter"
+FRONT_END_DATAEXCHANGE_UI_APP_NAME="$INSTANCE_PREPENDER-data-exchange-ui"
 
 ############### UAA Configurations ###############
 
@@ -31,11 +44,16 @@ UAA_USER_PASSWORD="app_user_1"
 UAA_ADMIN_SECRET="secret"
 
 # The generic client ID that will be created with necessary UAA scope/autherities
+UAA_CLIENTID_LOGIN="login_client_id"
+
+# The generic client ID password
+UAA_CLIENTID_LOGIN_SECRET="secret"
+
+# The generic client ID that will be created with necessary UAA scope/autherities
 UAA_CLIENTID_GENERIC="app_client_id"
 
 # The generic client ID password
 UAA_CLIENTID_GENERIC_SECRET="secret"
-
 ############# Predix Asset Configurations #############
 
 # Name of the "Asset" that is recorded to Predix Asset
@@ -85,6 +103,17 @@ TIMESERIES_SERVICE_PLAN="Free"
 #Name of your TimeSeries instance - default already set
 TIMESERIES_INSTANCE_NAME="$INSTANCE_PREPENDER-time-series"
 
+############# Predix Access Control Service Configurations ##############
+
+#The name of the Asset service you are binding to - default already set
+ACCESS_CONTROL_SERVICE_NAME="predix-acs"
+
+#Name of the Asset plan (eg: Free) - default already set
+ACCESS_CONTROL_SERVICE_PLAN="Free"
+
+#Name of your Asset instance - default already set
+ACCESS_CONTROL_SERVICE_INSTANCE_NAME="$INSTANCE_PREPENDER-acs"
+
 ############# Predix Asset Configurations ##############
 
 #The name of the Asset service you are binding to - default already set
@@ -95,6 +124,19 @@ ASSET_SERVICE_PLAN="Free"
 
 #Name of your Asset instance - default already set
 ASSET_INSTANCE_NAME="$INSTANCE_PREPENDER-asset"
+
+
+RABBITMQ_SERVICE_INSTANCE_NAME="$INSTANCE_PREPENDER-rmq"
+RABBITMQ_SERVICE_PLAN="standard"
+RABBITMQ_SERVICE_NAME="rabbitmq-36"
+
+ANALYTIC_FRAMEWORK_SERVICE_INSTANCE_NAME="$INSTANCE_PREPENDER-af"
+ANALYTIC_FRAMEWORK_SERVICE_NAME="predix-analytics-framework"
+ANALYTIC_FRAMEWORK_SERVICE_PLAN="Free"
+
+REDIS_INSTANCE_NAME="$INSTANCE_PREPENDER-redis"
+REDIS_SERVICE_NAME="redis"
+REDIS_SERVICE_PLAN="shared-vm"
 
 #Predix Enable modbus configuration using Modbus simulator
 ENABLE_MODBUS_SIMULATOR="true"
@@ -120,5 +162,3 @@ EDGE_MANAGER_UAA_URL="https://9274a009-9af1-4c5d-a0bb-dfe07771e29c.predix-uaa.ru
 EDGE_MANAGER_SHARED_CLIENT_SECRET="c2hhcmVkLXRlbmFudC1hcHAtY2xpZW50Okk1NXpLbUFGMFNfQUdkbAo="
 EDGE_DEVICE_NAME="$INSTANCE_PREPENDER-workshopedisondevice1"
 EDGE_DEVICE_ID="$INSTANCE_PREPENDER-workshopedisondevice1"
-
-PREDIX_MACHINE_HOME="`pwd`/PredixMachineDebug-$MACHINE_VERSION"

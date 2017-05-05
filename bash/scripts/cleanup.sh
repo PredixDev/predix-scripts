@@ -4,24 +4,24 @@ set -e
 # Authors: GE SDLP 2015
 #
 
-cleanUpPath="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cleanUpLogDirectory="$cleanUpPath/../log"
+rootDir=$quickstartRootDir
+logDir="$rootDir/log"
 
-source "$cleanUpPath/predix_funcs.sh"
-source "$cleanUpPath/variables.sh"
-source "$cleanUpPath/files_helper_funcs.sh"
-source "$cleanUpPath/error_handling_funcs.sh"
+source "$rootDir/bash/scripts/predix_funcs.sh"
+source "$rootDir/bash/scripts/variables.sh"
+source "$rootDir/bash/scripts/files_helper_funcs.sh"
+source "$rootDir/bash/scripts/error_handling_funcs.sh"
 
-if ! [ -d "$cleanUpLogDirectory" ]; then
-	mkdir "$cleanUpLogDirectory"
-	chmod 744 "$cleanUpLogDirectory"
+if ! [ -d "$logDir" ]; then
+	mkdir "$logDir"
+	chmod 744 "$logDir"
 fi
 
-touch "$cleanUpLogDirectory/quickstartlog.log"
+touch "$logDir/quickstart.log"
 
 # Unbind any possible services
 # *****************************
-__append_new_head_log "Cleaning up Apps and Services" "#" "$cleanUpLogDirectory"
+__append_new_head_log "Cleaning up Apps and Services" "#" "$logDir"
 
 __try_unbind $TEMP_APP $TIMESERIES_INSTANCE_NAME
 __try_unbind $FRONT_END_APP_NAME $TIMESERIES_INSTANCE_NAME

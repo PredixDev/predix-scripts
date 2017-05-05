@@ -25,9 +25,9 @@ fi
 touch "$logDir/quickstart.log"
 
 # ********************************** MAIN **********************************
-__validate_num_arguments 1 $# "\"build-basic-app.sh\" expected in order: String of Predix Application used to get VCAP configurations" "$logDir"
+__validate_num_arguments 1 $# "\"digital-twin.sh\" expected in order: String of Predix Application used to get VCAP configurations" "$logDir"
 
-__append_new_head_log "Build & Deploy Application" "#" "$logDir"
+__append_new_head_log "Build & Deploy Analytic Application" "#" "$logDir"
 
 #	----------------------------------------------------------------
 #	Function called by quickstart.sh, must be spelled main()
@@ -38,6 +38,6 @@ function main() {
   for ((switchIndex = 0; switchIndex < ${#SWITCH_ARRAY[@]}; switchIndex++))
   do
       switch="${SWITCH_ARRAY[$switchIndex]}"
-      runFunctionForBasicApp $1 $switch
+      runFunctionForDigitalTwin $1 $switch
   done
 }

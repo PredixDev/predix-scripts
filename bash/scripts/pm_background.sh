@@ -1,4 +1,4 @@
-PREDIX_MACHINE_HOME="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PREDIX_MACHINE_HOME=$quickstartRootDir
 PREDIX_MACHINE_LOGS="$PREDIX_MACHINE_HOME/../../../logs/machine"
 mkdir -p "$PREDIX_MACHINE_LOGS"
 touch "$PREDIX_MACHINE_LOGS/machine.log"

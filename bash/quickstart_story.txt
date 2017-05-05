@@ -21,7 +21,7 @@ CF_HOST=<api.endpoint.predix.io>
 
 Right now there are two main endpoints:
 1) Predix Basic Account : api.system.aws-usw02-pr.ice.predix.io
-2) Predix Select Account : api.system.asv-pr.ice.predix.io
+2) Predix USEast Account : api.system.asv-pr.ice.predix.io
 
 EOF
 

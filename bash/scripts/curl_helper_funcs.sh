@@ -1,11 +1,11 @@
 #!/bin/bash
 set -e
-CURL_HELPER_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-CURL_HELPER_LOG_PATH="$CURL_HELPER_PATH/../log"
+rootDir=$quickstartRootDir
+logDir="$rootDir/log"
 
-source "$CURL_HELPER_PATH/variables.sh"
-source "$CURL_HELPER_PATH/error_handling_funcs.sh"
-source "$CURL_HELPER_PATH/files_helper_funcs.sh"
+source "$rootDir/bash/scripts/variables.sh"
+source "$rootDir/bash/scripts/error_handling_funcs.sh"
+source "$rootDir/bash/scripts/files_helper_funcs.sh"
 
 trap "trap_ctrlc" 2
 
@@ -25,7 +25,7 @@ trap "trap_ctrlc" 2
 #	----------------------------------------------------------------
 
 function __jsonval {
-    __validate_num_arguments 2 $# "\"curl_helper_funcs:__jsonval\" expected in order: String of JSON, String of property to look for" "$CURL_HELPER_LOG_PATH"
+    __validate_num_arguments 2 $# "\"curl_helper_funcs:__jsonval\" expected in order: String of JSON, String of property to look for" "$logDir"
 
     temp=`echo $1 | sed 's/\\\\\//\//g' | sed 's/[{}]//g' | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}' | sed 's/\"\:\"/\|/g' | sed 's/[\,]/ /g' | sed 's/\"//g' | grep -w $2`
     echo ${temp##*|}
@@ -44,7 +44,7 @@ function __getUaaAdminToken
 		echo ""
   else
     UAA_ADMIN_BASE64=$(echo -ne admin:$UAA_ADMIN_SECRET | base64)
-    responseCurl=`curl -X GET "$1/oauth/token?grant_type=client_credentials" -H "Authorization: Basic $UAA_ADMIN_BASE64" -H "Content-Type: application/x-www-form-urlencoded"`
+    responseCurl=`curl --silent -X GET "$1/oauth/token?grant_type=client_credentials" -H "Authorization: Basic $UAA_ADMIN_BASE64" -H "Content-Type: application/x-www-form-urlencoded"`
     tokenType=$( __jsonval "$responseCurl" "token_type" )
     accessToken=$( __jsonval "$responseCurl" "access_token" )
 
@@ -52,11 +52,20 @@ function __getUaaAdminToken
 	fi
 }
 
+#	----------------------------------------------------------------
+#	Function for getting a Client Token from UAA
+#		Accepts 3 arguments:
+#			string of UAA URL
+#			string of Client Id
+#			string of Client Id Secret
+#  Returns:
+#     String of the the UAA Token
+#	----------------------------------------------------------------
 function __getUaaClientToken
 {
 
-    UAA_ADMIN_BASE64=$(echo -ne $UAA_CLIENTID_GENERIC:$UAA_CLIENTID_GENERIC_SECRET | base64)
-    responseCurl=`curl -X GET "$1/oauth/token?grant_type=client_credentials" -H "Authorization: Basic $UAA_ADMIN_BASE64" -H "Content-Type: application/x-www-form-urlencoded"`
+    UAA_ADMIN_BASE64=$(echo -ne $2:$3 | base64)
+    responseCurl=`curl --silent -X GET "$1/oauth/token?grant_type=client_credentials" -H "Authorization: Basic $UAA_ADMIN_BASE64" -H "Content-Type: application/x-www-form-urlencoded"`
     tokenType=$( __jsonval "$responseCurl" "token_type" )
     accessToken=$( __jsonval "$responseCurl" "access_token" )
 
@@ -65,75 +74,120 @@ function __getUaaClientToken
 
 #---------------------------------
 # Check if the clientId exists and return the clientId details as json
-# Accepts 2 arguments
-#   String UAA client Id
+# Accepts 3 arguments
 #   String UAA URI
+#   String UAA ClientId
+#   Var ResonseStatus
 #
-function checkUaaClient
+function __checkUaaClient
 {
-  __validate_num_arguments 2 $# "\"curl_helper_funcs:__getUaaClient\" expected in order: UAA URI, Status Response" "$CURL_HELPER_LOG_PATH"
+  __validate_num_arguments 3 $# "\"curl_helper_funcs:__checkUaaClient\" expected in order: UAA URI, UAA ClientId, Status Response" "$logDir"
 
-  __append_new_line_log "Making CURL GET request to get UAA Admin Token..." "$CURL_HELPER_LOG_PATH"
+  __append_new_line_log "Check UAA Client" "$logDir"
 
-  adminUaaToken=$( __getUaaAdminToken "$1" )
-  if [ ${#adminUaaToken} -lt 3 ]; then
-    __error_exit "Failed to get a token from \"$1\"" "$CURL_HELPER_LOG_PATH"
+  echo "UAA_ADMIN_TOKEN=$UAA_ADMIN_TOKEN"
+  if [[ "$UAA_ADMIN_TOKEN" == "" ]]; then
+    __append_new_line_log "Making CURL GET request to get UAA Admin Token..." "$logDir"
+    adminUaaToken=$( __getUaaAdminToken "$1" )
+    UAA_ADMIN_TOKEN=$adminUaaToken
+  fi
+
+
+  if [ ${#UAA_ADMIN_TOKEN} -lt 3 ]; then
+    __error_exit "Failed to get a token from \"$1\"" "$logDir"
   else
-    __append_new_line_log "Got UAA admin token" "$CURL_HELPER_LOG_PATH"
-    __append_new_line_log "Making CURL GET request to get UAA Client ID \"$UAA_CLIENTID_GENERIC\"..." "$CURL_HELPER_LOG_PATH"
-
-    local responseCurl=$(curl --write-out %{http_code} --silent --output /dev/null "$1/oauth/clients/$UAA_CLIENTID_GENERIC" -H "Pragma: no-cache" -H "Content-Type: application/json" -H "Cache-Control: no-cache" -H "Authorization: $adminUaaToken")
+    __append_new_line_log "Making CURL GET request to get UAA Client ID \"$2\"..." "$logDir"
+    curlCmd="curl --write-out %{http_code} \"$1/oauth/clients/$2\" -H \"Pragma: no-cache\" -H \"Content-Type: application/json\" -H \"Cache-Control: no-cache\" -H \"Authorization: $UAA_ADMIN_TOKEN\""
+    echo $curlCmd
+    local responseCurl=$(curl --write-out %{http_code} --output /dev/null "$1/oauth/clients/$2" -H "Pragma: no-cache" -H "Content-Type: application/json" -H "Cache-Control: no-cache" -H "Authorization: $UAA_ADMIN_TOKEN")
     #__append_new_line_log "get uaa client id : $responseCurl"
     if [[ $responseCurl -eq 200 ]]; then
-      __append_new_line_log "Client Id found" "$CURL_HELPER_LOG_PATH"
+      __append_new_line_log "Client Id found" "$logDir"
     else
       if [[ $responseCurl -eq 404 ]]; then
-      __append_new_line_log "Client Id Not found" "$CURL_HELPER_LOG_PATH"
+      __append_new_line_log "Client Id Not found" "$logDir"
       else
-        __error_exit "Failed to make request to get UAA Client to \"$1\"" "$CURL_HELPER_LOG_PATH"
+        __error_exit "Failed to make request to get UAA Client to \"$1\"" "$logDir"
       fi
     fi
-    eval $2=$responseCurl
+    eval $3=$responseCurl
   fi
+}
+
+#	----------------------------------------------------------------
+#	Function for processing a UAA Client ID
+#		Accepts 3 argument:
+#			string of UAA URI
+#			string of clientId to create
+#			string of clientIdsecret
+#
+#	----------------------------------------------------------------
+function __createUaaAppClient
+{
+  __validate_num_arguments 3 $# "\"curl_helper_funcs:__createUaaClient\" expected in order: UAA_URI ClientId ClientIdSecret" "$logDir"
+  dataBinary="{\"client_id\":\"$2\",\"client_secret\":\"$3\",\"scope\":[\"acs.policies.read\",\"acs.policies.write\",\"acs.attributes.read\",\"uaa.none\",\"openid\"],\"authorized_grant_types\":[\"client_credentials\",\"authorization_code\",\"refresh_token\",\"password\"],\"authorities\":[\"openid\",\"uaa.none\",\"uaa.resource\"],\"autoapprove\":[\"openid\"],\"allowedproviders\":[\"uaa\"]}"
+  __createUaaClient $1 $2 $3 $dataBinary
+}
+
+#	----------------------------------------------------------------
+#	Function for processing a UAA Client ID
+#		Accepts 3 argument:
+#			string of UAA URI
+#			string of clientId to create
+#			string of clientIdsecret
+#
+#	----------------------------------------------------------------
+function __createUaaLoginClient
+{
+  __validate_num_arguments 3 $# "\"curl_helper_funcs:__createUaaLoginClient\" expected in order: UAA_URI ClientId ClientIdSecret" "$logDir"
+  dataBinary="{\"client_id\":\"$2\",\"client_secret\":\"$3\",\"scope\":[\"uaa.none\",\"openid\"],\"authorized_grant_types\":[\"client_credentials\",\"authorization_code\",\"refresh_token\"],\"authorities\":[\"openid\",\"uaa.none\",\"uaa.resource\"],\"autoapprove\":[\"openid\"],\"allowedproviders\":[\"uaa\"]}"
+  __createUaaClient $1 $2 $3 $dataBinary
 }
 
 #	----------------------------------------------------------------
 #	Function for processing a UAA Client ID
 #		Accepts 4 argument:
 #			string of UAA URI
-#     string of the TIMESERIES_ZONE_ID
-#     string of the ASSET_SERVICE_NAME
-#     string of the ASSET_ZONE_ID
+#			string of clientId to create
+#			string of clientIdsecret
+#			string of dataBinary request
 #
 #	----------------------------------------------------------------
 function __createUaaClient
 {
-  __validate_num_arguments 4 $# "\"curl_helper_funcs:__createUaaClient\" expected in order: UAA URI, Time Series Zone ID, Asset Service Name, and Asset Service Zone ID" "$CURL_HELPER_LOG_PATH"
+  __validate_num_arguments 4 $# "\"curl_helper_funcs:__createUaaClient\" expected in order: UAA_URI ClientId ClientIdSecret CurlToUse" "$logDir"
+  __append_new_head_log "Create UAA Client $2 to secure the application" "-" "$logDir"
 
-  __append_new_line_log "Making CURL GET request to get UAA Admin Token..." "$CURL_HELPER_LOG_PATH"
+  __append_new_line_log "Create UAA Client: UAA Uri=$1" "$logDir"
 
-  adminUaaToken=$( __getUaaAdminToken "$1" )
-  if [ ${#adminUaaToken} -lt 3 ]; then
-    __error_exit "Failed to get a token from \"$1\"" "$CURL_HELPER_LOG_PATH"
+  if [[ "$UAA_ADMIN_TOKEN" == "" ]]; then
+    __append_new_line_log "Making CURL GET request to get UAA Admin Token..." "$logDir"
+    adminUaaToken=$( __getUaaAdminToken "$1" )
+    UAA_ADMIN_TOKEN=$adminUaaToken
+  fi
+
+  if [ ${#UAA_ADMIN_TOKEN} -lt 3 ]; then
+    __error_exit "Failed to get a token from \"$1\"" "$logDir"
   else
-    __append_new_line_log "Got UAA admin token" "$CURL_HELPER_LOG_PATH"
+    if [[ "$UAA_URL" == "" ]]; then
+      getUaaUrl $TEMP_APP
+    fi
 
     ## check if the client exists
-    checkUaaClient $uaaURL getResponseStatus
+    __checkUaaClient $UAA_URL $2 getResponseStatus
     if [[ $getResponseStatus -eq 200 ]]; then
-        __append_new_line_log "Client Found - calling Update" "$CURL_HELPER_LOG_PATH"
-        _arrayScope=("timeseries.zones.$TIMESERIES_ZONE_ID.query" "timeseries.zones.$TIMESERIES_ZONE_ID.ingest" "timeseries.zones.$TIMESERIES_ZONE_ID.user" "$ASSET_SERVICE_NAME.zones.$ASSET_ZONE_ID.user")
-       __updateUaaClient "$uaaURL" _arrayScope[@] _arrayScope[@]
+        __append_new_line_log "Client Found - No need to Create one" "$logDir"
     else
-      # call to create a new client id
-      __append_new_line_log "Making CURL GET request to create UAA Client ID \"$UAA_CLIENTID_GENERIC\"..." "$CURL_HELPER_LOG_PATH"
-
-      curlCmd="curl \"$1/oauth/clients\" -H \"Pragma: no-cache\" -H \"Content-Type: application/json\" -H \"Cache-Control: no-cache\" -H \"Authorization: $adminUaaToken\" --data-binary '{\"client_id\":\"'$UAA_CLIENTID_GENERIC'\",\"client_secret\":\"'$UAA_CLIENTID_GENERIC_SECRET'\",\"scope\":[\"acs.policies.read\",\"acs.policies.write\",\"acs.attributes.read\",\"'timeseries.zones.$2.user'\",\"'timeseries.zones.$2.query'\",\"'timeseries.zones.$2.ingest'\",\"'$3.zones.$4.user'\",\"uaa.none\",\"openid\"],\"authorized_grant_types\":[\"client_credentials\",\"authorization_code\",\"refresh_token\",\"password\"],\"authorities\":[\"openid\",\"uaa.none\",\"uaa.resource\",\"'timeseries.zones.$2.user'\",\"'timeseries.zones.$2.query'\",\"'timeseries.zones.$2.ingest'\",\"'$3.zones.$4.user'\"],\"autoapprove\":[\"openid\"]}'"
+      # call to create a new app client id
+      __append_new_line_log "Making CURL GET request to create UAA Client ID \"$2\"..." "$logDir"
+      curlCmd="curl \"$1/oauth/clients\" -H \"Pragma: no-cache\" -H \"Content-Type: application/json\" -H \"Cache-Control: no-cache\" -H \"Authorization: $UAA_ADMIN_TOKEN\" --data-binary "$4""
       echo $curlCmd
-      responseCurl=`curl "$1/oauth/clients" -H "Pragma: no-cache" -H "Content-Type: application/json" -H "Cache-Control: no-cache" -H "Authorization: $adminUaaToken" --data-binary '{"client_id":"'$UAA_CLIENTID_GENERIC'","client_secret":"'$UAA_CLIENTID_GENERIC_SECRET'","scope":["acs.policies.read","acs.policies.write","acs.attributes.read","'timeseries.zones.$2.user'","'timeseries.zones.$2.query'","'timeseries.zones.$2.ingest'","'$3.zones.$4.user'","uaa.none","openid"],"authorized_grant_types":["client_credentials","authorization_code","refresh_token","password"],"authorities":["openid","uaa.none","uaa.resource","'timeseries.zones.$2.user'","'timeseries.zones.$2.query'","'timeseries.zones.$2.ingest'","'$3.zones.$4.user'"],"autoapprove":["openid"]}'`
+      responseCurl=`curl "$1/oauth/clients" -H "Pragma: no-cache" -H "Content-Type: application/json" -H "Cache-Control: no-cache" -H "Authorization: $UAA_ADMIN_TOKEN" --data-binary $4`
+      echo ""
+      echo $responseCurl
 
       if [ ${#responseCurl} -lt 3 ]; then
-        __error_exit "Failed to make request to create UAA User to \"$1\"" "$CURL_HELPER_LOG_PATH"
+        __error_exit "Failed to make request to create UAA User to \"$1\"" "$logDir"
       else
         # If the response has a attribute for "error" ,
         # AND not a value of "Client already exists: $UAA_CLIENTID_GENERIC" for attribute "error_description" then fail
@@ -141,13 +195,13 @@ function __createUaaClient
         errorDescriptionAttribute=$( __jsonval "$responseCurl" "error_description" )
 
         if [ ${#errorAttribute} -gt 3 ]; then
-          if [ "$errorDescriptionAttribute" != "Client already exists: $UAA_CLIENTID_GENERIC" ]; then
-            __error_exit "The request failed to successfully create or reuse the Client ID" "$CURL_HELPER_LOG_PATH"
+          if [ "$errorDescriptionAttribute" != "Client already exists: $2" ]; then
+            __error_exit "The request failed to successfully create or reuse the Client ID" "$logDir"
           else
-            __append_new_line_log "Successfully re-using existing Client ID: \"$UAA_CLIENTID_GENERIC\"" "$CURL_HELPER_LOG_PATH"
+            __append_new_line_log "Successfully re-using existing Client ID: \"$2\"" "$logDir"
           fi
         else
-          __append_new_line_log "Successfully created new Client ID: \"$UAA_CLIENTID_GENERIC\"" "$CURL_HELPER_LOG_PATH"
+          __append_new_line_log "Successfully created new Client ID: \"$2\"" "$logDir"
         fi
       fi
     fi
@@ -155,34 +209,131 @@ function __createUaaClient
 
 }
 #	----------------------------------------------------------------
+#	Function for adding Timeseries Authorities
+#		Accepts 1 arguments:
+#     String of UAA ClientId
+#	----------------------------------------------------------------
+function __addTimeseriesAuthorities {
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:__addTimeseriesAuthorities\" expected in order: Client Id " "$logDir"
+
+  if [[ "$UAA_URL" == "" ]]; then
+    getUaaUrl $TEMP_APP
+  fi
+  if [[ "$TIMESERIES_ZONE_ID" == "" ]]; then
+    getTimeseriesZoneId $TEMP_APP
+  fi
+  __append_new_line_log "Add Timeseries Authorities: TimeseriesZoneId=$TIMESERIES_ZONE_ID" "$logDir"
+  ## check if the client exists
+  __checkUaaClient $UAA_URL $1 getResponseStatus
+  if [[ $getResponseStatus -eq 200 ]]; then
+      _arrayScope=("timeseries.zones.$TIMESERIES_ZONE_ID.query" "timeseries.zones.$TIMESERIES_ZONE_ID.ingest" "timeseries.zones.$TIMESERIES_ZONE_ID.user")
+      __updateUaaClient "$uaaURL" "$1" _arrayScope[@] _arrayScope[@]
+  fi
+}
+#	----------------------------------------------------------------
+#	Function for adding ACS Authorities
+#		Accepts 1 arguments:
+#     String of UAA ClientId
+#	----------------------------------------------------------------
+function __addAcsAuthorities {
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:__addAcsAuthorities\" expected in order: Client Id " "$logDir"
+
+  if [[ "$UAA_URL" == "" ]]; then
+    getUaaUrl $TEMP_APP
+  fi
+  if [[ "$ACS_ZONE_ID" == "" ]]; then
+    getAcsZoneId $ACCESS_CONTROL_SERVICE_INSTANCE_NAME
+  fi
+  __append_new_line_log "Add Acs Authorities: AcsZoneId=$ACS_ZONE_ID" "$logDir"
+
+  ## check if the client exists
+  __checkUaaClient $UAA_URL $1 getResponseStatus
+  if [[ $getResponseStatus -eq 200 ]]; then
+      _arrayScope=("predix-acs.zones.$ACS_ZONE_ID.user")
+      __updateUaaClient "$uaaURL" "$1" _arrayScope[@] _arrayScope[@]
+  fi
+}
+#	----------------------------------------------------------------
+#	Function for adding Asset Authorities
+#		Accepts 1 arguments:
+#     String of UAA ClientId
+#	----------------------------------------------------------------
+function __addAssetAuthorities {
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:__addAssetAuthorities\" expected in order: Client Id " "$logDir"
+
+  __append_new_line_log "Add Asset Authorities: AssetServiceName=$ASSET_SERVICE_NAME, AssetZoneId=$ASSET_ZONE_ID" "$logDir"
+  if [[ "$UAA_URL" == "" ]]; then
+    getUaaUrl $TEMP_APP
+  fi
+  if [[ "$ASSET_ZONE_ID" == "" ]]; then
+    getAssetZoneId $1
+  fi
+
+  ## check if the client exists
+  __checkUaaClient $UAA_URL $1 getResponseStatus
+  if [[ $getResponseStatus -eq 200 ]]; then
+      _arrayScope=("$ASSET_SERVICE_NAME.zones.$ASSET_ZONE_ID.user")
+      __updateUaaClient "$uaaURL" "$1" _arrayScope[@] _arrayScope[@]
+  fi
+}
+
+#	----------------------------------------------------------------
+#	Function for adding Asset Authorities
+#		Accepts 1 arguments:
+#     String of UAA ClientId
+#	----------------------------------------------------------------
+function __addAnalyticFrameworkAuthorities {
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:__addAnalyticFrameworkAuthorities\" expected in order: Client Id " "$logDir"
+  __append_new_line_log "Add Analytic Framwork Authorities: AnalyticFrameworkServiceName=$ANALYTIC_FRAMEWORK_SERVICE_NAME, AnalyticFrameworkZoneId=$AF_ZONE_ID" "$logDir"
+  if [[ "$UAA_URL" == "" ]]; then
+    getUaaUrl $TEMP_APP
+  fi
+  if [[ "$AF_ZONE_ID" == "" ]]; then
+    getAFZoneId $TEMP_APP
+  fi
+
+  ## check if the client exists
+  __checkUaaClient $UAA_URL $1 getResponseStatus
+  if [[ $getResponseStatus -eq 200 ]]; then
+      _arrayScope=("analytics.zones.$AF_ZONE_ID.user")
+      __updateUaaClient "$uaaURL" "$1" _arrayScope[@] _arrayScope[@]
+  fi
+}
+
+#	----------------------------------------------------------------
 #	Function for processing a UAA Client ID - Updated
 #		Accepts 4 argument:
 #			string of UAA URI
-#     string of the TIMESERIES_ZONE_ID
-#     string of the ASSET_SERVICE_NAME
-#     string of the ASSET_ZONE_ID
+#     string of CLIENT ID to update
+#     array of SCOPE to be added
+#     array of AUTORITIES to be added
 #
 #	----------------------------------------------------------------
 function __updateUaaClient
 {
-  __validate_num_arguments 3 $# "\"curl_helper_funcs:__createUaaClient\" expected in order: UAA URI, Array of SCOPE to be added , Array of Authorities to be added " "$CURL_HELPER_LOG_PATH"
+  __validate_num_arguments 4 $# "\"curl_helper_funcs:__updateUaaClient\" expected in order: UAA URI, Client Id, Array of SCOPE to be added , Array of Authorities to be added " "$logDir"
+  __append_new_head_log "Update UAA Client $2 to secure the application" "-" "$logDir"
 
-  __append_new_line_log "Making CURL GET request to get UAA Admin Token..." "$CURL_HELPER_LOG_PATH"
+  __append_new_line_log "Udate Uaa Client with new Scopes and Authorities" "$logDir"
 
-  declare -a arrayScopes=("${!2}")
-  declare -a arrayAuthorities=("${!3}")
+  declare -a arrayScopes=("${!3}")
+  declare -a arrayAuthorities=("${!4}")
 
-  adminUaaToken=$( __getUaaAdminToken "$1" )
-  if [ ${#adminUaaToken} -lt 3 ]; then
-    __error_exit "Failed to get a token from \"$1\"" "$CURL_HELPER_LOG_PATH"
+  if [[ "$UAA_ADMIN_TOKEN" == "" ]]; then
+    __append_new_line_log "Making CURL GET request to get UAA Admin Token..." "$logDir"
+    adminUaaToken=$( __getUaaAdminToken "$1" )
+    UAA_ADMIN_TOKEN=$adminUaaToken
+  fi
+
+  if [ ${#UAA_ADMIN_TOKEN} -lt 3 ]; then
+    __error_exit "Failed to get a token from \"$1\"" "$logDir"
   else
-    __append_new_line_log "Got UAA admin token" "$CURL_HELPER_LOG_PATH"
-    __append_new_line_log "Making CURL GET request to create UAA Client ID \"$UAA_CLIENTID_GENERIC\"..." "$CURL_HELPER_LOG_PATH"
+    __append_new_line_log "Making CURL GET request to update UAA Client ID \"$2\"..." "$logDir"
 
-    responseCurl=`curl "$1/oauth/clients/$UAA_CLIENTID_GENERIC" -H "Pragma: no-cache" -H "Content-Type: application/json" -H "Cache-Control: no-cache" -H "Authorization: $adminUaaToken"`
+    responseCurl=`curl "$1/oauth/clients/$2" -H "Pragma: no-cache" -H "Content-Type: application/json" -H "Cache-Control: no-cache" -H "Authorization: $UAA_ADMIN_TOKEN"`
 
     if [ ${#responseCurl} -lt 3 ]; then
-      __error_exit "Failed to make request to Get client \"$1\"" "$CURL_HELPER_LOG_PATH"
+      __error_exit "Failed to make request to Get client \"$1\"" "$logDir"
     else
       # If the response has a attribute for "error" ,
       # AND not a value of "Client already exists: $UAA_CLIENTID_GENERIC" for attribute "error_description" then fail
@@ -215,21 +366,21 @@ function __updateUaaClient
       if [ "$updateClientFlag" = "true" ]; then
         postbody="$jsonjqresponse"
         echo $postbody
-        __append_new_line_log "Making CURL request to update UAA Client ID \"$UAA_CLIENTID_GENERIC\"..." "$CURL_HELPER_LOG_PATH"
+        __append_new_line_log "Making CURL request to update UAA Client ID \"$2\"..." "$logDir"
 
-        responseCurl=`curl --write-out %{http_code} --silent --output /dev/null "$1/oauth/clients/$UAA_CLIENTID_GENERIC" -X PUT -H "Pragma: no-cache" -H "Content-Type: application/json" -H "Cache-Control: no-cache" -H "Authorization: $adminUaaToken" --data-binary "$postbody"`
+        responseCurl=`curl --write-out %{http_code} --output /dev/null "$1/oauth/clients/$2" -X PUT -H "Pragma: no-cache" -H "Content-Type: application/json" -H "Cache-Control: no-cache" -H "Authorization: $UAA_ADMIN_TOKEN" --data-binary "$postbody"`
 
         if [[ $responseCurl -eq 200 ]]; then
-          __append_new_line_log "Client Id update successful" "$CURL_HELPER_LOG_PATH"
+          __append_new_line_log "Client Id update successful" "$logDir"
         else
           if [[ $responseCurl -eq 404 ]]; then
-          __append_new_line_log "Client Id update failed " "$CURL_HELPER_LOG_PATH"
+          __append_new_line_log "Client Id update failed " "$logDir"
           else
-            __error_exit "Failed to make request to update UAA Client to \"$1\"" "$CURL_HELPER_LOG_PATH"
+            __error_exit "Failed to make request to update UAA Client to \"$1\"" "$logDir"
           fi
         fi
       else
-        __append_new_line_log "Update Client call not needed all scope and authorities are set." "$CURL_HELPER_LOG_PATH"
+        __append_new_line_log "Update Client call not needed all scope and authorities are set." "$logDir"
       fi
     fi
   fi
@@ -237,29 +388,33 @@ function __updateUaaClient
 }
 
 #	----------------------------------------------------------------
-#	Function for processing a UAA Client ID
+#	Function for adding a UAA User
 #		Accepts 1 argument:
 #			string of UAA URI
 #	----------------------------------------------------------------
 function __addUaaUser
 {
-  __validate_num_arguments 1 $# "\"curl_helper_funcs:__addUaaUser\" expected in order: UAA URI" "$CURL_HELPER_LOG_PATH"
+  __append_new_head_log "Creating User $1 on UAA to login to the application" "-" "$logDir"
 
-  __append_new_line_log "Making CURL GET request to get UAA Admin Token..." "$CURL_HELPER_LOG_PATH"
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:__addUaaUser\" expected in order: UAA URI" "$logDir"
 
-  adminUaaToken=$( __getUaaAdminToken "$1" )
-  if [ ${#adminUaaToken} -lt 3 ]; then
-    __error_exit "Failed to get a token from \"$1\"" "$CURL_HELPER_LOG_PATH"
+  if [[ "$UAA_ADMIN_TOKEN" == "" ]]; then
+    __append_new_line_log "Making CURL GET request to get UAA Admin Token..." "$logDir"
+    adminUaaToken=$( __getUaaAdminToken "$1" )
+    UAA_ADMIN_TOKEN=$adminUaaToken
+  fi
+
+  if [ ${#UAA_ADMIN_TOKEN} -lt 3 ]; then
+    __error_exit "Failed to get a token from \"$1\"" "$logDir"
   else
-    __append_new_line_log "Got UAA admin token" "$CURL_HELPER_LOG_PATH"
-    __append_new_line_log "Making CURL GET request to create UAA user \"$UAA_USER_NAME\"..." "$CURL_HELPER_LOG_PATH"
+    __append_new_line_log "Making CURL GET request to create UAA user \"$UAA_USER_NAME\"..." "$logDir"
 
-    curlCmd="curl \"$1/Users\" -H \"Pragma: no-cache\" -H \"Content-Type: application/json\" -H \"Cache-Control: no-cache\" -H \"Authorization: $adminUaaToken\" --data-binary '{\"userName\":\"'$UAA_USER_NAME'\",\"password\":\"'$UAA_USER_PASSWORD'\",\"emails\":[{\"value\":\"'$UAA_USER_EMAIL'\"}]}'"
+    curlCmd="curl \"$1/Users\" -H \"Pragma: no-cache\" -H \"Content-Type: application/json\" -H \"Cache-Control: no-cache\" -H \"Authorization: $UAA_ADMIN_TOKEN\" --data-binary '{\"userName\":\"'$UAA_USER_NAME'\",\"password\":\"'$UAA_USER_PASSWORD'\",\"emails\":[{\"value\":\"'$UAA_USER_EMAIL'\"}]}'"
     echo $curlCmd
-    responseCurl=`curl "$1/Users" -H "Pragma: no-cache" -H "Content-Type: application/json" -H "Cache-Control: no-cache" -H "Authorization: $adminUaaToken" --data-binary '{"userName":"'$UAA_USER_NAME'","password":"'$UAA_USER_PASSWORD'","emails":[{"value":"'$UAA_USER_EMAIL'"}]}'`
+    responseCurl=`curl "$1/Users" -H "Pragma: no-cache" -H "Content-Type: application/json" -H "Cache-Control: no-cache" -H "Authorization: $UAA_ADMIN_TOKEN" --data-binary '{"userName":"'$UAA_USER_NAME'","password":"'$UAA_USER_PASSWORD'","emails":[{"value":"'$UAA_USER_EMAIL'"}]}'`
 
     if [ ${#responseCurl} -lt 3 ]; then
-      __error_exit "Failed to make request to create UAA User to \"$1\"" "$CURL_HELPER_LOG_PATH"
+      __error_exit "Failed to make request to create UAA User to \"$1\"" "$logDir"
     else
       # If the response has a attribute for "error" ,
       # AND not a value of "Username already in use: $UAA_USER_NAME" for attribute "error_description" then fail
@@ -268,81 +423,295 @@ function __addUaaUser
 
       if [ ${#errorAttribute} -gt 3 ]; then
         if [ "$errorDescriptionAttribute" != "Username already in use: $UAA_USER_NAME" ]; then
-          __error_exit "The request failed to successfully create or reuse the UAA User \"$UAA_USER_NAME\"" "$CURL_HELPER_LOG_PATH"
+          __error_exit "The request failed to successfully create or reuse the UAA User \"$UAA_USER_NAME\"" "$logDir"
         else
-          __append_new_line_log "Successfully re-using existing UAA User: \"$UAA_USER_NAME\"" "$CURL_HELPER_LOG_PATH"
+          __append_new_line_log "Successfully re-using existing UAA User: \"$UAA_USER_NAME\"" "$logDir"
         fi
       else
-        __append_new_line_log "Successfully created new UAA User: \"$UAA_USER_NAME\"" "$CURL_HELPER_LOG_PATH"
+        __append_new_line_log "Successfully created new UAA User: \"$UAA_USER_NAME\"" "$logDir"
       fi
     fi
   fi
 }
 
+#	----------------------------------------------------------------
+#	Function for creating an asset
+#		Accepts 6 arguments:
+#			string of UAA URL
+#			string of Client Id
+#			string of Client Id Secret
+#     string of assetURI
+#     string of assetZoneId
+#     string of assetPostBody
+#  Returns:
+#	----------------------------------------------------------------
 function createAsset
 {
-  #$trustedIssuerID $assetURI $ASSET_ZONE_ID $assetPostBody
-  clientToken=$( __getUaaClientToken $1)
-  __append_new_line_log "Got UAA Client Token for $UAA_CLIENTID_GENERIC" "$CURL_HELPER_LOG_PATH"
-  createAssetCMD="curl -X POST $2/asset -H 'Predix-Zone-Id: $3' -H 'Content-Type: application/json' -H 'Authorization: $clientToken' --data '$4'"
-  echo $createAssetCMD
-  curl -X POST $2/asset -H "Predix-Zone-Id: $3" -H "Content-Type: application/json" -H "Authorization: $clientToken" --data "$4"
+  __validate_num_arguments 6 $# "\"curl_helper_funcs:createAsset\" expected in order: UAA URI, Client Id, ClientIdSecret, Asset URI, AssetZoneId, AssetPostBody " "$logDir"
 
+  #$TRUSTED_ISSUER_ID $assetURI $ASSET_ZONE_ID $assetPostBody
+  clientToken=$( __getUaaClientToken $1 $2 $3)
+  __append_new_line_log "Got UAA Client Token for $2" "$logDir"
+  createAssetCMD="curl --silent -X POST $4/asset -H 'Predix-Zone-Id: $5' -H 'Content-Type: application/json' -H 'Authorization: $clientToken' --data '$6'"
+  echo $createAssetCMD
+  curl --silent -X POST $4/asset -H "Predix-Zone-Id: $5" -H "Content-Type: application/json" -H "Authorization: $clientToken" --data "$6"
+
+}
+
+#	----------------------------------------------------------------
+#	Function for creating an asset with metadata
+#		Accepts 6 arguments:
+#			string of UAA URL
+#			string of Client Id
+#			string of Client Id Secret
+#     string of assetURI  - for later use of passing to data-exchange
+#     string of assetZoneId - for later use of passing to data-exchange
+#     string of dataexhangeURI
+#     string of metaData JSON file
+#     string of assetModel JSON file
+#  Returns:
+#	----------------------------------------------------------------
+function createAssetWithMetaData
+{
+  __validate_num_arguments 8 $# "\"curl_helper_funcs:createAssetWithMetaData\" expected in order: UAA URI, Client Id, ClientIdSecret, Asset URI, AssetZoneId, AssetPostBody, DataExchangeURI, MetaDataJsonFile, AssetModelJsonFile  " "$logDir"
+
+  clientToken=$( __getUaaClientToken $1 $2 $3)
+  __append_new_line_log "Got UAA Client Token for $2" "$logDir"
+  metadataFile=`echo $7`
+  assetJsonFile=`echo $8`
+  metadataRequest=$( cat $metadataFile )
+  cp $assetJsonFile asset_upload_file.json
+  echo $metadataRequest
+  createAssetCMD='curl -X POST "https://'$6'/services/fdhrouter/fielddatahandler/putfielddatafile" -H "Authorization: '$clientToken'"  -H "Content-Type: multipart/form-data;" -H "Accept: application/json" -F "file=@'"asset_upload_file.json"'" -F '"'"'"putfielddata"='$metadataRequest"'"
+  echo $createAssetCMD
+  responseCurl=`curl --write-out %{http_code} --output /dev/null -X POST "https://$6/services/fdhrouter/fielddatahandler/putfielddatafile" -H "Authorization: $clientToken"  -H "Content-Type: multipart/form-data;" -H "Accept: application/json" -F "file=@asset_upload_file.json" -F "putfielddata=$metadataRequest"`
+  echo ""
+  echo $responseCurl
+  if [[ $responseCurl == 200* ]]; then
+    __append_new_line_log "Asset Model Created" "$logDir"
+  else
+    if [[ $responseCurl == 404* ]]; then
+      __error_exit "Unable to Create Asset Model - Service $6 Not found" "$logDir"
+    else
+      __error_exit "Failed to make request to Create Asset Model to \"$1\"" "$logDir"
+    fi
+  fi
 }
 
 function fetchVCAPSInfo
 {
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:fetchVCAPSInfo\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
+
+  echo "WARNING: fetchVCAPSInfo function has been deprecated and no longer works.  Script should call a specific function in curl_helper_funcs.sh"
   # Get the UAA enviorment variables (VCAPS)
-	if trustedIssuerID=$(cf env $TEMP_APP | grep predix-uaa* | grep issuerId*| awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}' ); then
-	  if [[ "$trustedIssuerID" == "" ]] ; then
-	    __error_exit "The UAA trustedIssuerID was not found for \"$TEMP_APP\"..." "$CURL_HELPER_LOG_PATH"
-	  fi
-	  export TRUSTED_ISSUER_ID="${trustedIssuerID}"
-	else
-		__error_exit "There was an error getting the UAA trustedIssuerID..." "$CURL_HELPER_LOG_PATH"
-	fi
+  # if [[ "$trustedIssuerID" == "" ]]; then
+  #   getTrustedIssuerId $1
+  # fi
+  #
+  # if [[ "$UAA_URL" == "" ]]; then
+  #   getUaaUrl $1
+  # fi
+  #
+	# if TIMESERIES_INGEST_URI=$(cf env $TEMP_APP | grep -m 100 uri | grep wss: | awk -F"\"" '{print $4}'); then
+	# 	if [[ "$TIMESERIES_INGEST_URI" == "" ]] ; then
+	# 		__error_exit "The TIMESERIES_INGEST_URI was not found for \"$TEMP_APP\"..." "$logDir"
+	# 	fi
+  #   __append_new_line_log " TIMESERIES_INGEST_URI copied from VCAP environmental variables!" "$logDir"
+  #   export TIMESERIES_INGEST_URI="${TIMESERIES_INGEST_URI}"
+	# else
+	# 	__error_exit "There was an error getting TIMESERIES_INGEST_URI..." "$logDir"
+	# fi
+  #
+  # if TIMESERIES_QUERY_URI=$(cf env $TEMP_APP | grep -m 100 uri | grep datapoints | awk -F"\"" '{print $4}'); then
+	# 	if [[ "$TIMESERIES_QUERY_URI" == "" ]] ; then
+	# 		__error_exit "The TIMESERIES_QUERY_URI was not found for \"$TEMP_APP\"..." "$logDir"
+	# 	fi
+  #   __append_new_line_log " TIMESERIES_QUERY_URI copied from VCAP environmental variables!" "$logDir"
+  #   export TIMESERIES_QUERY_URI="${TIMESERIES_QUERY_URI}"
+	# else
+	# 	__error_exit "There was an error getting TIMESERIES_QUERY_URI..." "$logDir"
+	# fi
+  #
+  #
+  # if assetURI=$(cf env $TEMP_APP  | grep uri*| grep predix-asset* | awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}'); then
+	# 	if [[ "$assetURI" == "" ]] ; then
+	# 		__error_exit "The Asset URI was not found for \"$TEMP_APP\"..." "$logDir"
+	# 	fi
+	# 	__append_new_line_log "Asset Service URI : ${assetURI}" "$logDir"
+  #   export ASSET_URL="${assetURI}"
+  #   export ASSET_URI="${assetURI}"
+	# else
+	# 	__error_exit "There was an error getting assetURI..." "$logDir"
+	# fi
+  #
 
-	if uaaURL=$(cf env $TEMP_APP | grep predix-uaa* | grep uri*| awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}' ); then
-	  if [[ "$uaaURL" == "" ]] ; then
-	    __error_exit "The UAA URL was not found for \"$TEMP_APP\"..." "$CURL_HELPER_LOG_PATH"
-	  fi
-	  export UAA_URL="${uaaURL}"
-	else
-		__error_exit "There was an error getting the UAA URL..." "$CURL_HELPER_LOG_PATH"
-	fi
+}
 
-	if TIMESERIES_INGEST_URI=$(cf env $TEMP_APP | grep -m 100 uri | grep wss: | awk -F"\"" '{print $4}'); then
-		if [[ "$TIMESERIES_INGEST_URI" == "" ]] ; then
-			__error_exit "The TIMESERIES_INGEST_URI was not found for \"$TEMP_APP\"..." "$CURL_HELPER_LOG_PATH"
-		fi
-    export TIMESERIES_INGEST_URI="${TIMESERIES_INGEST_URI}"
-	else
-		__error_exit "There was an error getting TIMESERIES_INGEST_URI..." "$CURL_HELPER_LOG_PATH"
-	fi
+function getUaaUrl() {
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getUaaUrl\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
 
-	if TIMESERIES_ZONE_ID=$(cf env $TEMP_APP | grep zone-http-header-value |head -n 1 | awk -F"\"" '{print $4}'); then
-    if [[ "$TIMESERIES_ZONE_ID" == "" ]] ; then
-      __error_exit "The TIMESERIES_ZONE_ID was not found for \"$TEMP_APP\"..." "$CURL_HELPER_LOG_PATH"
+  if uaaURL=$(cf env $1 | grep predix-uaa* | grep uri*| awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}' ); then
+    if [[ "$uaaURL" == "" ]] ; then
+      __error_exit "The UAA URL was not found for \"$1\"..." "$logDir"
     fi
+    __append_new_line_log "UAA URL copied from VCAP environmental variables!" "$logDir"
+    export UAA_URL="${uaaURL}"
+  else
+    __error_exit "There was an error getting the UAA URL..." "$logDir"
+  fi
+}
+
+function getTimeseriesIngestUri() {
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesQueryUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
+  if TIMESERIES_INGEST_URI=$(cf env $1 | grep -m 100 uri | grep wss: | awk -F"\"" '{print $4}'); then
+  	if [[ "$TIMESERIES_INGEST_URI" == "" ]] ; then
+  		__error_exit "The TIMESERIES_INGEST_URI was not found for \"$1\"..." "$logDir"
+  	fi
+    __append_new_line_log " TIMESERIES_INGEST_URI copied from VCAP environmental variables!" "$logDir"
+    export TIMESERIES_INGEST_URI="${TIMESERIES_INGEST_URI}"
+  else
+  	__error_exit "There was an error getting TIMESERIES_INGEST_URI..." "$logDir"
+  fi
+}
+
+function getTimeseriesQueryUri() {
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesQueryUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
+  if TIMESERIES_QUERY_URI=$(cf env $1 | grep -m 100 uri | grep time-series-store | awk -F"\"" '{print $4}'); then
+    __append_new_line_log "Timeseries Query URI copied from environment variables! $TIMESERIES_QUERY_URI" "$logDir"
+  else
+    __error_exit "There was an error getting Timeseries Query URI..." "$logDir"
+  fi
+}
+
+function getTimeseriesIngestUri() {
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesQueryUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
+  if TIMESERIES_INGEST_URI=$(cf env $TEMP_APP | grep -m 100 uri | grep wss: | awk -F"\"" '{print $4}'); then
+  	if [[ "$TIMESERIES_INGEST_URI" == "" ]] ; then
+  		__error_exit "The TIMESERIES_INGEST_URI was not found for \"$TEMP_APP\"..." "$logDir"
+  	fi
+    __append_new_line_log " TIMESERIES_INGEST_URI copied from VCAP environmental variables!" "$logDir"
+    export TIMESERIES_INGEST_URI="${TIMESERIES_INGEST_URI}"
+  else
+  	__error_exit "There was an error getting TIMESERIES_INGEST_URI..." "$logDir"
+  fi
+}
+function getTimeseriesZoneId() {
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesZoneId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
+  if TIMESERIES_ZONE_ID=$(cf env ext-integration-hello-world | sed '/VCAP_APPLICATION/q' | sed '$ d' | sed '$ d' | tail -n +5 | jq -r '."VCAP_SERVICES"."predix-timeseries"[].credentials.query."zone-http-header-value"'); then
+    if [[ "$TIMESERIES_ZONE_ID" == "" ]] ; then
+      __error_exit "The TIMESERIES_ZONE_ID was not found for \"$1\"..." "$logDir"
+    fi
+    __append_new_line_log "TIMESERIES_ZONE_ID copied from VCAP environmental variables!" "$logDir"
     export TIMESERIES_ZONE_ID="${TIMESERIES_ZONE_ID}"
 	else
-		__error_exit "There was an error getting TIMESERIES_ZONE_ID..." "$CURL_HELPER_LOG_PATH"
+		__error_exit "There was an error getting TIMESERIES_ZONE_ID..." "$logDir"
 	fi
-	if assetURI=$(cf env $TEMP_APP  | grep uri*| grep predix-asset* | awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}'); then
-		if [[ "$assetURI" == "" ]] ; then
-			__error_exit "The Asset URI was not found for \"$TEMP_APP\"..." "$CURL_HELPER_LOG_PATH"
-		fi
-		__append_new_line_log "Asset Service URI : ${assetURI}" "$CURL_HELPER_LOG_PATH"
-    export ASSET_URL="${assetURI}"
+}
+
+function getAssetUri() {
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getAssetUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
+  if ASSET_URI=$(cf env $1 | grep -m 100 uri | grep asset | awk -F"\"" '{print $4}'); then
+		__append_new_line_log "Asset URI copied from environment variables! $ASSET_URI" "$logDir"
 	else
-		__error_exit "There was an error getting assetURI..." "$CURL_HELPER_LOG_PATH"
+		__error_exit "There was an error getting Asset URI..." "$logDir"
 	fi
-	if ASSET_ZONE_ID=$(cf env $TEMP_APP | grep -m 1 http-header-value | sed 's/"http-header-value": "//' | sed 's/",//' | tr -d '[[:space:]]'); then
+}
+function getAssetZoneId() {
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getAssetZoneId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
+
+  if ASSET_ZONE_ID=$(cf env $1 | sed '/VCAP_APPLICATION/q' | sed '$ d' | sed '$ d' | tail -n +5 | jq -r '."VCAP_SERVICES"."predix-asset"[].credentials.zone."http-header-value"'); then
 	  if [[ "$ASSET_ZONE_ID" == "" ]] ; then
-	    __error_exit "The TimeSeries Zone ID was not found for \"$TEMP_APP\"..." "$CURL_HELPER_LOG_PATH"
+	    __error_exit "The Asset Zone ID was not found for \"$1\"..." "$logDir"
 	  fi
+    __append_new_line_log "ASSET_ZONE_ID copied from VCAP environment variables!" "$logDir"
 		export ASSET_ZONE_ID="${ASSET_ZONE_ID}"
 	else
-	  __error_exit "There was an error getting ASSET_ZONE_ID..." "$CURL_HELPER_LOG_PATH"
+	  __error_exit "There was an error getting ASSET_ZONE_ID..." "$logDir"
 	fi
+}
+
+
+function getAFUri() {
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getAFUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
+  if AF_URI=$(cf env $1 | sed '/VCAP_APPLICATION/q' | sed '$ d' | sed '$ d' | tail -n +5 |  jq -r '."VCAP_SERVICES"."predix-analytics-framework"[].credentials."execution_uri"'); then
+		__append_new_line_log "AF URI copied from environment variables! $AF_URI" "$logDir"
+	else
+		__error_exit "There was an error getting AF URI..." "$logDir"
+	fi
+}
+
+function getAFZoneId() {
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getAFZoneId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
+
+  if AF_ZONE_ID=$(cf env $1 | sed '/VCAP_APPLICATION/q' | sed '$ d' | sed '$ d' | tail -n +5 |  jq -r '."VCAP_SERVICES"."predix-analytics-framework"[].credentials."zone-http-header-value"'); then
+	  if [[ "$AF_ZONE_ID" == "" ]] ; then
+	    __error_exit "The AF Zone ID was not found for \"$1\"..." "$logDir"
+	  fi
+    __append_new_line_log "AF_ZONE_ID copied from VCAP environment variables!" "$logDir"
+		export AF_ZONE_ID="${AF_ZONE_ID}"
+	else
+	  __error_exit "There was an error getting AF_ZONE_ID..." "$logDir"
+	fi
+}
+
+function getTrustedIssuerId()
+{
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getTrustedIssuerId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
+
+  if trustedIssuerID=$(cf env $1 | grep predix-uaa* | grep issuerId*| awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}' ); then
+		if [[ "$trustedIssuerID" == "" ]] ; then
+			__error_exit "The UAA trustedIssuerID was not found for \"$1\"..." "$logDir"
+		fi
+		#__append_new_line_log "trustedIssuerID copied from environmental variables!" "$logDir"
+    export TRUSTED_ISSUER_ID="${trustedIssuerID}"
+	else
+		__error_exit "There was an error getting the UAA trustedIssuerID..." "$logDir"
+	fi
+}
+
+function getAcsZoneId() {
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getAcsZoneId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
+
+  # Get the Zone ID from the environment variables (for use when querying Asset data)
+  if acsZoneId=$(predix si $1 | tail -n +2  | jq -r 'predix-asset.zone."http-header-value"'); then
+    if [[ "$acsZoneId" == "" ]]; then
+      __error_exit "The Access Control Service Zone ID was not found for \"$1\"..." "$logDir"
+    fi
+    __append_new_line_log "acsZoneId copied from environment variables!" "$logDir"
+    export ACS_ZONE_ID=$acsZoneId
+  else
+    __error_exit "There was an error getting ACS_ZONE_ID..." "$logDir"
+  fi
+}
+
+# Takes 3 arguments
+#  app-name to query for
+#  VARIABLE_NAME to store result
+#  desired protocol.  (for example: https or wss)
+function getUrlForAppName() {
+  __validate_num_arguments 3 $# "\"curl_helper_funcs:getUrlForAppName\" expected in order: Name of Predix Application, variable name to store the URL, protocol  " "$logDir"
+
+  local _result=$2
+  local _host=$(cf app $1 | grep urls | awk -F" " '{print $2}');
+  local _url
+  if [ -z "$_host" ]; then
+    __error_exit "There was an error getting App URI for: $1" "$logDir"
+  else
+    _url=$3://$_host
+    eval $_result="'$_url'"
+    __append_new_line_log "App URI copied from environment variables: $_url" "$logDir"
+  fi
+}
+
+# Takes one argument: variable name in which to store result.
+function getRedisServiceName() {
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getRedisServiceName\" expected in order: variable name to store the result  " "$logDir"
+  local redisName=$(cf m | grep redis | awk -F" " '{print $1}')
+  local result=$1
+  if [ -x "$redisName" ]; then
+    __error_exit "Error find the redis service. If redis is not available in your org/space, please file a support ticket."
+  else
+    eval $result="'$redisName'"
+    __append_new_line_log "Redis service name found: $redisName" "$logDir"
+  fi
 }

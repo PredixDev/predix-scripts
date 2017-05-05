@@ -5,17 +5,22 @@ set -e
 #
 # Be sure to set all your variables in the variables.sh file before you run quick start!
 
-quickstartRootDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+#quickstartRootDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+quickstartRootDir="$( pwd )/predix-scripts"
+export quickstartRootDir
+cd $quickstartRootDir
 quickstartLogDir="$quickstartRootDir/log"
-SUMMARY_TEXTFILE="$quickstartLogDir/predix-services-summary.txt"
+SUMMARY_TEXTFILE="$quickstartLogDir/quickstart-summary.txt"
 if [ -f $SUMMARY_TEXTFILE ] ; then
   rm -rf $SUMMARY_TEXTFILE
 fi
 
-source "$quickstartRootDir/scripts/error_handling_funcs.sh"
-source "$quickstartRootDir/scripts/files_helper_funcs.sh"
-source "$quickstartRootDir/scripts/curl_helper_funcs.sh"
-source "$quickstartRootDir/common/verifymvn.sh"
+source "$quickstartRootDir/bash/scripts/error_handling_funcs.sh"
+source "$quickstartRootDir/bash/scripts/files_helper_funcs.sh"
+source "$quickstartRootDir/bash/scripts/curl_helper_funcs.sh"
+source "$quickstartRootDir/bash/scripts/predix_funcs.sh"
+source "$quickstartRootDir/bash/common/verifymvn.sh"
+source "$rootDir/bash/scripts/local-setup-funcs.sh"
 
 if [ "${TERM/term}" = "$TERM" ] ; then
   COLUMNS=50
@@ -34,115 +39,109 @@ trap "trap_ctrlc" 2
 if ! [ -d "$quickstartLogDir" ]; then
   mkdir "$quickstartLogDir"
   chmod 744 "$quickstartLogDir"
-  touch "$quickstartLogDir/quickstartlog.log"
+  touch "$quickstartLogDir/quickstart.log"
 fi
 
 if [ ! -f "$SUMMARY_TEXTFILE" ]; then
   echo "" > $SUMMARY_TEXTFILE
   echo "------------------------------------------------------------"  >> $SUMMARY_TEXTFILE
   echo "Echoing properties from $SUMMARY_TEXTFILE"  >> $SUMMARY_TEXTFILE
-  echo "Authors SDLP v1 2015" >> $SUMMARY_TEXTFILE
   echo "------------------------------------------------------------"  >> $SUMMARY_TEXTFILE
   echo "What did we do:"  >> $SUMMARY_TEXTFILE
 fi
 
 export SUMMARY_TEXTFILE
 
-__append_new_head_log "Welcome to the Predix quick start script!" "-" "$quickstartLogDir"
+__append_new_head_log "Welcome to the Predix Quickstart script!" "-" "$quickstartLogDir"
 
-__append_new_head_log "Setting the local to en-US for the quickstart script" "*" "$quickstartLogDir"
+__append_new_head_log "Setting the local to en-US for the quickstart script" "-" "$quickstartLogDir"
 cf config --locale en-US
 
 # Check and install tools
 #chmod 755 "$quickstartRootDir/scripts/set_tool.sh"
 #"$quickstartRootDir/scripts/set_tool.sh"
-
-source "$quickstartRootDir/readargs.sh"
-
-if [[ "$RUN_PRINT_VCAPS" == "0" ]]; then
-  echo "INSTANCE_PREPENDER            : $INSTANCE_PREPENDER"
-  echo "USE_TRAINING_UAA              : $USE_TRAINING_UAA"
-  echo "CUSTOM_UAA_INSTANCE           : $CUSTOM_UAA_INSTANCE"
-  echo "RUN_DELETE_SERVICES           : $RUN_DELETE_SERVICES"
-  echo "RUN_CREATE_SERVICES           : $RUN_CREATE_SERVICES"
-  echo "RUN_MACHINE_CONFIG            : $RUN_MACHINE_CONFIG"
-  echo "RUN_CREATE_MACHINE_CONTAINER  : $RUN_CREATE_MACHINE_CONTAINER"
-  echo "RUN_EDGE_MANAGER_SETUP        : $RUN_EDGE_MANAGER_SETUP"
-  echo "MACHINE_VERSION               : $MACHINE_VERSION"
-  echo "MACHINE_CONTAINER_TYPE        : $MACHINE_CONTAINER_TYPE"
-  echo "RUN_COMPILE_REPO              : $RUN_COMPILE_REPO"
-  echo "RUN_MACHINE_TRANSFER          : $RUN_MACHINE_TRANSFER"
-  echo "RUN_DEPLOY_FRONTEND           : $RUN_DEPLOY_FRONTEND"
-  echo "BRANCH                        : $BRANCH"
-  echo "QUIET_MODE                    : $QUIET_MODE"
-  echo "MAVEN_SETTNGS_FILE            : $MAVEN_SETTNGS_FILE"
-  echo "USE_WINDDATA_SERVICE          : $USE_WINDDATA_SERVICE"
-  echo "VERIFY_MVN                    : $VERIFY_MVN"
+source "$quickstartRootDir/bash/readargs.sh"
+if [[ ! "$SCRIPT_READARGS" == "" ]]; then
+  source "$quickstartRootDir/bash/scripts/$SCRIPT_READARGS"
+else
+  echo "unable to call SCRIPT_READARGS as nothing is defined"
 fi
 
+if [[ ( $LOGIN == 1 ) ]]; then
+    #Check CF login and target Space
+    space="`cf target | grep -i Space | awk '{print $2}'`"
+    __append_new_line_log "Space : $space" "$quickstartLogDir"
+    echo ""
 
-if [[ $RUN_CREATE_MACHINE_CONTAINER == 1 || $USE_WINDDATA_SERVICE == 1 || $VERIFY_MVN == 1 ]]; then
-  checkmvnsettings $MAVEN_SETTNGS_FILE
-  assertmvn
+    if [[ "$space" == "" ]] ; then
+      read -p "Enter the CF API Endpoint (default : https://api.system.aws-usw02-pr.ice.predix.io)> " CF_HOST
+      CF_HOST=${CF_HOST:-https://api.system.aws-usw02-pr.ice.predix.io}
+      read -p "Enter your CF username> " CF_USERNAME
+      read -p "Enter your CF password> " -s CF_PASSWORD
+
+      __append_new_line_log "Attempting to login user \"$CF_USERNAME\" to Cloud Foundry" "$quickstartLogDir"
+      if cf login -a $CF_HOST -u $CF_USERNAME -p $CF_PASSWORD --skip-ssl-validation; then
+        __append_new_line_log "Successfully logged into CloudFoundry" "$quickstartLogDir"
+      else
+        __error_exit "There was an error logging into CloudFoundry. Is the password correct?" "$quickstartLogDir"
+      fi
+    fi
+    ENDPOINT="`cf target | grep endpoint | awk '{print $3}'`"
+
+  #UNIQUE Prefix
+  if [[ "$INSTANCE_PREPENDER" == "" ]]; then
+    __get_login
+    echo "Apps and Services in the Predix Cloud need unique names"
+    read -p "Enter a unique string to be used as an prefix for service names and app names, e.g. thomas-edison default=[$INSTANCE_PREPENDER]>" INPUT
+    INSTANCE_PREPENDER="${INPUT:-$INSTANCE_PREPENDER}"
+  fi
+
+  while true; do
+    if [ "$INSTANCE_PREPENDER" == "${INSTANCE_PREPENDER/_/}" ]; then
+      export INSTANCE_PREPENDER
+      break;
+    else
+      echo "Unique prefix cannot have underscore(_)"
+      read -p "Enter a unique prefix with dash (-) in place of underscore(_)> " INSTANCE_PREPENDER
+    fi
+  done
+
+  __append_new_line_log "Using Unique Prefix : $INSTANCE_PREPENDER" "$quickstartLogDir"
+
 fi
 
-if [[ ( $RUN_CREATE_MACHINE_CONTAINER == 0 && $RUN_PRINT_VCAPS == 0 && $RUN_CREATE_SERVICES == 0 && $RUN_MACHINE_CONFIG == 0 && $RUN_MACHINE_TRANSFER == 0 && $RUN_DEPLOY_FRONTEND == 0  ) ]]; then
-  __print_out_usage
-  exit
+if [[ $VERIFY_MVN == 1 ]]; then
+  checkmvnsettings $MAVEN_SETTINGS_FILE
+  assertmvn $MAVEN_SETTINGS_FILE
 fi
-source "$quickstartRootDir/scripts/variables.sh"
 
+source "$quickstartRootDir/bash/scripts/variables.sh"
+
+#Note: sourcing subfiles carries variables forward and allows us to have the --continue-from feature
 if [[ "$RUN_PRINT_VCAPS" == "1" ]]; then
-  "$quickstartRootDir/scripts/print_service_details.sh"
+  source "$quickstartRootDir/bash/scripts/print_service_details.sh"
+  __printServiceDetails
   echo "Printed the info from VCAPS : "  >> $SUMMARY_TEXTFILE
 fi
-
-if [[ $RUN_DELETE_SERVICES -eq 1 ]]; then
-  "$quickstartRootDir/scripts/cleanup.sh" "$TEMP_APP"
-fi
-
 # Instantiate, configure, and push the following Predix services: Timeseries, Asset, and UAA.
-if [[ $RUN_CREATE_SERVICES -eq 1 ]]; then
-  "$quickstartRootDir/scripts/predix_services_setup.sh" "$TEMP_APP"
+if [[ ( $RUN_CREATE_SERVICES == 1 || $RUN_CREATE_UAA == 1 || $RUN_CREATE_ASSET == 1 || $RUN_CREATE_TIMESERIES == 1 || $RUN_CREATE_ACS == 1 || $RUN_CREATE_ANALYTIC_FRAMEWORK == 1) ]]; then
+  source "$quickstartRootDir/bash/scripts/predix_services_setup.sh"
+  __setupServices "$TEMP_APP"
 fi
 
-# Build our application from the 'predix-nodejs-starter' repo, passing it our MS instances
-if [[ $RUN_DEPLOY_FRONTEND -eq 1 ]]; then
-  if [ $RUN_DELETE_SERVICES -eq 1 ] && [ $RUN_CREATE_SERVICES -eq 0]; then
-    "$quickstartRootDir/scripts/predix_services_setup.sh" "$TEMP_APP"
-  fi
-  "$quickstartRootDir/scripts/build-basic-app.sh" "$TEMP_APP"
-fi
-#Create machine container
-if [[ $RUN_CREATE_MACHINE_CONTAINER -eq 1 ]]; then
-  "$quickstartRootDir/scripts/create_machine_container.sh"
-fi
-# Build Predix Machine container using properties from Predix Services Created above
-if [[ $RUN_MACHINE_CONFIG -eq 1 ]] || [[ $RUN_MACHINE_TRANSFER -eq 1 ]]; then
-  __echo_run  "$quickstartRootDir/scripts/predix_machine_setup.sh" "$TEMP_APP" "$RUN_MACHINE_CONFIG" "$RUN_MACHINE_TRANSFER"
+# Build our application
+if [[ "$APP_SCRIPT" != "" ]]; then
+  source "$quickstartRootDir/bash/scripts/$APP_SCRIPT" "$TEMP_APP"
+  main "$TEMP_APP"
 fi
 
-if [[ $RUN_PRINT_VCAPS == 0 && $QUIET_MODE == 0 ]]; then
+function allDone() {
+  echo "SUMMARY_TEXTFILE=$SUMMARY_TEXTFILE"
   cat $SUMMARY_TEXTFILE
+  __append_new_head_log "Clearing the locale" "-" "$quickstartLogDir"
+  cf config --locale CLEAR
+}
+
+if [[ $SKIP_ALL_DONE == 0 ]]; then
+  allDone
 fi
-
-# Delete the TEMP APP created earlier
-#__append_new_line_log "Deleting the $TEMP_APP" "$quickstartLogDir"
-#if cf d $TEMP_APP -f -r; then
-#  __append_new_line_log "Successfully deleted $TEMP_APP" "$quickstartLogDir"
-#else
-#  __append_new_line_log "Failed to delete $TEMP_APP. Retrying..." "$quickstartLogDir"
-#  if cf d $TEMP_APP -f -r; then
-#    __append_new_line_log "Successfully deleted $TEMP_APP" "$quickstartLogDir"
-#  else
-#    __append_new_line_log "Failed to delete $TEMP_APP. Last attempt..." "$quickstartLogDir"
-#    if cf d $TEMP_APP -f -r; then
-#      __append_new_line_log "Successfully deleted $TEMP_APP" "$quickstartLogDir"
-#    else
-#      __error_exit "Failed to delete $TEMP_APP. Giving up" "$quickstartLogDir"
-#    fi
-#  fi
-#fi
-
-__append_new_head_log "Clearing the locale" "*" "$quickstartLogDir"
-cf config --locale CLEAR
