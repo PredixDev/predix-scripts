@@ -92,21 +92,9 @@ function build-basic-app-nodejs-w-timeseries-main() {
     sed -i -e 's/uaa_service_label : predix-uaa/uaa_service_label : predix-uaa-training/' manifest.yml
   fi
 
-  case "$(uname -s)" in
-       Darwin)
-         # OSX
-         ;;
 
-       CYGWIN*|MINGW32*|MINGW64*|MSYS*)
-         # Windows
-         npm uninstall passport-predix-oauth --save
-         npm install passport-predix-oauth --save
-         ;;
-    esac
-
-  npm install
-  sed '/passport-predix-oauth.git/d' package.json > package1.json
-  mv package1.json package.json
+ npm uninstall passport-predix-oauth --save
+ npm install passport-predix-oauth --save
 
   __append_new_head_log "Deploying the application \"$FRONT_END_NODEJS_STARTER_APP_NAME\"" "-" "$logDir"
   if cf push; then

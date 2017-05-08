@@ -78,8 +78,6 @@ function build-basic-app-polymerseed-timeseries-main() {
   bower install
   gulp dist
 
-  sed '/passport-predix-oauth.git/d' package.json > package1.json
-  mv package1.json package.json
 
   __append_new_head_log "Deploying the application \"$FRONT_END_POLYMER_SEED_APP_NAME\"" "-" "$logDir"
   if cf push; then

@@ -1,11 +1,11 @@
 {
   "name": "Predix Scripts",
-  "version": "1.0.161",
+  "version": "1.0.162",
   "private": true,
   "dependencies": {
     "local-setup": "https://github.com/PredixDev/local-setup.git#1.0.11",
-    "Predix-HelloWorld-WebApp": "https://github.com/PredixDev/Predix-HelloWorld-WebApp.git#1.0.2",
-    "predix-nodejs-starter": "https://github.com/PredixDev/predix-nodejs-starter.git#1.1.0",
+    "Predix-HelloWorld-WebApp": "https://github.com/PredixDev/Predix-HelloWorld-WebApp.git#1.0.131",
+    "predix-nodejs-starter": "https://github.com/PredixDev/predix-nodejs-starter.git#1.1.3",
     "predix-machine-templates": "https://github.com/PredixDev/predix-machine-templates.git#1.1.9",
     "predix-machine-container-url": "https://raw.githubusercontent.com/PredixDev/predix-machine-templates/develop/PredixMachineDebug-16.4.2.zip#",
     "predix-machine-template-processor": "https://github.com/PredixDev/predix-machine-template-processor.git#2.1.14"

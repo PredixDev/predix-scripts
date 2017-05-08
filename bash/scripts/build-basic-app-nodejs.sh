@@ -70,11 +70,10 @@ function build-basic-app-nodejs-main() {
   __find_and_replace "-->" "" "secure.html" "$logDir"
   cd ..
 
-  # Push the application
-  npm install
-  sed '/passport-predix-oauth.git/d' package.json > package1.json
-  mv package1.json package.json
+npm uninstall passport-predix-oauth --save
+npm install passport-predix-oauth --save
 
+  # Push the application
   __append_new_head_log "Deploying the application \"$FRONT_END_NODEJS_STARTER_APP_NAME\"" "-" "$logDir"
   if cf push; then
     __append_new_line_log "Successfully deployed!" "$logDir"
