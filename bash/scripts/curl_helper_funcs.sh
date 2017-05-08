@@ -597,7 +597,7 @@ function getTimeseriesIngestUri() {
 }
 function getTimeseriesZoneId() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesZoneId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
-  if TIMESERIES_ZONE_ID=$(cf env ext-integration-hello-world | sed '/VCAP_APPLICATION/q' | sed '$ d' | sed '$ d' | tail -n +5 | jq -r '."VCAP_SERVICES"."predix-timeseries"[].credentials.query."zone-http-header-value"'); then
+  if TIMESERIES_ZONE_ID=$(cf env $TEMP_APP | sed '/VCAP_APPLICATION/q' | sed '$ d' | sed '$ d' | tail -n +5 | jq -r '."VCAP_SERVICES"."predix-timeseries"[].credentials.query."zone-http-header-value"'); then
     if [[ "$TIMESERIES_ZONE_ID" == "" ]] ; then
       __error_exit "The TIMESERIES_ZONE_ID was not found for \"$1\"..." "$logDir"
     fi

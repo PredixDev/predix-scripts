@@ -83,7 +83,7 @@ function cloud-basics-hello-world-main() {
   echo ""
   echo "Step 5. Using a browser, visit the URL to see the app"
   echo "--------------------------------------------------------------"
-  url=$(predix app $app_name | grep urls | awk '{print $2}')
+  url=$(cf app Predix-HelloWorld-WebApp-swap-test | grep -i urls | awk '{print $2}')
   echo "You have successfully pushed your first Predix application."
   echo "Enter the URL below in a browser to view the application."
   echo ""
