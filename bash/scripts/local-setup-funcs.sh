@@ -5,6 +5,8 @@
 #
 # These are a group of helper methods that will perform actions around local-setup
 #
+localSetupLogDir="."
+
 
 function run_mac_setup() {
 	#get the url and branch of the requested repo from the version.json
@@ -97,6 +99,58 @@ __echo_run() {
   return $?
 }
 
+
+
+#	----------------------------------------------------------------
+#	Function for checking the expected number of arguments
+#		Accepts 4 argument:
+#			string containing the expected number
+#			string of the actual number of arguments
+#			string explaining the expected arguments
+#     string containing the root path of where the log will output
+#	----------------------------------------------------------------
+function validate_num_arguments
+{
+	if [[ "$#" -ne 4 ]] ; then
+
+		ERRORMSG="__validate_num_arguments() - Expected (4), Actual($#) arguments. Expected in order: number of arguments, actual number of arguments, explaination of required arguments, path to where log will be generated"
+		echo "********************************************"
+		echo "Failure to run quickstart script"
+		echo "${PROGNAME}: ${ERRORMSG:-"Unknown Error"}" 1>&2
+		echo "********************************************"
+		echo -e $(timestamp): " --- ERROR:" "$ERRORMSG"  >> "$localSetupLogDir/localsetuplog.log"
+		exit 1
+	fi
+
+	if [[ "$1" -ne "$2" ]]; then
+		ERRORMSG="Expected ($1), Actual($2) arguments. $3"
+		echo "********************************************"
+		echo "Failure to run quickstart script"
+		echo "${PROGNAME}: ${ERRORMSG:-"Unknown Error"}" 1>&2
+		echo "********************************************"
+		echo -e $(timestamp): " --- ERROR:" "$ERRORMSG"  >> "$4/localsetuplog.log"
+		exit 1
+	fi
+}
+
+#Creating a timestamp for logging
+timestamp() {
+  date +"%Y-%m-%d  %H:%M:%S"
+}
+
+#	----------------------------------------------------------------
+#	Function for appending to a logfile
+#		Accepts 2 argument:
+#			string content of the new line being appended to line matching pattern
+#     string of where to generate the log
+#	----------------------------------------------------------------
+function append_new_line_log
+{
+	validate_num_arguments 2 $# "\"append_new_line_log()\" expected in order: String of the new line being appended, path of where to generate log" "$localSetupLogDir"
+	echo "-->> $1"
+	echo $(timestamp): " --- " "$1"  >> "$2/localsetup.log"
+}
+
 #	----------------------------------------------------------------
 #	Function for creating an asset with metadata
 #		Accepts 3 arguments:
@@ -105,7 +159,7 @@ __echo_run() {
 #  Returns:
 #	----------------------------------------------------------------
 function getGitRepo() {
-	__validate_num_arguments 1 $# "\"curl_helper_funcs:getGitRepo\" Directory to clone to, optional arg whether to remove dir" "$logDir"
+	validate_num_arguments 1 $# "\"curl_helper_funcs:getGitRepo\" Directory to clone to, optional arg whether to remove dir" "$localSetupLogDir"
 
 	if [[ $2 == "" ]] || $2 == "false" || $2 == "FALSE" ]]; then
 		rm -rf $1
@@ -115,7 +169,7 @@ function getGitRepo() {
 	if [[ $currentDir/ == *"$1/"* ]]; then
 		cd ..
 		if [ -d "$1" ]; then
-			__append_new_line_log "copy $1 dir to.. $currentDir" "$logDir"
+			append_new_line_log "copy $1 dir to.. $currentDir" "$localSetupLogDir"
 			mkdir -p $currentDir/$1
 			find $1/* -maxdepth 0 -type f -not \( -path $1/predix-scripts -prune \) -not \( -path $1/.git -prune \) -exec cp '{}' predix-scripts/$1 2>>/dev/null ';'
 			find $1/.* -maxdepth 0 -type f -not \( -path $1/predix-scripts -prune \) -not \( -path $1/.git -prune \) -exec cp '{}' predix-scripts/$1 2>>/dev/null ';'
@@ -126,7 +180,7 @@ function getGitRepo() {
 			cd ..
 			pwd
 			if [ -d "$1" ]; then
-				__append_new_line_log "copy $1 dir to... $currentDir" "$logDir"
+				append_new_line_log "copy $1 dir to... $currentDir" "$localSetupLogDir"
 				mkdir -p $currentDir/$1
 				find $1/* -maxdepth 0 -type f -not \( -path $1/predix-scripts -prune \) -not \( -path $1/.git -prune \) -exec cp '{}' $1/predix-scripts/$1 2>>/dev/null ';'
 				find $1/.* -maxdepth 0 -type f -not \( -path $1/predix-scripts -prune \) -not \( -path $1/.git -prune \) -exec cp '{}' $1/predix-scripts/$1 2>>/dev/null ';'
@@ -134,14 +188,14 @@ function getGitRepo() {
 				cd $currentDir
 				return
 			else
-				__append_new_line_log "$1 dir not available to copy, will git clone" "$logDir"
+				append_new_line_log "$1 dir not available to copy, will git clone" "$localSetupLogDir"
 			fi
 		fi
 		cd ..
 	else
 		cd ..
 		if [ -d "$1" ]; then
-			__append_new_line_log "copy $1 dir to.... $currentDir" "$logDir"
+			append_new_line_log "copy $1 dir to.... $currentDir" "$localSetupLogDir"
 			mkdir -p $currentDir/$1
 			find $1/* -maxdepth 0 -type f -not \( -path $1/predix-scripts -prune \) -not \( -path $1/.git -prune \) -exec cp '{}' predix-scripts/$1 2>>/dev/null ';'
 			find $1/.* -maxdepth 0 -type f -not \( -path $1/predix-scripts -prune \) -not \( -path $1/.git -prune \) -exec cp '{}' predix-scripts/$1 2>>/dev/null ';'
@@ -149,7 +203,7 @@ function getGitRepo() {
 			cd $currentDir
 			return
 		else
-			__append_new_line_log "$1 dir not available to copy, will git clone" "$logDir"
+			append_new_line_log "$1 dir not available to copy, will git clone" "$localSetupLogDir"
 		fi
 	fi
 
@@ -161,8 +215,8 @@ function getGitRepo() {
 		branch="$BRANCH"
 	fi
 	if git clone -b "$branch" "$git_url" "$1"; then
-		__append_new_line_log "Successfully cloned \"$git_url\" and checkout the branch \"$branch\"" "$logDir"
+		append_new_line_log "Successfully cloned \"$git_url\" and checkout the branch \"$branch\"" "$localSetupLogDir"
 	else
-		__error_exit "There was an error cloning the repo \"$1\". Is the repo listed in version.json?  Also, be sure to have permissions to the repo, or SSH keys created for your account" "$logDir"
+		__error_exit "There was an error cloning the repo \"$1\". Is the repo listed in version.json?  Also, be sure to have permissions to the repo, or SSH keys created for your account" "$localSetupLogDir"
 	fi
 }

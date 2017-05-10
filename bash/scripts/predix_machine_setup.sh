@@ -86,6 +86,7 @@ fi
 
 cd $rootDir
 if [ "$3" == "1" ]; then
+	echo "logDir=$logDir"
 	__append_new_head_log "Transferring Predix Machine Container" "#" "$logDir"
 	echo "Current Dir is"
 	pwd
