@@ -151,11 +151,32 @@ function append_new_line_log
 	echo $(timestamp): " --- " "$1"  >> "$2/localsetup.log"
 }
 
+function getPredixScripts() {
+  if [ ! -d "$PREDIX_SCRIPTS" ]; then
+    echo "Cloning predix script repo ..."
+    git clone --depth 1 --branch $PREDIX_SCRIPTS_BRANCH $PREDIX_SCRIPTS_URL
+  else
+    echo "Predix scripts repo found reusing it..."
+    cd $PREDIX_SCRIPTS
+    git pull
+    cd ..
+  fi
+}
+
+function getCurrentRepo() {
+  quickstartRootDir="$( pwd )/$PREDIX_SCRIPTS"
+  cd $PREDIX_SCRIPTS
+  source bash/scripts/files_helper_funcs.sh
+  getGitRepo $REPO_NAME
+  cd ..
+}
+
+
 #	----------------------------------------------------------------
-#	Function for creating an asset with metadata
-#		Accepts 3 arguments:
-#			string of Directory to which to clone
-#			string indicating whether to not remove directory
+#	Function for getting a gitRepo
+#		Accepts 1 argument (+1 optional argument):
+#			string of repo to clone, must be in version.json
+#			boolean string indicating whether delete the dir
 #  Returns:
 #	----------------------------------------------------------------
 function getGitRepo() {
