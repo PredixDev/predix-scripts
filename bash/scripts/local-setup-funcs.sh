@@ -43,7 +43,7 @@ function __print_out_standard_usage
   echo "        [-h|-?|--?|   --help]                          => Print usage"
 
 	echo -e "     *** examples\n"
-  echo -e "     ./$SCRIPT_NAME                                                       => install all features"
+  echo -e "     ./$SCRIPT_NAME                                     => install all features"
   echo -e "     ./$SCRIPT_NAME --skip-setup                        => skip the installation of tools"
   echo -e "     ./$SCRIPT_NAME --continue-from -xxx                => start from the feature -xxx, skipping anything before that"
   echo -e "     ./$SCRIPT_NAME --override -yyy                     => only run the yyy service install feature"
@@ -180,7 +180,7 @@ function getCurrentRepo() {
 #  Returns:
 #	----------------------------------------------------------------
 function getGitRepo() {
-	validate_num_arguments 1 $# "\"curl_helper_funcs:getGitRepo\" Directory to clone to, optional arg whether to remove dir" "$localSetupLogDir"
+	validate_num_arguments 1 $# "\"local-setup-funcs:getGitRepo\" Directory to clone to, optional arg whether to remove dir" "$localSetupLogDir"
 
 	if [[ $2 == "" ]] || $2 == "false" || $2 == "FALSE" ]]; then
 		rm -rf $1
@@ -213,19 +213,6 @@ function getGitRepo() {
 			fi
 		fi
 		cd ..
-	else
-		cd ..
-		if [ -d "$1" ]; then
-			append_new_line_log "copy $1 dir to.... $currentDir" "$localSetupLogDir"
-			mkdir -p $currentDir/$1
-			find $1/* -maxdepth 0 -type f -not \( -path $1/predix-scripts -prune \) -not \( -path $1/.git -prune \) -exec cp '{}' predix-scripts/$1 2>>/dev/null ';'
-			find $1/.* -maxdepth 0 -type f -not \( -path $1/predix-scripts -prune \) -not \( -path $1/.git -prune \) -exec cp '{}' predix-scripts/$1 2>>/dev/null ';'
-			find $1/* -maxdepth 0 -type d -not \( -path $1/predix-scripts -prune \) -not \( -path $1/.git -prune \) -exec cp -R '{}' predix-scripts/$1 ';'
-			cd $currentDir
-			return
-		else
-			append_new_line_log "$1 dir not available to copy, will git clone" "$localSetupLogDir"
-		fi
 	fi
 
 	#get using git, look in version.json to find the reponame and branch

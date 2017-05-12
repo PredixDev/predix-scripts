@@ -156,7 +156,6 @@ if [[ "$GET_MACHINE_CONFIG" == "1" ]]; then
 $TIMESERIES_INGEST_URI|$TIMESERIES_ZONE_ID|$TRUSTED_ISSUER_ID|$UAA_CLIENTID_GENERIC"
 	#jq -Rn ' ( input  | split("|") ) as $keys | ( inputs | split("|") ) as $vals | [[$keys, $vals] | transpose[] | {key:.[0],value:.[1]}] | from_entries' <<< "$KEYS" | sed 's/\\r//g'
 	printf '{"timeseries-ingest-url":"%q","timeseries-zone-id":"%q","uaa-url":"%q","uaa-clientid":"%q"}\n' "$TIMESERIES_INGEST_URI" "$TIMESERIES_ZONE_ID" "$TRUSTED_ISSUER_ID" "$UAA_CLIENTID_GENERIC" | tr -d "\$'" | sed -e 's/\\r//g'
-	exit
 else
 	if [[ "$TIMESERIES_INGEST_URI" != "" ]]; then
 		echo "TIMESERIES_INGEST_URI : $TIMESERIES_INGEST_URI"

@@ -33,7 +33,6 @@ echo "Copied custom $MACHINE_BUNDLE to $MACHINE_HOME/machine/bundles" >> "$SUMMA
 
 echo "Deploying predix-machine-template-processor"
 rm -rf predix-machine-template-processor
-echo "dasfsdfdsaf"
 getRepoURL "predix-machine-template-processor" git_url version.json
 echo "git url : $git_url"
 getRepoVersion "predix-machine-template-processor" branch version.json

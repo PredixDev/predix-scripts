@@ -93,8 +93,11 @@ function build-basic-app-nodejs-w-timeseries-main() {
   fi
 
 
- npm uninstall passport-predix-oauth --save
- npm install passport-predix-oauth --save
+ #npm uninstall passport-predix-oauth --save
+ #npm install passport-predix-oauth --save
+sed '/passport-predix-oauth.git/d' package.json > package1.json        
+mv package1.json package.json
+npm install passport-predix-oauth --save
 
   __append_new_head_log "Deploying the application \"$FRONT_END_NODEJS_STARTER_APP_NAME\"" "-" "$logDir"
   if cf push; then
