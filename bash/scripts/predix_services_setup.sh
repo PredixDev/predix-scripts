@@ -195,6 +195,12 @@ function createRabbitMQInstance() {
 
 }
 
+function createDeviceService() {
+  __append_new_head_log "Create Client for Devices" "-" "$logDir"
+	__createDeviceClient "$UAA_URL" "$UAA_CLIENTID_DEVICE" "$UAA_CLIENTID_DEVICE_SECRET"
+	__addTimeseriesAuthorities $UAA_CLIENTID_DEVICE
+}
+
 # one arg: service name
 function createRedisInstance() {
     __append_new_head_log "Create Redis Service Instance" "-" "$logDir"
@@ -258,7 +264,7 @@ function __setupServices() {
 	fi
 
 	cd "$rootDir"
-	
+
 	__append_new_line_log "Predix Services Configurations found in file: \"$SUMMARY_TEXTFILE\"" "$logDir"
 
 	echo ""  >> $SUMMARY_TEXTFILE

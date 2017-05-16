@@ -20,6 +20,7 @@ WINDDATA_SERVICE_APP_NAME="$INSTANCE_PREPENDER-winddata-service"
 RMD_DATASOURCE_APP_NAME="$INSTANCE_PREPENDER-rmd-datasource"
 RMD_ORCHESTRATION_APP_NAME="$INSTANCE_PREPENDER-rmd-orchestration"
 RMD_ANALYTICS_APP_NAME="$INSTANCE_PREPENDER-rmd-analytics"
+KIT_SERVICE_APP_NAME="$INSTANCE_PREPENDER-kit-service"
 # Name for your Front End Application
 FRONT_END_NODEJS_STARTER_APP_NAME="$INSTANCE_PREPENDER-nodejs-starter"
 FRONT_END_POLYMER_SEED_APP_NAME="$INSTANCE_PREPENDER-predix-webapp-starter"
@@ -28,6 +29,7 @@ FRONT_END_POLYMER_SEED_ASSET_APP_NAME="$INSTANCE_PREPENDER-predix-webapp-starter
 FRONT_END_POLYMER_SEED_TIMESERIES_APP_NAME="$INSTANCE_PREPENDER-predix-webapp-starter"
 FRONT_END_POLYMER_SEED_RMD_APP_NAME="$INSTANCE_PREPENDER-predix-webapp-starter"
 FRONT_END_DATAEXCHANGE_UI_APP_NAME="$INSTANCE_PREPENDER-data-exchange-ui"
+FRONT_END_KIT_APP_NAME="$INSTANCE_PREPENDER-kit-app"
 
 ############### UAA Configurations ###############
 
@@ -54,6 +56,13 @@ UAA_CLIENTID_GENERIC="app_client_id"
 
 # The generic client ID password
 UAA_CLIENTID_GENERIC_SECRET="secret"
+
+# The machine generic client ID that will be created with necessary UAA scope/autherities
+UAA_CLIENTID_DEVICE="device_client_id"
+
+# The machine generic client ID password
+UAA_CLIENTID_DEVICE_SECRET="secret"
+
 ############# Predix Asset Configurations #############
 
 # Name of the "Asset" that is recorded to Predix Asset

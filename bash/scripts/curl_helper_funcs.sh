@@ -124,7 +124,7 @@ function __checkUaaClient
 #	----------------------------------------------------------------
 function __createUaaAppClient
 {
-  __validate_num_arguments 3 $# "\"curl_helper_funcs:__createUaaClient\" expected in order: UAA_URI ClientId ClientIdSecret" "$logDir"
+  __validate_num_arguments 3 $# "\"curl_helper_funcs:__createUaaAppClient\" expected in order: UAA_URI ClientId ClientIdSecret" "$logDir"
   dataBinary="{\"client_id\":\"$2\",\"client_secret\":\"$3\",\"scope\":[\"acs.policies.read\",\"acs.policies.write\",\"acs.attributes.read\",\"uaa.none\",\"openid\"],\"authorized_grant_types\":[\"client_credentials\",\"authorization_code\",\"refresh_token\",\"password\"],\"authorities\":[\"openid\",\"uaa.none\",\"uaa.resource\"],\"autoapprove\":[\"openid\"],\"allowedproviders\":[\"uaa\"]}"
   __createUaaClient $1 $2 $3 $dataBinary
 }
@@ -141,6 +141,21 @@ function __createUaaLoginClient
 {
   __validate_num_arguments 3 $# "\"curl_helper_funcs:__createUaaLoginClient\" expected in order: UAA_URI ClientId ClientIdSecret" "$logDir"
   dataBinary="{\"client_id\":\"$2\",\"client_secret\":\"$3\",\"scope\":[\"uaa.none\",\"openid\"],\"authorized_grant_types\":[\"client_credentials\",\"authorization_code\",\"refresh_token\"],\"authorities\":[\"openid\",\"uaa.none\",\"uaa.resource\"],\"autoapprove\":[\"openid\"],\"allowedproviders\":[\"uaa\"]}"
+  __createUaaClient $1 $2 $3 $dataBinary
+}
+
+#	----------------------------------------------------------------
+#	Function for processing a UAA Client ID
+#		Accepts 3 argument:
+#			string of UAA URI
+#			string of clientId to create
+#			string of clientIdsecret
+#
+#	----------------------------------------------------------------
+function __createDeviceClient
+{
+  __validate_num_arguments 3 $# "\"curl_helper_funcs:__createUaaLoginClient\" expected in order: UAA_URI ClientId ClientIdSecret" "$logDir"
+  dataBinary="{\"client_id\":\"$2\",\"client_secret\":\"$3\",\"scope\":[\"uaa.none\",\"openid\"],\"authorized_grant_types\":[\"client_credentials\":[\"openid\",\"uaa.none\",\"uaa.resource\"],\"autoapprove\":[\"openid\"],\"allowedproviders\":[\"uaa\"]}"
   __createUaaClient $1 $2 $3 $dataBinary
 }
 
@@ -284,13 +299,13 @@ function __addAssetAuthorities {
 #	----------------------------------------------------------------
 function __addAnalyticFrameworkAuthorities {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:__addAnalyticFrameworkAuthorities\" expected in order: Client Id " "$logDir"
-  __append_new_line_log "Add Analytic Framwork Authorities: AnalyticFrameworkServiceName=$ANALYTIC_FRAMEWORK_SERVICE_NAME, AnalyticFrameworkZoneId=$AF_ZONE_ID" "$logDir"
   if [[ "$UAA_URL" == "" ]]; then
     getUaaUrl $TEMP_APP
   fi
   if [[ "$AF_ZONE_ID" == "" ]]; then
     getAFZoneId $TEMP_APP
   fi
+  __append_new_line_log "Add Analytic Framwork Authorities: AnalyticFrameworkServiceName=$ANALYTIC_FRAMEWORK_SERVICE_NAME, AnalyticFrameworkZoneId=$AF_ZONE_ID" "$logDir"
 
   ## check if the client exists
   __checkUaaClient $UAA_URL $1 getResponseStatus
