@@ -2,13 +2,13 @@
 
 __try_bind() {
   if __is_bound $1 $2 ; then
-    echo -n "" # Do nothing
+    echo "$1 is already bound to $2" # Do nothing
   else
-    echo -e "\n$ cf bind-service $1 $2\n"
-    if cf bs $1 $2; then
+    echo -e "\n$ px bind-service $1 $2\n"
+    if px bs $1 $2; then
     	__append_new_line_log "\"$2\" successfully bound to app \"$1\"!" "$logDir"
     else
-    	if cf bs $1 $2; then
+    	if px bs $1 $2; then
         __append_new_line_log "\"$2\" successfully bound to app \"$1\"!" "$logDir"
       else
         __error_exit "There was an error binding \"$2\" to the app \"$1\"!" "$logDir"
@@ -17,7 +17,8 @@ __try_bind() {
   fi
 }
 
-__try_create_service() {
+__try_create_service_using_cfcli() {
+  echo "__try_create_service_using_cfcli $1 $2 $3 $4 $5"
   if __service_exists $3 ; then
     echo -n "Service $3 already exists" # Do nothing
   else
@@ -35,25 +36,62 @@ __try_create_service() {
   fi
 }
 
+__try_create_uaa() {
+  if __service_exists $3 ; then
+    echo -n "Service $3 already exists" # Do nothing
+  else
+    echo -e "\n$ px create-service $1 $2 $3 --admin-secret $4\n"
+    if px cs $1 $2 $3 --admin-secret $4; then
+    	__append_new_line_log "$5 service instance successfully created!" "$logDir"
+    else
+    	__append_new_line_log "Couldn't create $5 service. Retrying..." "$logDir"
+    	if px cs $1 $2 $3 --admin-secret $4; then
+    		__append_new_line_log "$5 service instance successfully created!" "$logDir"
+    	else
+    		__error_exit "Couldn't create $5 service instance..." "$logDir"
+    	fi
+    fi
+  fi
+}
+
+__try_create_predix_service() {
+  echo "__try_create_predix_service $1 $2 $3 $4 $5 $6"
+  px uaa login $4 admin --secret $6
+  if __service_exists $3 ; then
+    echo -n "Service $3 already exists" # Do nothing
+  else
+    echo -e "\n$ px create-service $1 $2 $3 $4 --client-id $5 --client-secret $6\n"
+    if px cs $1 $2 $3 $4 --client-id $5 --client-secret $6; then
+    	__append_new_line_log "$7 service instance successfully created!" "$logDir"
+    else
+    	__append_new_line_log "Couldn't create $7 service. Retrying..." "$logDir"
+    	if px cs $1 $2 $3 $4 --client-id $5 --client-secret $6; then
+    		__append_new_line_log "$7 service instance successfully created!" "$logDir"
+    	else
+    		__error_exit "Couldn't create $7 service instance..." "$logDir"
+    	fi
+    fi
+  fi
+}
 __try_unbind() {
 	if __app_exists $1 && __is_bound $1 $2; then
-    echo -e "\n$ cf unbind-service $1 $2\n"
-		if cf us $1 $2; then
+    echo -e "\n$ px unbind-service $1 $2\n"
+		if px us $1 $2; then
 	  	__append_new_line_log "Successfully unbound \"$2\" from \"$1\"" "$logDir"
 		else
-	  	__append_new_line_log "Failed to unbound \"$2\" from \"$1\"" "$logDir"
+	  	__append_new_line_log "Failed to undind \"$2\" from \"$1\"" "$logDir"
 		fi
 	fi
 }
 
 __try_delete_app() {
 	if __app_exists $1; then
-    echo -e "\n$ cf delete $1 -f -r\n"
-		if cf d $1 -f -r; then
+    echo -e "\n$ px delete $1 -f -r\n"
+		if px d $1 -f -r; then
 		  __append_new_line_log "Successfully deleted \"$1\"" "$logDir"
 		else
 		  __append_new_line_log "Failed to delete \"$1\". Retrying..." "$logDir"
-		  if cf d $1 -f -r; then
+		  if px d $1 -f -r; then
 		    __append_new_line_log "Successfully deleted \"$1\"" "$logDir"
 		  else
 		    __append_new_line_log "Failed to delete \"$1\". Giving up." "$logDir"
@@ -64,7 +102,7 @@ __try_delete_app() {
 
 __try_delete_service() {
   echo "deletingService $1"
-  if boundApps=$(cf s | grep $1 | tr -s ' ' | cut -d' ' -f4- ); then
+  if boundApps=$(px s | grep $1 | tr -s ' ' | cut -d' ' -f4- ); then
     echo -n "" # Do nothing
   else
     __error_exit "There was an error getting BOUND_APPS..." "$logDir"
@@ -79,12 +117,12 @@ __try_delete_service() {
   done
 
 	if __service_exists $1; then
-    echo -e "\n$ cf delete-service $1 -f\n"
-		if cf ds $1 -f; then
+    echo -e "\n$ px delete-service $1 -f\n"
+		if px ds $1 -f; then
 		  __append_new_line_log "Successfully deleted \"$1\"" "$logDir"
 		else
 		  __append_new_line_log "Failed to delete \"$1\". Retrying..." "$logDir"
-		  if cf d $1 -f; then
+		  if px d $1 -f; then
 		    __append_new_line_log "Successfully deleted \"$1\"" "$logDir"
 		  else
 		    __append_new_line_log "Failed to delete \"$1\". Giving up." "$logDir"
@@ -94,23 +132,23 @@ __try_delete_service() {
 }
 
 __app_exists() {
-	cf a | grep $1 > /dev/null 2>&1
+	px a | grep $1 > /dev/null 2>&1
 	return $?
 }
 
 __service_exists() {
-	cf s | grep $1 > /dev/null 2>&1
+	px s | grep $1 > /dev/null 2>&1
 	return $?
 }
 
 __is_bound() {
-  cf s | grep $2 | grep $1 > /dev/null 2>&1
+  px s | grep $2 | grep $1 > /dev/null 2>&1
   return $?
 }
 
 function __get_login() {
   if [ "$INSTANCE_PREPENDER" == "" ]; then
-    INSTANCE_PREPENDER=$(cf target | grep -i 'User' | awk '{print $2}' | cut -d@ -f1)
+    INSTANCE_PREPENDER=$(px target | grep -i 'User' | awk '{print $2}' | cut -d@ -f1)
     export INSTANCE_PREPENDER
   fi
 }

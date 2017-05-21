@@ -25,10 +25,13 @@ fi
 touch "$logDir/quickstart.log"
 
 # ********************************** MAIN **********************************
-function main() {
+function device-kit-service-main() {
   __validate_num_arguments 1 $# "\"edge-starter-kit-service.sh\" expected in order: String of Predix Application used to get VCAP configurations" "$logDir"
 
   __append_new_head_log "Build & Deploy Kit Microservice" "-" "$logDir"
+
+  UAA_HOSTNAME=$(echo $UAA_URL | awk -F"/" '{print $3}')
+  CLOUD_ENDPONT=$(echo $ENDPOINT | cut -d '.' -f3-6 )
 
   cd "$rootDir"
   if [[ "$USE_KIT_SERVICE" == "1" ]]; then
@@ -42,9 +45,9 @@ function main() {
 
     #    b) Add the services to bind to the application
     __find_and_replace "\#services:" "services:" "manifest.yml" "$logDir"
-    __find_and_replace "- <your-name>-uaa" "- $UAA_INSTANCE_NAME" "manifest.yml" "$logDir"
-    __find_and_replace "- <your-name>-timeseries" "- $TIMESERIES_INSTANCE_NAME" "manifest.yml" "$logDir"
-    __find_and_replace "- <your-name>-asset" "- $ASSET_INSTANCE_NAME" "manifest.yml" "$logDir"
+    __find_and_replace "{uaaService}" "$UAA_INSTANCE_NAME" "manifest.yml" "$logDir"
+    __find_and_replace "{timeSeriesService}" "$TIMESERIES_INSTANCE_NAME" "manifest.yml" "$logDir"
+    __find_and_replace "{assetService}" "$ASSET_INSTANCE_NAME" "manifest.yml" "$logDir"
 
     #    c) Set the clientid and base64ClientCredentials
     __find_and_replace "predix_uaa_name: .*" "predix_uaa_name: $UAA_INSTANCE_NAME" "manifest.yml" "$logDir"
@@ -56,6 +59,9 @@ function main() {
     __find_and_replace "predix_oauth_clientId : .*" "predix_oauth_clientId: $UAA_CLIENTID_GENERIC:$UAA_CLIENTID_GENERIC_SECRET" "manifest.yml" "$logDir"
     __find_and_replace "{oauthRestHost}" "$UAA_HOSTNAME" "manifest.yml" "$logDir"
     __find_and_replace "{kitCloudUrl}" "https://$FRONT_END_KIT_APP_NAME.run.$CLOUD_ENDPONT" "manifest.yml" "$logDir"
+      MYDEVICE_SECRET=$(echo -ne $UAA_CLIENTID_DEVICE:$UAA_CLIENTID_DEVICE_SECRET | base64)
+    __find_and_replace "{deviceEncodedClient}" "$MYDEVICE_SECRET" "manifest.yml" "$logDir"
+
 
     cat manifest.yml
 

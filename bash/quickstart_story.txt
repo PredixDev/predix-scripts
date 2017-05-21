@@ -68,10 +68,10 @@ uses Cloud Foundry behind the scenes.  (BETTER EXPLANATION PLEASE)
 
 EOF
 
-cf login -a $CF_HOST -u $CF_USERNAME -p $CF_PASSWORD -o $CF_ORG -s $CF_SPACE --skip-ssl-validation
+px login -a $CF_HOST -u $CF_USERNAME -p $CF_PASSWORD -o $CF_ORG -s $CF_SPACE --skip-ssl-validation
 
 cat << EOF
-The simple "cf login" command uses the following parameters, which you can explicitly set.
+The simple "px login" command uses the following parameters, which you can explicitly set.
 -a: Predix Cloud Foundry API endpoint
 -u: Predix Username
 -p: Predix PASSWORD
@@ -82,7 +82,7 @@ The simple "cf login" command uses the following parameters, which you can expli
 EOF
 
 If you don't put these parameters inline with the command, don't worry.  If
-you only typed "cf login" for your command, then it will ask you for each of these parameters
+you only typed "px login" for your command, then it will ask you for each of these parameters
 one-by-one. We use the full command to script the process, so it could run with minimal manual
 command line interaction.
 
@@ -90,9 +90,9 @@ Great! Now we are logged in and we can begin creating Predix Services in our Pre
 
 First, let's take a look at all the available services in our Predix Cloud Foundry Marketplace.
 
-The command "cf marketplace" or "cf m" outputs this in terminal for us.
+The command "px marketplace" or "px m" outputs this in terminal for us.
 
-cf m
+px m
 
 GREP and auto set the variables for each service :)!
 
@@ -114,16 +114,16 @@ the Cloud Foundry marketplace and configuring it to authenticate trusted users.
 
 All Predix platform services require a UAA instance to ensure secure use of each service.
 
-cf cs $UAA_SERVICE_NAME $UAA_PLAN $UAA_INSTANCE_NAME -c "{\"adminClientSecret\":\"$UAA_ADMIN_SECRET\"}"
+px cs $UAA_SERVICE_NAME $UAA_PLAN $UAA_INSTANCE_NAME -c "{\"adminClientSecret\":\"$UAA_ADMIN_SECRET\"}"
 
 The command that we just ran deserves some explanation.
 
-"cf create-service" or "cf cs" creates a new service instance in our Predix Space that we are logged into.
+"px create-service" or "px cs" creates a new service instance in our Predix Space that we are logged into.
 
-The first parameter for "cf cs" is the service name.  This matches the name of you see outputted in "cf m".
+The first parameter for "px cs" is the service name.  This matches the name of you see outputted in "px m".
 For the UAA service, it is $UAA_SERVICE_NAME.
 
-Then, we state the Plan used for the Service, also matching the output from "cf m".
+Then, we state the Plan used for the Service, also matching the output from "px m".
 For your UAA service, it is $UAA_PLAN.
 
 Next, we state the unique name used for the Service, which you can specify as anything.
@@ -133,14 +133,14 @@ Finally, -c "{\"adminClientSecret\":\"$UAA_ADMIN_SECRET\"}"
 PLEASE EXPLAIN THIS!!!
 
 In summary, the create service command always has the format:
-"cf cs <service_name> <plan_type> <unique_instance_name> -c <specific_to_service>"
+"px cs <service_name> <plan_type> <unique_instance_name> -c <specific_to_service>"
 
 ******Adrian please do this section.  You have the best understanding.*************
       #Push a test app to get credentials
       echo -e " ### Pushing $TEMP_APP to initially create Predix Microservices ... ###\n"
 
       cd testapp
-      cf push $TEMP_APP --no-start --random-route
+      px push $TEMP_APP --no-start --random-route
 ***********************************************************************************
 
 Great! Now we have pushed our app to Predix, however we must still bind it to our UAA Service instance.
@@ -156,27 +156,27 @@ it easier to understand.
 Now that we have a general understanding of what it means to bind a service. Let's bind the UAA Service Instance,
 $UAA_INSTANCE_NAME to our $TEMP_APP.
 
-cf bs $TEMP_APP $UAA_INSTANCE_NAME
+px bs $TEMP_APP $UAA_INSTANCE_NAME
 
 Congrats! You now have a UAA service instance bound to your app.
 
 The bind service command that we just ran deserves some explanation.
 
-"cf bind-service" or "cf bs" binds the service instance to the Predix Application.
+"px bind-service" or "px bs" binds the service instance to the Predix Application.
 
-The first parameter for "cf bs" is the Predix Application name.
+The first parameter for "px bs" is the Predix Application name.
 For this command's execution, we used $TEMP_APP.
 
 In the second and final parameter, we state the service's instance name.
 Since we are bind the UAA service, we use $UAA_INSTANCE_NAME for this parameter.
 
 In summary, the bind service command always has the format:
-"cf bs <app_name> <service_instance_name>"
+"px bs <app_name> <service_instance_name>"
 
 Now that we have a service bound to your application, let's make sure that it is included in the app's
 environment variables.
 
-cf env $TEMP_APP
+px env $TEMP_APP
 
 What you can see in the JSON object output above is the environment variables for your application.  This
 includes the list of all the services bound to your app.
@@ -189,8 +189,8 @@ Two important environment variables is your trusted issuer id and your UAA uri.
 -Your trusted issuer id is the UAA REST URL you use to get oauth tokens from your UAA Service.
 -Your UAA uri is simply the UAA URL for your UAA service. (ADRIAN CAN YOU DO BETTER?)
 
-trustedIssuerID=$(cf env $TEMP_APP | grep predix-uaa* | grep issuerId*| awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}' )
-uaaURL=$(cf env $TEMP_APP | grep predix-uaa* | grep uri*| awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}' )
+trustedIssuerID=$(px env $TEMP_APP | grep predix-uaa* | grep issuerId*| awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}' )
+uaaURL=$(px env $TEMP_APP | grep predix-uaa* | grep uri*| awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}' )
 
 In the case of your application, these variables are:
 -Trusted Issuer ID: $trustedIssuerID
@@ -210,15 +210,15 @@ The Time Series service provides the following benefits:
 First, we will create the Time Series Service instance for our Predix Space.  Similar to the UAA create
 service command...we now will execute the Time Series create service command.
 
-cf cs $TIMESERIES_SERVICE_NAME $TIMESERIES_SERVICE_PLAN $TIMESERIES_INSTANCE_NAME -c "{\"trustedIssuerIds\":[\"$trustedIssuerID\"]}"
+px cs $TIMESERIES_SERVICE_NAME $TIMESERIES_SERVICE_PLAN $TIMESERIES_INSTANCE_NAME -c "{\"trustedIssuerIds\":[\"$trustedIssuerID\"]}"
 
-Once again, just for a reminder "cf create-service" or "cf cs" creates a new service instance
+Once again, just for a reminder "px create-service" or "px cs" creates a new service instance
 in our Predix Space that we are logged into.
 
-The first parameter for "cf cs" is the service name.  This matches the name of you see outputted in "cf m".
+The first parameter for "px cs" is the service name.  This matches the name of you see outputted in "px m".
 For the Time Series service, it is $TIMESERIES_SERVICE_NAME.
 
-Then, we state the Plan used for the Service, also matching the output from "cf m".
+Then, we state the Plan used for the Service, also matching the output from "px m".
 For the Time Series service, it is $TIMESERIES_SERVICE_PLAN.
 
 Next, we state the unique name used for the Service, which you can specify as anything.
@@ -229,17 +229,17 @@ PLEASE EXPLAIN THIS!!!
 
 Now that we have the Time Series Service instance created, let's bind our $TEMP_APP to it.
 
-cf bs $TEMP_APP $TIMESERIES_INSTANCE_NAME
+px bs $TEMP_APP $TIMESERIES_INSTANCE_NAME
 
 Congrats! You now have a Time Series service instance bound to your app.
 
-As a quick refresher, the "cf bind-service" or "cf bs" binds the service instance to
+As a quick refresher, the "px bind-service" or "px bs" binds the service instance to
 the Predix Application.
 
 Now that we have the Time Series service bound to your application, let's make sure that it
 is included in the app's environment variables.
 
-cf env $TEMP_APP
+px env $TEMP_APP
 
 You should now see "predix-timeseries" listed as one of your "VCAP_SERVICES".
 
@@ -251,9 +251,9 @@ Three important environment variables from the Time Series environment variables
 -Time Series Ingest URI: URL that is used for websocket river for ingesting data into Time Series.
 -Time Series Query URI: URL that is used as the REST URL for querying the Time Series database.
 
-TIMESERIES_ZONE_ID=$(cf env $TEMP_APP | grep -m 1 zone-http-header-value | sed 's/"zone-http-header-value": "//' | sed 's/",//' | tr -d '[[:space:]]')
-TIMESERIES_INGEST_URI=$(cf env $TEMP_APP | grep -m 1 uri | sed 's/"uri": "//' | sed 's/",//' | tr -d '[[:space:]]')
-TIMESERIES_QUERY_URI=$(cf env $TEMP_APP | grep -m 2 uri | grep https | sed 's/"uri": "//' | sed 's/",//' | tr -d '[[:space:]]')
+TIMESERIES_ZONE_ID=$(px env $TEMP_APP | grep -m 1 zone-http-header-value | sed 's/"zone-http-header-value": "//' | sed 's/",//' | tr -d '[[:space:]]')
+TIMESERIES_INGEST_URI=$(px env $TEMP_APP | grep -m 1 uri | sed 's/"uri": "//' | sed 's/",//' | tr -d '[[:space:]]')
+TIMESERIES_QUERY_URI=$(px env $TEMP_APP | grep -m 2 uri | grep https | sed 's/"uri": "//' | sed 's/",//' | tr -d '[[:space:]]')
 
 In the case of your application, these variables are:
 -Time Series Predix Zone ID: $TIMESERIES_ZONE_ID
@@ -275,21 +275,21 @@ pump in an organization. The Asset service consists of an API layer, a query eng
 
 Let's now create the Predix Asset service instance in our Predix Space.
 
-cf cs $ASSET_SERVICE_NAME $ASSET_SERVICE_PLAN $ASSET_INSTANCE_NAME -c "{\"trustedIssuerIds\":[\"$trustedIssuerID\"]}"
+px cs $ASSET_SERVICE_NAME $ASSET_SERVICE_PLAN $ASSET_INSTANCE_NAME -c "{\"trustedIssuerIds\":[\"$trustedIssuerID\"]}"
 
-Just as when we created the UAA and Time Series services, we used "cf cs ...".  The parameters for Predix Asset are:
+Just as when we created the UAA and Time Series services, we used "px cs ...".  The parameters for Predix Asset are:
 Service Name: $ASSET_SERVICE_NAME
 Service Plan: $ASSET_SERVICE_PLAN
 Service Unique Instance Name: $ASSET_INSTANCE_NAME
 
 Now let's bind the $TEMP_APP to the $ASSET_INSTANCE_NAME
 
-cf bs $TEMP_APP $ASSET_INSTANCE_NAME
+px bs $TEMP_APP $ASSET_INSTANCE_NAME
 
 Congrats! You now have a Asset service instance bound to your app. Let's make sure that it
 is included in the app's environment variables.
 
-cf env $TEMP_APP
+px env $TEMP_APP
 
 You should now see "predix-asset" listed as one of your "VCAP_SERVICES".
 
@@ -298,7 +298,7 @@ An important environment variable from the Asset environment variables is such:
                        It is integral from being able to post data into Asset as well as
                        query for the data stored in Asset.
 
-ASSET_ZONE_ID=$(cf env $TEMP_APP | grep -m 1 http-header-value | sed 's/"http-header-value": "//' | sed 's/",//' | tr -d '[[:space:]]')
+ASSET_ZONE_ID=$(px env $TEMP_APP | grep -m 1 http-header-value | sed 's/"http-header-value": "//' | sed 's/",//' | tr -d '[[:space:]]')
 
 In the case of your application, this variable is:
 -Asset Predix Zone ID: $ASSET_ZONE_ID

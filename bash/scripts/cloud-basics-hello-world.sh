@@ -39,7 +39,7 @@ function cloud-basics-hello-world-main() {
 
   __append_new_head_log "Build & Deploy Application" "#" "$logDir"
   cd $REPO_NAME
-  
+
   echo ""
   echo "Step 1. Give the application a unique name"
   echo "--------------------------------------------------------------"
@@ -59,12 +59,12 @@ function cloud-basics-hello-world-main() {
   echo ""
   echo "Step 2. Push the app to the cloud"
   echo "--------------------------------------------------------------"
-  __echoAndRun cf push
+  __echoAndRun px push
 
   echo ""
   echo "Step 3. Using a browser, visit the URL to see the app"
   echo "--------------------------------------------------------------"
-  url=$(cf app $app_name | grep -i urls | awk '{print $2}')
+  url=$(px app $app_name | grep -i urls | awk '{print $2}')
   echo "You have successfully pushed your first Predix application."
   echo "Enter the URL below in a browser to view the application."
   echo ""

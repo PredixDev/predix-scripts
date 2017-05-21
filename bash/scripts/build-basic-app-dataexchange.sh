@@ -93,17 +93,17 @@ function build-basic-app-dataexchange-main() {
       mvn clean dependency:copy -s $MAVEN_SETTINGS_FILE
     fi
     __append_new_head_log "Deploying the application $DATAEXCHANGE_APP_NAME" "-" "$logDir"
-    if cf push; then
+    if px push; then
       __append_new_line_log "Successfully deployed!" "$logDir"
     else
       __append_new_line_log "Failed to deploy application. Retrying..." "$logDir"
-      if cf push; then
+      if px push; then
         __append_new_line_log "Successfully deployed!" "$logDir"
       else
-        __error_exit "There was an error pushing using: \"cf push\"" "$logDir"
+        __error_exit "There was an error pushing using: \"px push\"" "$logDir"
       fi
     fi
-    APP_URL=$(cf app $DATAEXCHANGE_APP_NAME | grep urls | awk -F" " '{print $2}')
+    APP_URL=$(px app $DATAEXCHANGE_APP_NAME | grep urls | awk -F" " '{print $2}')
     cd ..
   fi
 
@@ -113,5 +113,5 @@ function build-basic-app-dataexchange-main() {
   echo "--------------------------------------------------"  >> $SUMMARY_TEXTFILE
   echo "Installed DataExchange back-end microservice to the cloud and updated the manifest file with UAA, Asset and Timeseries info"  >> $SUMMARY_TEXTFILE
   echo "App URL: https://$DATAEXCHANGE_APP_NAME.run.$CLOUD_ENDPONT" >> $SUMMARY_TEXTFILE
-  echo -e "You can execute 'cf env "$DATAEXCHANGE_APP_NAME"' to view info about your back-end microservice, and the bound UAA, Asset, and Time Series" >> $SUMMARY_TEXTFILE
+  echo -e "You can execute 'px env "$DATAEXCHANGE_APP_NAME"' to view info about your back-end microservice, and the bound UAA, Asset, and Time Series" >> $SUMMARY_TEXTFILE
 }

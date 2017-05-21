@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 arguments="$*"
-echo "arguments : $arguments"
+#echo "bba arguments : $arguments"
 
 # Reset all variables that might be set
 USE_TRAINING_UAA=0
@@ -81,8 +81,39 @@ function __print_out_usage
 	echo -e "./$SCRIPT_NAME -uaa -asset -ts -mc -cc -mt  => create services, machine config, compile repos and transfer machine container"
 }
 
-#process all the switches as normal
-while :; do
+function processReadargs() {
+	#process all the switches as normal
+	while :; do
+			doShift=0
+			processBuildBasicAppReadargsSwitch $@
+			if [[ $doShift == 2 ]]; then
+				shift
+				shift
+			fi
+			if [[ $doShift == 1 ]]; then
+				shift
+			fi
+	  	shift
+			#echo "processReadargs $@"
+	done
+
+	if [[ ($RUN_CREATE_MACHINE_CONTAINER == 1) && (! -n $MACHINE_VERSION) ]]; then
+	  __error_exit "-cm|--create-machine requires option -machine-version to be set " "$quickstartLogDir"
+	fi
+
+	if [[ "$MACHINE_VERSION" == "" ]]; then
+		MACHINE_VERSION="16.4.2"
+	fi
+	PREDIX_MACHINE_HOME=""$rootDir/PredixMachine$MACHINE_CONTAINER_TYPE
+
+	printBBAVariables
+}
+
+function processBuildBasicAppReadargsSwitch() {
+	switch=$1
+	SUPPRESS_PRINT_UNKNOWN=$2
+	#process all the switches as normal
+		#echo "bba-readargs $1"
 		case $1 in
         -tu|--training-uaa)
           USE_TRAINING_UAA=1
@@ -94,6 +125,7 @@ while :; do
               CUSTOM_UAA_INSTANCE=$2
               SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-custom-uaa"
               PRINT_USAGE=0
+							doShift=1
               shift
           else
               printf 'ERROR: "-custom-uaa" requires a non-empty option argument.\n' >&2
@@ -168,9 +200,11 @@ while :; do
 								SWITCH_ARRAY[SWITCH_INDEX++]="-amrmd"
                 PRINT_USAGE=0
                 LOGIN=1
+								doShift=1
                 shift
                 if [ -n "$2" ]; then
                   RUN_CREATE_ASSET_MODEL_RMD_FILE=$2
+									doShift=2
                   shift
                 fi
             else
@@ -214,6 +248,7 @@ while :; do
               printf 'ERROR: "machine-container-type" requires a argument[AGENT|AGENT_DEBUG|PROV|DEBUG|TECH|CONN|CUSTOM].\n' >&2
               exit 1
             fi
+						doShift=1
             shift
           else
             printf 'ERROR: "machine-container-type" requires a argument[AGENT|AGENT_DEBUG|PROV|DEBUG|TECH|CONN|CUSTOM].\n' >&2
@@ -223,6 +258,7 @@ while :; do
         -machine-version)
           if [ -n "$2" ]; then
             MACHINE_VERSION=$2
+						doShift=1
             shift
           else
             printf 'ERROR: "-release| -machine-version" requires a non-empty option argument.\n' >&2
@@ -340,6 +376,7 @@ while :; do
 				-predix-machine-home)
 					if [ -n "$2" ]; then
 						PREDIX_MACHINE_HOME=$2
+						doShift=1
 						shift
 					else
 						printf 'ERROR: "-predix-machine-home" requires a non-empty option argument.\n' >&2
@@ -353,112 +390,111 @@ while :; do
         -?*)
 					doShift=0
 					processSwitchCommon $@
-					if [[ $doShift == 1 ]]; then
-						shift
+					if [[ $UNKNOWN_SWITCH == 1 ]]; then
+						if [[ $SUPPRESS_PRINT_UNKNOWN == 0 ]]; then
+							echo "unknown BBA switch=$1"
+						fi
 					fi
           ;;
-				*)               # Default case: If no more options then break out of the loop.
-          break
+				*)
+					# Default case: If no more options then break out of the loop.
+					UNKNOWN_SWITCH=1
+					break
 					;;
     esac
-  	shift
-done
+}
 
 #echo "Switches=${SWITCH_DESC_ARRAY[*]}"
 
-if [[ ($RUN_CREATE_MACHINE_CONTAINER == 1) && (! -n $MACHINE_VERSION) ]]; then
-  __error_exit "-cm|--create-machine requires option -machine-version to be set " "$quickstartLogDir"
-fi
 
-if [[ "$MACHINE_VERSION" == "" ]]; then
-	MACHINE_VERSION="16.4.2"
-fi
-PREDIX_MACHINE_HOME=""$rootDir/PredixMachine$MACHINE_CONTAINER_TYPE
+function printBBAVariables() {
+	if [[ "$RUN_PRINT_VARIABLES" == "0" ]]; then
+		printCommonVariables
+	  echo ""
+		echo "BUILD-BASIC-APP:"
+		echo "SERVICES:"
+	  echo "CUSTOM_UAA_INSTANCE                      : $CUSTOM_UAA_INSTANCE"
+	  echo "RUN_CREATE_SERVICES                      : $RUN_CREATE_SERVICES"
+	  echo "RUN_CREATE_ACS                           : $RUN_CREATE_ACS"
+	  echo "RUN_CREATE_ASSET                         : $RUN_CREATE_ASSET"
+	  echo "RUN_CREATE_TIMESERIES                    : $RUN_CREATE_TIMESERIES"
+	  echo "RUN_CREATE_UAA                           : $RUN_CREATE_UAA"
+	  echo "USE_TRAINING_UAA                         : $USE_TRAINING_UAA"
+	  echo ""
+	  echo "ASSET-MODEL:"
+	  echo "RUN_CREATE_ASSET_MODEL_DEVICE1           : $RUN_CREATE_ASSET_MODEL_DEVICE1"
+	  echo "RUN_CREATE_ASSET_MODEL_RMD               : $RUN_CREATE_ASSET_MODEL_RMD"
+	  echo "RUN_CREATE_ASSET_MODEL_RMD_METADATA_FILE : $RUN_CREATE_ASSET_MODEL_RMD_METADATA_FILE"
+	  echo "RUN_CREATE_ASSET_MODEL_RMD_FILE          : $RUN_CREATE_ASSET_MODEL_RMD_FILE"
+	  echo ""
+	  echo "BACK-END:"
+	  echo "USE_DATAEXCHANGE                         : $USE_DATAEXCHANGE"
+	  echo "USE_DATA_SIMULATOR                       : $USE_DATA_SIMULATOR"
+	  echo "USE_RMD_DATASOURCE                       : $USE_RMD_DATASOURCE"
+	  echo "USE_WEBSOCKET_SERVER                     : $USE_WEBSOCKET_SERVER"
+	  echo "USE_WINDDATA_SERVICE                     : $USE_WINDDATA_SERVICE"
+	  echo ""
+	  echo "FRONT-END:"
+		echo "USE_NODEJS_STARTER                       : $USE_NODEJS_STARTER"
+		echo "USE_NODEJS_STARTER_W_TIMESERIES          : $USE_NODEJS_STARTER_W_TIMESERIES"
+	  echo "USE_POLYMER_SEED                         : $USE_POLYMER_SEED"
+	  echo "USE_POLYMER_SEED_UAA                     : $USE_POLYMER_SEED_UAA"
+	  echo "USE_POLYMER_SEED_ASSET                   : $USE_POLYMER_SEED_ASSET"
+	  echo "USE_POLYMER_SEED_TIMESERIES              : $USE_POLYMER_SEED_TIMESERIES"
+	  echo "USE_POLYMER_SEED_RMD                     : $USE_POLYMER_SEED_RMD"
+	  echo "USE_DATAEXCHANGE_UI                      : $USE_DATAEXCHANGE_UI"
+	  echo ""
+	  echo "MACHINE:"
+	  echo "PREDIX_MACHINE_HOME			 : $PREDIX_MACHINE_HOME"
+	  echo "RUN_MACHINE_CONFIG                       : $RUN_MACHINE_CONFIG"
+	  echo "RUN_CREATE_MACHINE_CONTAINER             : $RUN_CREATE_MACHINE_CONTAINER"
+	  echo "RUN_EDGE_MANAGER_SETUP                   : $RUN_EDGE_MANAGER_SETUP"
+	  echo "MACHINE_VERSION                          : $MACHINE_VERSION"
+	  echo "MACHINE_CONTAINER_TYPE                   : $MACHINE_CONTAINER_TYPE"
+	  echo "RUN_MACHINE_TRANSFER                     : $RUN_MACHINE_TRANSFER"
+	  echo ""
+	fi
+
+	exportCommonVariables
+	export CUSTOM_UAA_INSTANCE
+	export USE_TRAINING_UAA
+	export RUN_DELETE_SERVICES
+	export RUN_CREATE_SERVICES
+	export RUN_CREATE_ACS
+	export RUN_CREATE_ANALYTIC_FRAMEWORK
+	export RUN_CREATE_ASSET
+	export RUN_CREATE_ASSET_MODEL_DEVICE1
+	export RUN_CREATE_ASSET_MODEL_RMD
+	export RUN_CREATE_ASSET_MODEL_RMD_FILE
+	export RUN_CREATE_ASSET_MODEL_RMD_METADATA_FILE
+	export RUN_CREATE_TIMESERIES
+	export RUN_CREATE_UAA
+	export RUN_MACHINE_CONFIG
+	export RUN_CREATE_MACHINE_CONTAINER
+	export RUN_COMPILE_REPO
+	export RUN_EDGE_MANAGER_SETUP
+	export RUN_MACHINE_TRANSFER
+	export USE_WINDDATA_SERVICE
+	export USE_DATAEXCHANGE
+	export USE_WEBSOCKET_SERVER
+	export USE_DATA_SIMULATOR
+	export USE_RMD_DATASOURCE
+	export USE_NODEJS_STARTER
+	export USE_NODEJS_STARTER_W_TIMESERIES
+	export USE_POLYMER_SEED
+	export USE_POLYMER_SEED_UAA
+	export USE_POLYMER_SEED_ASSET
+	export USE_POLYMER_SEED_TIMESERIES
+	export USE_POLYMER_SEED_RMD
+	export USE_DATAEXCHANGE_UI
+	export PREDIX_MACHINE_HOME
+	export MACHINE_CONTAINER_TYPE
+	export MACHINE_VERSION
+	export ENDPOINT
+
+}
 
 
-if [[ "$RUN_PRINT_VARIABLES" == "0" ]]; then
-	printCommonVariables
-  echo ""
-  echo "SERVICES:"
-  echo "CUSTOM_UAA_INSTANCE                      : $CUSTOM_UAA_INSTANCE"
-  echo "RUN_CREATE_SERVICES                      : $RUN_CREATE_SERVICES"
-  echo "RUN_CREATE_ACS                           : $RUN_CREATE_ACS"
-  echo "RUN_CREATE_ASSET                         : $RUN_CREATE_ASSET"
-  echo "RUN_CREATE_TIMESERIES                    : $RUN_CREATE_TIMESERIES"
-  echo "USE_TRAINING_UAA                         : $USE_TRAINING_UAA"
-  echo "RUN_CREATE_UAA                           : $RUN_CREATE_UAA"
-  echo ""
-  echo "ASSET-MODEL:"
-  echo "RUN_CREATE_ASSET_MODEL_DEVICE1           : $RUN_CREATE_ASSET_MODEL_DEVICE1"
-  echo "RUN_CREATE_ASSET_MODEL_RMD               : $RUN_CREATE_ASSET_MODEL_RMD"
-  echo "RUN_CREATE_ASSET_MODEL_RMD_METADATA_FILE : $RUN_CREATE_ASSET_MODEL_RMD_METADATA_FILE"
-  echo "RUN_CREATE_ASSET_MODEL_RMD_FILE          : $RUN_CREATE_ASSET_MODEL_RMD_FILE"
-  echo ""
-  echo "BACK-END:"
-  echo "USE_DATAEXCHANGE                         : $USE_DATAEXCHANGE"
-  echo "USE_DATA_SIMULATOR                       : $USE_DATA_SIMULATOR"
-  echo "USE_RMD_DATASOURCE                       : $USE_RMD_DATASOURCE"
-  echo "USE_WEBSOCKET_SERVER                     : $USE_WEBSOCKET_SERVER"
-  echo "USE_WINDDATA_SERVICE                     : $USE_WINDDATA_SERVICE"
-  echo ""
-  echo "FRONT-END:"
-	echo "USE_NODEJS_STARTER                       : $USE_NODEJS_STARTER"
-	echo "USE_NODEJS_STARTER_W_TIMESERIES          : $USE_NODEJS_STARTER_W_TIMESERIES"
-  echo "USE_POLYMER_SEED                         : $USE_POLYMER_SEED"
-  echo "USE_POLYMER_SEED_UAA                     : $USE_POLYMER_SEED_UAA"
-  echo "USE_POLYMER_SEED_ASSET                   : $USE_POLYMER_SEED_ASSET"
-  echo "USE_POLYMER_SEED_TIMESERIES              : $USE_POLYMER_SEED_TIMESERIES"
-  echo "USE_POLYMER_SEED_RMD                     : $USE_POLYMER_SEED_RMD"
-  echo "USE_DATAEXCHANGE_UI                      : $USE_DATAEXCHANGE_UI"
-  echo ""
-  echo "MACHINE:"
-  echo "PREDIX_MACHINE_HOME			 : $PREDIX_MACHINE_HOME"
-  echo "RUN_MACHINE_CONFIG                       : $RUN_MACHINE_CONFIG"
-  echo "RUN_CREATE_MACHINE_CONTAINER             : $RUN_CREATE_MACHINE_CONTAINER"
-  echo "RUN_EDGE_MANAGER_SETUP                   : $RUN_EDGE_MANAGER_SETUP"
-  echo "MACHINE_VERSION                          : $MACHINE_VERSION"
-  echo "MACHINE_CONTAINER_TYPE                   : $MACHINE_CONTAINER_TYPE"
-  echo "RUN_MACHINE_TRANSFER                     : $RUN_MACHINE_TRANSFER"
-  echo ""
-fi
-
-export CUSTOM_UAA_INSTANCE
-export USE_TRAINING_UAA
-export RUN_DELETE_SERVICES
-export RUN_CREATE_SERVICES
-export RUN_CREATE_ACS
-export RUN_CREATE_ANALYTIC_FRAMEWORK
-export RUN_CREATE_ASSET
-export RUN_CREATE_ASSET_MODEL_DEVICE1
-export RUN_CREATE_ASSET_MODEL_RMD
-export RUN_CREATE_ASSET_MODEL_RMD_FILE
-export RUN_CREATE_ASSET_MODEL_RMD_METADATA_FILE
-export RUN_CREATE_TIMESERIES
-export RUN_CREATE_UAA
-export RUN_MACHINE_CONFIG
-export RUN_CREATE_MACHINE_CONTAINER
-export RUN_COMPILE_REPO
-export RUN_EDGE_MANAGER_SETUP
-export RUN_MACHINE_TRANSFER
-export USE_WINDDATA_SERVICE
-export USE_DATAEXCHANGE
-export USE_WEBSOCKET_SERVER
-export USE_DATA_SIMULATOR
-export USE_RMD_DATASOURCE
-export USE_NODEJS_STARTER
-export USE_NODEJS_STARTER_W_TIMESERIES
-export USE_POLYMER_SEED
-export USE_POLYMER_SEED_UAA
-export USE_POLYMER_SEED_ASSET
-export USE_POLYMER_SEED_TIMESERIES
-export USE_POLYMER_SEED_RMD
-export USE_DATAEXCHANGE_UI
-export PREDIX_MACHINE_HOME
-export MACHINE_CONTAINER_TYPE
-export MACHINE_VERSION
-export ENDPOINT
-
-exportCommonVariables
 #	----------------------------------------------------------------
 #	Function for creating an asset with metadata
 #		Accepts 3 arguments:
@@ -466,7 +502,7 @@ exportCommonVariables
 #			string indicating whether to not remove directory
 #  Returns:
 #	----------------------------------------------------------------
-function runFunctionForBasicApp() {
+function runFunctionsForBasicApp() {
 	while :; do
 		runFunctionForCommon $1 $2
 	    case $2 in
@@ -627,7 +663,7 @@ function runFunctionForBasicApp() {
 	          break
 						;;
 	        *)
-            echo 'WARN: Unknown option (ignored) in runFunction: %s\n' "$2" >&2
+            echo 'WARN: Unknown BBA option (ignored) in runFunction: %s\n' "$1 $2" >&2
             break
 						;;
 	    esac

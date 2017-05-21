@@ -153,7 +153,7 @@ function append_new_line_log
 
 function getPredixScripts() {
   if [ ! -d "$PREDIX_SCRIPTS" ]; then
-    echo "Cloning predix script repo ..."
+    echo "Cloning predix script repo ... $PREDIX_SCRIPTS_URL $PREDIX_SCRIPTS_BRANCH"
     git clone --depth 1 --branch $PREDIX_SCRIPTS_BRANCH $PREDIX_SCRIPTS_URL
   else
     echo "Predix scripts repo found reusing it..."

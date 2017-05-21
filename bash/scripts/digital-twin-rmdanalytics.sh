@@ -53,7 +53,7 @@ function digital-twin-rmdanalytics-main() {
     __find_and_replace "{clientId}" "$UAA_CLIENTID_GENERIC" "manifest.yml" "$logDir"
     __find_and_replace "{secret}" "$UAA_CLIENTID_GENERIC_SECRET" "manifest.yml" "$logDir"
 
-    DATAEXCHANGE_URL=$(cf app $DATAEXCHANGE_APP_NAME | grep urls | awk -F" " '{print $2}')
+    DATAEXCHANGE_URL=$(px app $DATAEXCHANGE_APP_NAME | grep urls | awk -F" " '{print $2}')
     __find_and_replace "predix_fdh_restHost: .*" "predix_fdh_restHost: $DATAEXCHANGE_URL" "manifest.yml" "$logDir"
 
     cat manifest.yml
@@ -69,17 +69,17 @@ function digital-twin-rmdanalytics-main() {
       mvn clean dependency:copy -s $MAVEN_SETTINGS_FILE
     fi
     __append_new_head_log "Deploying the application $RMD_ANALYTICS_APP_NAME" "-" "$logDir"
-    if cf push; then
+    if px push; then
       __append_new_line_log "Successfully deployed!" "$logDir"
     else
       __append_new_line_log "Failed to deploy application. Retrying..." "$logDir"
-      if cf push; then
+      if px push; then
         __append_new_line_log "Successfully deployed!" "$logDir"
       else
-        __error_exit "There was an error pushing using: \"cf push\"" "$logDir"
+        __error_exit "There was an error pushing using: \"px push\"" "$logDir"
       fi
     fi
-    APP_URL=$(cf app $RMD_ANALYTICS_APP_NAME | grep urls | awk -F" " '{print $2}')
+    APP_URL=$(px app $RMD_ANALYTICS_APP_NAME | grep urls | awk -F" " '{print $2}')
     cd ..
   fi
 
@@ -90,5 +90,5 @@ function digital-twin-rmdanalytics-main() {
   echo "--------------------------------------------------"  >> $SUMMARY_TEXTFILE
   echo "Installed RMD Analytics back-end microservice to the cloud and updated the manifest file with UAA, Asset and Timeseries info"  >> $SUMMARY_TEXTFILE
   echo "App URL: https://$RMD_ANALYTICS_APP_NAME.run.$CLOUD_ENDPONT" >> $SUMMARY_TEXTFILE
-  echo -e "You can execute 'cf env "$RMD_ANALYTICS_APP_NAME"' to view info about your back-end microservice, and the bound UAA, Asset, and Time Series" >> $SUMMARY_TEXTFILE
+  echo -e "You can execute 'px env "$RMD_ANALYTICS_APP_NAME"' to view info about your back-end microservice, and the bound UAA, Asset, and Time Series" >> $SUMMARY_TEXTFILE
 }

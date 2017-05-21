@@ -38,6 +38,6 @@ function main() {
   for ((switchIndex = 0; switchIndex < ${#SWITCH_ARRAY[@]}; switchIndex++))
   do
       switch="${SWITCH_ARRAY[$switchIndex]}"
-      runFunctionForBasicApp $1 $switch
+      runFunctionsForBasicApp $1 $switch
   done
 }

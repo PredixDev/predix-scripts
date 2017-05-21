@@ -129,6 +129,6 @@ function trap_ctrlc ()
 {
     # perform cleanup here
     echo $(date +"%Y-%m-%d  %H:%M:%S") ": --- Ctrl-C caught...exiting script" >> "$logDir/quickstartlog.log"
-    cf config --locale CLEAR
+    px config --locale CLEAR
 		exit 1
 }

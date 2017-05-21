@@ -56,17 +56,17 @@ function build-basic-app-winddata-main() {
     UAA_HOSTNAME=$(echo $uaaURL | awk -F"/" '{print $3}')
     __find_and_replace "predix_uaa_name: .*" "predix_uaa_name: $UAA_INSTANCE_NAME" "manifest.yml" "$logDir"
     __find_and_replace "{uaaService}" "$UAA_INSTANCE_NAME" "manifest.yml" "$logDir"
-    __find_and_replace "predix_timeseries_name : .*" "predix_timeseries_name: $TIMESERIES_INSTANCE_NAME" "manifest.yml" "$logDir"
+    __find_and_replace "predix_timeseries_name: .*" "predix_timeseries_name: $TIMESERIES_INSTANCE_NAME" "manifest.yml" "$logDir"
     __find_and_replace "{timeSeriesService}" "$TIMESERIES_INSTANCE_NAME" "manifest.yml" "$logDir"
-    __find_and_replace "predix_asset_name : .*" "predix_asset_name: $ASSET_INSTANCE_NAME" "manifest.yml" "$logDir"
+    __find_and_replace "predix_asset_name: .*" "predix_asset_name: $ASSET_INSTANCE_NAME" "manifest.yml" "$logDir"
     __find_and_replace "{assetService}" "$ASSET_INSTANCE_NAME" "manifest.yml" "$logDir"
-    __find_and_replace "predix_oauth_clientId : .*" "predix_oauthClientId: $UAA_CLIENTID_GENERIC:$UAA_CLIENTID_GENERIC_SECRET" "manifest.yml" "$logDir"
+    __find_and_replace "predix_oauth_clientId: .*" "predix_oauthClientId: $UAA_CLIENTID_GENERIC:$UAA_CLIENTID_GENERIC_SECRET" "manifest.yml" "$logDir"
 
     cat manifest.yml
 
     # Push the application
     if [[ $USE_TRAINING_UAA -eq 1 ]]; then
-      sed -i -e 's/uaa_service_label : predix-uaa/uaa_service_label : predix-uaa-training/' manifest.yml
+      sed -i -e 's/uaa_service_label: predix-uaa/uaa_service_label: predix-uaa-training/' manifest.yml
     fi
     __append_new_head_log "Retrieving the application $WINDDATA_SERVICE_APP_NAME" "-" "$logDir"
     if [[ $RUN_COMPILE_REPO -eq 1 ]]; then
@@ -75,17 +75,17 @@ function build-basic-app-winddata-main() {
       mvn clean dependency:copy -s $MAVEN_SETTINGS_FILE
     fi
     __append_new_head_log "Deploying the application $WINDDATA_SERVICE_APP_NAME" "-" "$logDir"
-    if cf push; then
+    if px push; then
       __append_new_line_log "Successfully deployed!" "$logDir"
     else
       __append_new_line_log "Failed to deploy application. Retrying..." "$logDir"
-      if cf push; then
+      if px push; then
         __append_new_line_log "Successfully deployed!" "$logDir"
       else
-        __error_exit "There was an error pushing using: \"cf push\"" "$logDir"
+        __error_exit "There was an error pushing using: \"px push\"" "$logDir"
       fi
     fi
-    WINDDATA_SERVICE_URL=$(cf app $WINDDATA_SERVICE_APP_NAME | grep urls | awk -F" " '{print $2}')
+    WINDDATA_SERVICE_URL=$(px app $WINDDATA_SERVICE_APP_NAME | grep urls | awk -F" " '{print $2}')
     cd ..
   fi
 
@@ -96,5 +96,5 @@ function build-basic-app-winddata-main() {
   echo "--------------------------------------------------"  >> $SUMMARY_TEXTFILE
   echo "Installed Wind Data back-end microservice to the cloud and updated the manifest file with UAA, Asset and Timeseries info"  >> $SUMMARY_TEXTFILE
   echo "App URL: https://$WINDDATA_SERVICE_APP_NAME.run.$CLOUD_ENDPONT" >> $SUMMARY_TEXTFILE
-  echo -e "You can execute 'cf env "$WINDDATA_SERVICE_APP_NAME"' to view info about your back-end microservice, and the bound UAA, Asset, and Time Series" >> $SUMMARY_TEXTFILE
+  echo -e "You can execute 'px env "$WINDDATA_SERVICE_APP_NAME"' to view info about your back-end microservice, and the bound UAA, Asset, and Time Series" >> $SUMMARY_TEXTFILE
 }

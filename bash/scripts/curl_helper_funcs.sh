@@ -155,7 +155,7 @@ function __createUaaLoginClient
 function __createDeviceClient
 {
   __validate_num_arguments 3 $# "\"curl_helper_funcs:__createUaaLoginClient\" expected in order: UAA_URI ClientId ClientIdSecret" "$logDir"
-  dataBinary="{\"client_id\":\"$2\",\"client_secret\":\"$3\",\"scope\":[\"uaa.none\",\"openid\"],\"authorized_grant_types\":[\"client_credentials\":[\"openid\",\"uaa.none\",\"uaa.resource\"],\"autoapprove\":[\"openid\"],\"allowedproviders\":[\"uaa\"]}"
+  dataBinary="{\"client_id\":\"$2\",\"client_secret\":\"$3\",\"scope\":[\"uaa.none\",\"openid\"],\"authorized_grant_types\":[\"client_credentials\",\"authorization_code\",\"refresh_token\"],\"authorities\":[\"openid\",\"uaa.none\",\"uaa.resource\"],\"autoapprove\":[\"openid\"],\"allowedproviders\":[\"uaa\"]}"
   __createUaaClient $1 $2 $3 $dataBinary
 }
 
@@ -527,7 +527,7 @@ function fetchVCAPSInfo
   #   getUaaUrl $1
   # fi
   #
-	# if TIMESERIES_INGEST_URI=$(cf env $TEMP_APP | grep -m 100 uri | grep wss: | awk -F"\"" '{print $4}'); then
+	# if TIMESERIES_INGEST_URI=$(px env $TEMP_APP | grep -m 100 uri | grep wss: | awk -F"\"" '{print $4}'); then
 	# 	if [[ "$TIMESERIES_INGEST_URI" == "" ]] ; then
 	# 		__error_exit "The TIMESERIES_INGEST_URI was not found for \"$TEMP_APP\"..." "$logDir"
 	# 	fi
@@ -537,7 +537,7 @@ function fetchVCAPSInfo
 	# 	__error_exit "There was an error getting TIMESERIES_INGEST_URI..." "$logDir"
 	# fi
   #
-  # if TIMESERIES_QUERY_URI=$(cf env $TEMP_APP | grep -m 100 uri | grep datapoints | awk -F"\"" '{print $4}'); then
+  # if TIMESERIES_QUERY_URI=$(px env $TEMP_APP | grep -m 100 uri | grep datapoints | awk -F"\"" '{print $4}'); then
 	# 	if [[ "$TIMESERIES_QUERY_URI" == "" ]] ; then
 	# 		__error_exit "The TIMESERIES_QUERY_URI was not found for \"$TEMP_APP\"..." "$logDir"
 	# 	fi
@@ -548,7 +548,7 @@ function fetchVCAPSInfo
 	# fi
   #
   #
-  # if assetURI=$(cf env $TEMP_APP  | grep uri*| grep predix-asset* | awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}'); then
+  # if assetURI=$(px env $TEMP_APP  | grep uri*| grep predix-asset* | awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}'); then
 	# 	if [[ "$assetURI" == "" ]] ; then
 	# 		__error_exit "The Asset URI was not found for \"$TEMP_APP\"..." "$logDir"
 	# 	fi
@@ -565,7 +565,7 @@ function fetchVCAPSInfo
 function getUaaUrl() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getUaaUrl\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
 
-  if uaaURL=$(cf env $1 | grep predix-uaa* | grep uri*| awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}' ); then
+  if uaaURL=$(px env $1 | grep predix-uaa* | grep uri*| awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}' ); then
     if [[ "$uaaURL" == "" ]] ; then
       __error_exit "The UAA URL was not found for \"$1\"..." "$logDir"
     fi
@@ -578,7 +578,7 @@ function getUaaUrl() {
 
 function getTimeseriesIngestUri() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesQueryUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
-  if TIMESERIES_INGEST_URI=$(cf env $1 | grep -m 100 uri | grep wss: | awk -F"\"" '{print $4}'); then
+  if TIMESERIES_INGEST_URI=$(px env $1 | grep -m 100 uri | grep wss: | awk -F"\"" '{print $4}'); then
   	if [[ "$TIMESERIES_INGEST_URI" == "" ]] ; then
   		__error_exit "The TIMESERIES_INGEST_URI was not found for \"$1\"..." "$logDir"
   	fi
@@ -591,7 +591,7 @@ function getTimeseriesIngestUri() {
 
 function getTimeseriesQueryUri() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesQueryUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
-  if TIMESERIES_QUERY_URI=$(cf env $1 | grep -m 100 uri | grep time-series-store | awk -F"\"" '{print $4}'); then
+  if TIMESERIES_QUERY_URI=$(px env $1 | grep -m 100 uri | grep time-series-store | awk -F"\"" '{print $4}'); then
     __append_new_line_log "Timeseries Query URI copied from environment variables! $TIMESERIES_QUERY_URI" "$logDir"
   else
     __error_exit "There was an error getting Timeseries Query URI..." "$logDir"
@@ -600,7 +600,7 @@ function getTimeseriesQueryUri() {
 
 function getTimeseriesIngestUri() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesQueryUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
-  if TIMESERIES_INGEST_URI=$(cf env $TEMP_APP | grep -m 100 uri | grep wss: | awk -F"\"" '{print $4}'); then
+  if TIMESERIES_INGEST_URI=$(px env $TEMP_APP | grep -m 100 uri | grep wss: | awk -F"\"" '{print $4}'); then
   	if [[ "$TIMESERIES_INGEST_URI" == "" ]] ; then
   		__error_exit "The TIMESERIES_INGEST_URI was not found for \"$TEMP_APP\"..." "$logDir"
   	fi
@@ -612,7 +612,7 @@ function getTimeseriesIngestUri() {
 }
 function getTimeseriesZoneId() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesZoneId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
-  if TIMESERIES_ZONE_ID=$(cf env $TEMP_APP | sed '/VCAP_APPLICATION/q' | sed '$ d' | sed '$ d' | tail -n +5 | jq -r '."VCAP_SERVICES"."predix-timeseries"[].credentials.query."zone-http-header-value"'); then
+  if TIMESERIES_ZONE_ID=$(px env $TEMP_APP | sed '/VCAP_APPLICATION/q' | sed '$ d' | sed '$ d' | tail -n +5 | jq -r '."VCAP_SERVICES"."predix-timeseries"[].credentials.query."zone-http-header-value"'); then
     if [[ "$TIMESERIES_ZONE_ID" == "" ]] ; then
       __error_exit "The TIMESERIES_ZONE_ID was not found for \"$1\"..." "$logDir"
     fi
@@ -625,7 +625,7 @@ function getTimeseriesZoneId() {
 
 function getAssetUri() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getAssetUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
-  if ASSET_URI=$(cf env $1 | grep -m 100 uri | grep asset | awk -F"\"" '{print $4}'); then
+  if ASSET_URI=$(px env $1 | grep -m 100 uri | grep asset | awk -F"\"" '{print $4}'); then
 		__append_new_line_log "Asset URI copied from environment variables! $ASSET_URI" "$logDir"
 	else
 		__error_exit "There was an error getting Asset URI..." "$logDir"
@@ -633,22 +633,21 @@ function getAssetUri() {
 }
 function getAssetZoneId() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getAssetZoneId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
-
-  if ASSET_ZONE_ID=$(cf env $1 | sed '/VCAP_APPLICATION/q' | sed '$ d' | sed '$ d' | tail -n +5 | jq -r '."VCAP_SERVICES"."predix-asset"[].credentials.zone."http-header-value"'); then
-	  if [[ "$ASSET_ZONE_ID" == "" ]] ; then
+  if ASSET_ZONE_ID=$(px env $1 | sed '/VCAP_APPLICATION/q' | sed '$ d' | sed '$ d' | tail -n +5 | jq -r '."VCAP_SERVICES"."predix-asset"[].credentials.zone."http-header-value"'); then
+  	if [[ "$ASSET_ZONE_ID" == "" ]] ; then
 	    __error_exit "The Asset Zone ID was not found for \"$1\"..." "$logDir"
-	  fi
-    __append_new_line_log "ASSET_ZONE_ID copied from VCAP environment variables!" "$logDir"
-		export ASSET_ZONE_ID="${ASSET_ZONE_ID}"
-	else
-	  __error_exit "There was an error getting ASSET_ZONE_ID..." "$logDir"
 	fi
+    	__append_new_line_log "ASSET_ZONE_ID copied from VCAP environment variables!" "$logDir"
+	export ASSET_ZONE_ID="${ASSET_ZONE_ID}"
+  else
+	__error_exit "There was an error getting ASSET_ZONE_ID using command px env $1 | sed '/VCAP_APPLICATION/q' | sed '$ d' | sed '$ d' | tail -n +5 | jq -r '."VCAP_SERVICES"."predix-asset"[].credentials.zone."http-header-value"'" "$logDir"
+  fi
 }
 
 
 function getAFUri() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getAFUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
-  if AF_URI=$(cf env $1 | sed '/VCAP_APPLICATION/q' | sed '$ d' | sed '$ d' | tail -n +5 |  jq -r '."VCAP_SERVICES"."predix-analytics-framework"[].credentials."execution_uri"'); then
+  if AF_URI=$(px env $1 | sed '/VCAP_APPLICATION/q' | sed '$ d' | sed '$ d' | tail -n +5 |  jq -r '."VCAP_SERVICES"."predix-analytics-framework"[].credentials."execution_uri"'); then
 		__append_new_line_log "AF URI copied from environment variables! $AF_URI" "$logDir"
 	else
 		__error_exit "There was an error getting AF URI..." "$logDir"
@@ -658,7 +657,7 @@ function getAFUri() {
 function getAFZoneId() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getAFZoneId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
 
-  if AF_ZONE_ID=$(cf env $1 | sed '/VCAP_APPLICATION/q' | sed '$ d' | sed '$ d' | tail -n +5 |  jq -r '."VCAP_SERVICES"."predix-analytics-framework"[].credentials."zone-http-header-value"'); then
+  if AF_ZONE_ID=$(px env $1 | sed '/VCAP_APPLICATION/q' | sed '$ d' | sed '$ d' | tail -n +5 |  jq -r '."VCAP_SERVICES"."predix-analytics-framework"[].credentials."zone-http-header-value"'); then
 	  if [[ "$AF_ZONE_ID" == "" ]] ; then
 	    __error_exit "The AF Zone ID was not found for \"$1\"..." "$logDir"
 	  fi
@@ -673,7 +672,7 @@ function getTrustedIssuerId()
 {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getTrustedIssuerId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
 
-  if trustedIssuerID=$(cf env $1 | grep predix-uaa* | grep issuerId*| awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}' ); then
+  if trustedIssuerID=$(px env $1 | grep predix-uaa* | grep issuerId*| awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}' ); then
 		if [[ "$trustedIssuerID" == "" ]] ; then
 			__error_exit "The UAA trustedIssuerID was not found for \"$1\"..." "$logDir"
 		fi
@@ -707,7 +706,7 @@ function getUrlForAppName() {
   __validate_num_arguments 3 $# "\"curl_helper_funcs:getUrlForAppName\" expected in order: Name of Predix Application, variable name to store the URL, protocol  " "$logDir"
 
   local _result=$2
-  local _host=$(cf app $1 | grep urls | awk -F" " '{print $2}');
+  local _host=$(px app $1 | grep urls | awk -F" " '{print $2}');
   local _url
   if [ -z "$_host" ]; then
     __error_exit "There was an error getting App URI for: $1" "$logDir"
@@ -721,7 +720,7 @@ function getUrlForAppName() {
 # Takes one argument: variable name in which to store result.
 function getRedisServiceName() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getRedisServiceName\" expected in order: variable name to store the result  " "$logDir"
-  local redisName=$(cf m | grep redis | awk -F" " '{print $1}')
+  local redisName=$(px m | grep redis | awk -F" " '{print $1}')
   local result=$1
   if [ -x "$redisName" ]; then
     __error_exit "Error find the redis service. If redis is not available in your org/space, please file a support ticket."

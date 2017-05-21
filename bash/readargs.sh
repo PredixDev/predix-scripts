@@ -178,8 +178,8 @@ function processSwitchCommon() {
 			LOGIN=1
 			;;
 		*)               # Default case: If no more options then break out of the loop.
-			printf 'WARN: Unknown switch (ignored): %s\n' "$1" >&2
-			break
+      UNKNOWN_SWITCH=1;
+			#break
 			;;
 	esac
 
@@ -190,6 +190,7 @@ function processSwitchCommon() {
 
 function printCommonVariables() {
 	if [[ "$RUN_PRINT_VARIABLES" == "0" ]]; then
+    echo "COMMON CONFIGURATIONS:"
 	  echo "quickstartRootDir                        : $quickstartRootDir"
 	  echo "APP_SCRIPT                               : $APP_SCRIPT"
 	  echo "SCRIPT_READARGS                          : $SCRIPT_READARGS"
@@ -206,7 +207,7 @@ function printCommonVariables() {
     echo "SKIP_INTERACTIVE                         : $SKIP_INTERACTIVE"
 	  echo ""
 	  echo "BACK-END:"
-	  echo "MAVEN_SETTINGS_FILE                       : $MAVEN_SETTINGS_FILE"
+	  echo "MAVEN_SETTINGS_FILE                      : $MAVEN_SETTINGS_FILE"
 	  echo "VERIFY_MVN                               : $VERIFY_MVN"
 	  echo ""
 	fi

@@ -36,10 +36,10 @@ function pushAnAppForBinding()
 	getGitRepo "Predix-HelloWorld-WebApp"
 	cd Predix-HelloWorld-WebApp
 
-	if __echo_run cf push $1 --random-route; then
+	if __echo_run px push $1 --random-route; then
 		__append_new_line_log "App \"$1\" successfully pushed to CloudFoundry!" "$logDir"
 	else
-		if __echo_run cf push $1 --random-route; then
+		if __echo_run px push $1 --random-route; then
 			__append_new_line_log "App \"$1\" successfully pushed to CloudFoundry!" "$logDir"
 		else
 			__error_exit "There was an error pushing the app \"$1\" to CloudFoundry..." "$logDir"
@@ -55,13 +55,18 @@ function createUaa()
 		 __try_delete_service $UAA_INSTANCE_NAME
 	fi
 
-	# Create instance of Predix UAA Service
-	__try_create_service $UAA_SERVICE_NAME $UAA_PLAN $UAA_INSTANCE_NAME "{\"adminClientSecret\":\"$UAA_ADMIN_SECRET\"}" "Predix UAA"
+	if [[ $USE_TRAINING_UAA == 1 ]]; then
+		configParameters="{\"adminClientSecret\":\"$UAA_ADMIN_SECRET\"}"
+		__try_create_service_using_cfcli $UAA_SERVICE_NAME $UAA_PLAN $UAA_INSTANCE_NAME $configParameters "Predix UAA"
+	else
+		# Create instance of Predix UAA Service
+		__try_create_uaa $UAA_SERVICE_NAME $UAA_PLAN $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET "Predix UAA"
+	fi
 
 	# Bind Temp App to UAA instance
 	__try_bind $1 $UAA_INSTANCE_NAME
 
-	# if uaaURL=$(cf env $1 | grep predix-uaa* | grep uri*| awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}' ); then
+	# if uaaURL=$(px env $1 | grep predix-uaa* | grep uri*| awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}' ); then
 	#   if [[ "$uaaURL" == "" ]] ; then
 	#     __error_exit "The UAA URL was not found for \"$1\"..." "$logDir"
 	#   fi
@@ -83,39 +88,16 @@ function createTimeseries()
     getTrustedIssuerId $1
   fi
 
-	# Create instance of Predix TimeSeries Service
-	__try_create_service $TIMESERIES_SERVICE_NAME $TIMESERIES_SERVICE_PLAN $TIMESERIES_INSTANCE_NAME "{\"trustedIssuerIds\":[\"$TRUSTED_ISSUER_ID\"]}" "Predix TimeSeries"
+	if [[ $USE_TRAINING_UAA == 1 ]]; then
+		configParameters="{\"trustedIssuerIds\":[\"$TRUSTED_ISSUER_ID\"]}"
+		__try_create_service_using_cfcli $TIMESERIES_SERVICE_NAME $TIMESERIES_SERVICE_PLAN $TIMESERIES_INSTANCE_NAME $configParameters "Predix Timeseries"
+	else
+		# Create instance of Predix TimeSeries Service
+		__try_create_predix_service $TIMESERIES_SERVICE_NAME $TIMESERIES_SERVICE_PLAN $TIMESERIES_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET "Predix TimeSeries"
+	fi
 
 	# Bind Temp App to TimeSeries Instance
 	__try_bind $1 $TIMESERIES_INSTANCE_NAME
-
-	# # Get the Zone ID and URIs from the environment variables (for use when querying and ingesting data)
-	# if TIMESERIES_ZONE_HEADER_NAME=$(cf env $TEMP_APP | grep -m 1 zone-http-header-name | sed 's/"zone-http-header-name": "//' | sed 's/",//' | tr -d '[[:space:]]'); then
-	# 	echo "TIMESERIES_ZONE_HEADER_NAME : $TIMESERIES_ZONE_HEADER_NAME"
-	# 	__append_new_line_log "TIMESERIES_ZONE_HEADER_NAME copied from environmental variables!" "$logDir"
-	# else
-	# 	__error_exit "There was an error getting TIMESERIES_ZONE_HEADER_NAME..." "$logDir"
-	# fi
-	#
-	# if TIMESERIES_ZONE_ID=$(cf env $TEMP_APP | grep zone-http-header-value |head -n 1 | awk -F"\"" '{print $4}'); then
-	# 	echo "TIMESERIES_ZONE_ID : $TIMESERIES_ZONE_ID"
-	# 	__append_new_line_log "TIMESERIES_ZONE_ID copied from environmental variables!" "$logDir"
-	# else
-	# 	__error_exit "There was an error getting TIMESERIES_ZONE_ID..." "$logDir"
-	# fi
-	#
-	# if TIMESERIES_INGEST_URI=$(cf env $TEMP_APP | grep -m 1 uri | grep wss: | awk -F"\"" '{print $4}'); then
-	# 	echo "TIMESERIES_INGEST_URI : $TIMESERIES_INGEST_URI"
-	# 	__append_new_line_log "TIMESERIES_INGEST_URI copied from environmental variables!" "$logDir"
-	# else
-	# 	__error_exit "There was an error getting TIMESERIES_INGEST_URI..." "$logDir"
-	# fi
-	#
-	# if TIMESERIES_QUERY_URI=$(cf env $TEMP_APP | grep -m 1 uri | grep datapoints | awk -F"\"" '{print $4}'); then
-	# 	__append_new_line_log "TIMESERIES_QUERY_URI copied from environmental variables!" "$logDir"
-	# else
-	# __error_exit "There was an error getting TIMESERIES_QUERY_URI..." "$logDir"
-	#fi
 }
 
 function createACSService() {
@@ -129,8 +111,13 @@ function createACSService() {
 		getTrustedIssuerId $1
 	fi
 
-	# Create instance of Predix Access Control Service
-	__try_create_service $ACCESS_CONTROL_SERVICE_NAME $ACCESS_CONTROL_SERVICE_PLAN $ACCESS_CONTROL_SERVICE_INSTANCE_NAME "{\"trustedIssuerIds\":[\"$trustedIssuerID\"]}" "Predix Access Control Service"
+	if [[ $USE_TRAINING_UAA == 1 ]]; then
+		configParameters="{\"trustedIssuerIds\":[\"$TRUSTED_ISSUER_ID\"]}"
+		__try_create_service_using_cfcli $ACCESS_CONTROL_SERVICE_NAME $ACCESS_CONTROL_SERVICE_PLAN $ACCESS_CONTROL_INSTANCE_NAME $configParameters "Predix Access Control Service"
+	else
+		# Create instance of Predix Access Control Service
+		__try_create_predix_service $ACCESS_CONTROL_SERVICE_NAME $ACCESS_CONTROL_SERVICE_PLAN $ACCESS_CONTROL_SERVICE_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET "Predix Access Control Service"
+	fi
 
 	# Bind Temp App to ACS Instance
 	__try_bind $1 $ACCESS_CONTROL_SERVICE_INSTANCE_NAME
@@ -148,8 +135,13 @@ function createAssetService() {
     getTrustedIssuerId $1
   fi
 
-	# Create instance of Predix Asset Service
-	__try_create_service $ASSET_SERVICE_NAME $ASSET_SERVICE_PLAN $ASSET_INSTANCE_NAME "{\"trustedIssuerIds\":[\"$TRUSTED_ISSUER_ID\"]}" "Predix Asset"
+	if [[ $USE_TRAINING_UAA == 1 ]]; then
+		configParameters="{\"trustedIssuerIds\":[\"$TRUSTED_ISSUER_ID\"]}"
+		__try_create_service_using_cfcli $ASSET_SERVICE_NAME $ASSET_SERVICE_PLAN $ASSET_INSTANCE_NAME $configParameters "Predix Asset Service"
+	else
+		# Create instance of Predix Asset Service
+		__try_create_predix_service $ASSET_SERVICE_NAME $ASSET_SERVICE_PLAN $ASSET_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET "Predix Asset"
+	fi
 
 	# Bind Temp App to Asset Instance
 	__try_bind $1 $ASSET_INSTANCE_NAME
@@ -161,38 +153,41 @@ function createAssetService() {
 }
 
 function createAnalyticFrameworkServiceInstance() {
-        __append_new_head_log "Create Analytic Framework Service Instance" "-" "$logDir"
+	__append_new_head_log "Create Analytic Framework Service Instance" "-" "$logDir"
 
-        if [[ $RUN_DELETE_SERVICES -eq 1 ]]; then
-           __try_delete_service $ANALYTIC_FRAMEWORK_SERVICE_INSTANCE_NAME
-        fi
+	if [[ $RUN_DELETE_SERVICES -eq 1 ]]; then
+	   __try_delete_service $ANALYTIC_FRAMEWORK_SERVICE_INSTANCE_NAME
+	fi
 
-				if [[ "$TRUSTED_ISSUER_ID" == "" ]]; then
-			    getTrustedIssuerId $1
-			  fi
+	if [[ "$TRUSTED_ISSUER_ID" == "" ]]; then
+	  getTrustedIssuerId $1
+	fi
 
-        # Create instance of Predix Analytic Framework Service
-        __try_create_service $ANALYTIC_FRAMEWORK_SERVICE_NAME $ANALYTIC_FRAMEWORK_SERVICE_PLAN $ANALYTIC_FRAMEWORK_SERVICE_INSTANCE_NAME "{\"trustedIssuerIds\":[\"$TRUSTED_ISSUER_ID\"]}" "Predix AF Service"
+	if [[ $USE_TRAINING_UAA == 1 ]]; then
+		configParameters="{\"trustedIssuerIds\":[\"$TRUSTED_ISSUER_ID\"]}"
+		__try_create_service_using_cfcli $ANALYTIC_FRAMEWORK_SERVICE_NAME $ANALYTIC_FRAMEWORK_SERVICE_PLAN $ANALYTIC_FRAMEWORK_SERVICE_INSTANCE_NAME $configParameters "Analytic Framework Service"
+	else
+		# Create instance of Predix Analytic Framework Service
+		__try_create_predix_service $ANALYTIC_FRAMEWORK_SERVICE_NAME $ANALYTIC_FRAMEWORK_SERVICE_PLAN $ANALYTIC_FRAMEWORK_SERVICE_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET "Predix AF Service"
+	fi
 
-        # Bind Temp App to Analytic framework Instance
-        __try_bind $1 $ANALYTIC_FRAMEWORK_SERVICE_INSTANCE_NAME
-
+	# Bind Temp App to Analytic framework Instance
+	__try_bind $1 $ANALYTIC_FRAMEWORK_SERVICE_INSTANCE_NAME
 }
 
 function createRabbitMQInstance() {
-        __append_new_head_log "Create RabbitMQ Service Instance" "-" "$logDir"
+	__append_new_head_log "Create RabbitMQ Service Instance" "-" "$logDir"
 
-        if [[ $RUN_DELETE_SERVICES -eq 1 ]]; then
-           __try_delete_service $RABBITMQ_SERVICE_INSTANCE_NAME
-        fi
+	if [[ $RUN_DELETE_SERVICES -eq 1 ]]; then
+	   __try_delete_service $RABBITMQ_SERVICE_INSTANCE_NAME
+	fi
 
-        # Create instance of RabbitMQ Service
-				configParameters="{}" #no config params for rabbit mq creation
-        __try_create_service $RABBITMQ_SERVICE_NAME $RABBITMQ_SERVICE_PLAN $RABBITMQ_SERVICE_INSTANCE_NAME $configParameters "Predix RabbitMQ Service"
+	# Create instance of RabbitMQ Service
+	configParameters="{}" #no config params for rabbit mq creation
+	__try_create_service_using_cfcli $RABBITMQ_SERVICE_NAME $RABBITMQ_SERVICE_PLAN $RABBITMQ_SERVICE_INSTANCE_NAME $configParameters "Predix RabbitMQ Service"
 
-        # Bind Temp App to RabbitMQ Service Instance
-        __try_bind $1 $RABBITMQ_SERVICE_INSTANCE_NAME
-
+	# Bind Temp App to RabbitMQ Service Instance
+	__try_bind $1 $RABBITMQ_SERVICE_INSTANCE_NAME
 }
 
 function createDeviceService() {
@@ -210,7 +205,7 @@ function createRedisInstance() {
 	fi
 
 	# Create instance of RabbitMQ Service
-	__try_create_service $1 $REDIS_SERVICE_PLAN $REDIS_INSTANCE_NAME "{}" "Redis Service"
+	__try_create_service_using_cfcli $1 $REDIS_SERVICE_PLAN $REDIS_INSTANCE_NAME "{}" "Redis Service"
 }
 
 #main sript starts here
@@ -230,29 +225,39 @@ function __setupServices() {
 		fi
 
 		__createUaaLoginClient "$UAA_URL" "$UAA_CLIENTID_LOGIN" "$UAA_CLIENTID_LOGIN_SECRET"
-		__createUaaAppClient "$UAA_URL" "$UAA_CLIENTID_GENERIC" "$UAA_CLIENTID_GENERIC_SECRET"
+		if [[ $USE_TRAINING_UAA == 1 ]]; then
+			__createUaaAppClient "$UAA_URL" "$UAA_CLIENTID_GENERIC" "$UAA_CLIENTID_GENERIC_SECRET"
+		fi
 		# Create a new user account
 		__addUaaUser "$UAA_URL"
 	fi
 
 	if [[ ( $RUN_CREATE_SERVICES == 1 || $RUN_CREATE_ASSET == 1 ) ]]; then
 		createAssetService $1
-		__addAssetAuthorities $UAA_CLIENTID_GENERIC
+		if [[ $USE_TRAINING_UAA == 1 ]]; then
+			__addAssetAuthorities $UAA_CLIENTID_GENERIC
+		fi
 	fi
 
 	if [[ ( $RUN_CREATE_SERVICES == 1 || $RUN_CREATE_TIMESERIES == 1 ) ]]; then
 		createTimeseries $1
-		__addTimeseriesAuthorities $UAA_CLIENTID_GENERIC
+		if [[ $USE_TRAINING_UAA == 1 ]]; then
+			__addTimeseriesAuthorities $UAA_CLIENTID_GENERIC
+		fi
 	fi
 
 	if [[ ( $RUN_CREATE_SERVICES == 1 || $RUN_CREATE_ACS == 1 ) ]]; then
 		createACSService $1
-		__addAcsAuthorities $UAA_CLIENTID_GENERIC
+		if [[ $USE_TRAINING_UAA == 1 ]]; then
+			__addAcsAuthorities $UAA_CLIENTID_GENERIC
+		fi
 	fi
 
 	if [[ ( $RUN_CREATE_SERVICES == 1 || $RUN_CREATE_ANALYTIC_FRAMEWORK == 1 ) ]]; then
 		createAnalyticFrameworkServiceInstance $1
-		__addAnalyticFrameworkAuthorities $UAA_CLIENTID_GENERIC
+		if [[ $USE_TRAINING_UAA == 1 ]]; then
+			__addAnalyticFrameworkAuthorities $UAA_CLIENTID_GENERIC
+		fi
 	fi
 
 	#get some variables for printing purposes below

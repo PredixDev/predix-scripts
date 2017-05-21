@@ -52,17 +52,17 @@ function build-basic-app-websocketserver-main() {
       mvn clean dependency:copy -s $MAVEN_SETTINGS_FILE
     fi
     __append_new_head_log "Deploying the application $WEBSOCKET_SERVER_APP_NAME" "-" "$logDir"
-    if cf push; then
+    if px push; then
       __append_new_line_log "Successfully deployed!" "$logDir"
     else
       __append_new_line_log "Failed to deploy application. Retrying..." "$logDir"
-      if cf push; then
+      if px push; then
         __append_new_line_log "Successfully deployed!" "$logDir"
       else
-        __error_exit "There was an error pushing using: \"cf push\"" "$logDir"
+        __error_exit "There was an error pushing using: \"px push\"" "$logDir"
       fi
     fi
-    APP_URL=$(cf app $WEBSOCKET_SERVER_APP_NAME | grep urls | awk -F" " '{print $2}')
+    APP_URL=$(px app $WEBSOCKET_SERVER_APP_NAME | grep urls | awk -F" " '{print $2}')
     cd ..
   fi
 
@@ -73,7 +73,7 @@ function build-basic-app-websocketserver-main() {
   echo "--------------------------------------------------"  >> $SUMMARY_TEXTFILE
   echo "Installed WebSocketServer back-end microservice to the cloud and updated the manifest file"  >> $SUMMARY_TEXTFILE
   echo "App URL: https://$WEBSOCKET_SERVER_APP_NAME.run.$CLOUD_ENDPONT" >> $SUMMARY_TEXTFILE
-  echo -e "You can execute 'cf env "$WEBSOCKET_SERVER_APP_NAME"' to view info about your back-end microservice" >> $SUMMARY_TEXTFILE
+  echo -e "You can execute 'px env "$WEBSOCKET_SERVER_APP_NAME"' to view info about your back-end microservice" >> $SUMMARY_TEXTFILE
 
   SUMMARY_TEXTFILE="$logDir/quickstart-summary.txt"
   echo "wss all done"

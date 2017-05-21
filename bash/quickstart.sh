@@ -55,7 +55,8 @@ export SUMMARY_TEXTFILE
 __append_new_head_log "Welcome to the Predix Quickstart script!" "-" "$quickstartLogDir"
 
 __append_new_head_log "Setting the local to en-US for the quickstart script" "-" "$quickstartLogDir"
-cf config --locale en-US
+export PREDIX_NO_CF_BYPASS=false
+px config --locale en-US
 
 # Check and install tools
 #chmod 755 "$quickstartRootDir/scripts/set_tool.sh"
@@ -63,21 +64,23 @@ cf config --locale en-US
 source "$quickstartRootDir/bash/readargs.sh"
 if [[ ! "$SCRIPT_READARGS" == "" ]]; then
   source "$quickstartRootDir/bash/scripts/$SCRIPT_READARGS"
+  processReadargs $@
 else
   echo "unable to call SCRIPT_READARGS as nothing is defined"
 fi
-
 if [[ ( $LOGIN == 1 ) ]]; then
-    #Check CF login and target Space
-    space="`cf target | grep -i Space | awk '{print $2}'`"
+    #Check px login and target Space
+    org="`px target | grep -i Org | awk '{print $2}'`"
+    __append_new_line_log "Org : $org" "$quickstartLogDir"
+    space="`px target | grep -i Space | awk '{print $2}'`"
     __append_new_line_log "Space : $space" "$quickstartLogDir"
     echo ""
 
     if [[ "$space" == "" ]] ; then
-      read -p "Enter the CF API Endpoint (default : https://api.system.aws-usw02-pr.ice.predix.io)> " CF_HOST
+      read -p "Enter the px API Endpoint (default : https://api.system.aws-usw02-pr.ice.predix.io)> " CF_HOST
       CF_HOST=${CF_HOST:-https://api.system.aws-usw02-pr.ice.predix.io}
-      read -p "Enter your CF username> " CF_USERNAME
-      read -p "Enter your CF password> " -s CF_PASSWORD
+      read -p "Enter your px username> " CF_USERNAME
+      read -p "Enter your px password> " -s CF_PASSWORD
 
       __append_new_line_log "Attempting to login user \"$CF_USERNAME\" to Cloud Foundry" "$quickstartLogDir"
       if cf login -a $CF_HOST -u $CF_USERNAME -p $CF_PASSWORD --skip-ssl-validation; then
@@ -86,7 +89,7 @@ if [[ ( $LOGIN == 1 ) ]]; then
         __error_exit "There was an error logging into CloudFoundry. Is the password correct?" "$quickstartLogDir"
       fi
     fi
-    ENDPOINT="`cf target | grep endpoint | awk '{print $3}'`"
+    ENDPOINT="`px target | grep endpoint | awk '{print $3}'`"
 
   #UNIQUE Prefix
   if [[ "$INSTANCE_PREPENDER" == "" ]]; then
@@ -139,7 +142,7 @@ function allDone() {
   echo "SUMMARY_TEXTFILE=$SUMMARY_TEXTFILE"
   cat $SUMMARY_TEXTFILE
   __append_new_head_log "Clearing the locale" "-" "$quickstartLogDir"
-  cf config --locale CLEAR
+  px config --locale CLEAR
 }
 
 if [[ $SKIP_ALL_DONE == 0 ]]; then

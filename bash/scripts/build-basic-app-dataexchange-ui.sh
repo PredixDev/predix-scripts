@@ -60,7 +60,7 @@ function build-basic-app-dataexchange-ui-main() {
 #    Set the service clientid label
   __find_and_replace "\uaa_service_label: .*" "uaa_service_label: $UAA_SERVICE_NAME" "manifest.yml" "$logDir"
 
-  DATAEXCHANGE_URL=$(cf app $DATAEXCHANGE_APP_NAME | grep urls | awk -F" " '{print $2}')
+  DATAEXCHANGE_URL=$(px app $DATAEXCHANGE_APP_NAME | grep urls | awk -F" " '{print $2}')
   __find_and_replace "\#dataExServiceUrl: .*" "dataExServiceUrl: https://$DATAEXCHANGE_URL" "manifest.yml" "$logDir"
 
   cat manifest.yml
@@ -85,20 +85,20 @@ function build-basic-app-dataexchange-ui-main() {
   mv package1.json package.json
 
   __append_new_head_log "Deploying the application \"$FRONT_END_DATAEXCHANGE_UI_APP_NAME\"" "-" "$logDir"
-  if cf push; then
+  if px push; then
     __append_new_line_log "Successfully deployed!" "$logDir"
   else
     __append_new_line_log "Failed to deploy application. Retrying..." "$logDir"
-    if cf push; then
+    if px push; then
       __append_new_line_log "Successfully deployed!" "$logDir"
     else
-      __error_exit "There was an error pushing using: \"cf push\"" "$logDir"
+      __error_exit "There was an error pushing using: \"px push\"" "$logDir"
     fi
   fi
 
   # Automagically open the application in browser, based on OS
   if [[ $SKIP_BROWSER == 0 ]]; then
-    apphost=$(cf app $FRONT_END_DATAEXCHANGE_UI_APP_NAME | grep urls: | awk '{print $2;}')
+    apphost=$(px app $FRONT_END_DATAEXCHANGE_UI_APP_NAME | grep urls: | awk '{print $2;}')
     case "$(uname -s)" in
        Darwin)
          # OSX
@@ -124,7 +124,7 @@ fi
     fi
   fi
 
-  if __echo_run cf start $FRONT_END_DATAEXCHANGE_UI_APP_NAME; then
+  if __echo_run px start $FRONT_END_DATAEXCHANGE_UI_APP_NAME; then
     __append_new_line_log "$FRONT_END_DATAEXCHANGE_UI_APP_NAME started!" "$logDir" 1>&2
   else
     __error_exit "Couldn't start $FRONT_END_DATAEXCHANGE_UI_APP_NAME" "$logDir"
@@ -142,6 +142,6 @@ fi
   echo "Front-end App URL: https://$FRONT_END_DATAEXCHANGE_UI_APP_NAME.run.$CLOUD_ENDPONT" >> $SUMMARY_TEXTFILE
   echo "Front-end App Login: app_user_1/app_user_1" >> $SUMMARY_TEXTFILE
   echo "" >> $SUMMARY_TEXTFILE
-  echo -e "You can execute 'cf env "$FRONT_END_DATAEXCHANGE_UI_APP_NAME"' to view info about your front-end app" >> $SUMMARY_TEXTFILE
+  echo -e "You can execute 'px env "$FRONT_END_DATAEXCHANGE_UI_APP_NAME"' to view info about your front-end app" >> $SUMMARY_TEXTFILE
   echo -e "In your web browser, navigate to your front-end application endpoint" >> $SUMMARY_TEXTFILE
 }

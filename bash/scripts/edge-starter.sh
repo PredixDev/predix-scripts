@@ -25,9 +25,9 @@ fi
 touch "$logDir/quickstart.log"
 
 # ********************************** MAIN **********************************
-__validate_num_arguments 1 $# "\"digital-twin.sh\" expected in order: String of Predix Application used to get VCAP configurations" "$logDir"
+__validate_num_arguments 1 $# "\"edge-starter.sh\" expected in order: String of Predix Application used to get VCAP configurations" "$logDir"
 
-__append_new_head_log "Build & Deploy Analytic Application" "#" "$logDir"
+__append_new_head_log "Build & Deploy Kit Service" "#" "$logDir"
 
 #	----------------------------------------------------------------
 #	Function called by quickstart.sh, must be spelled main()
@@ -35,9 +35,11 @@ __append_new_head_log "Build & Deploy Analytic Application" "#" "$logDir"
 #			string of app name used to bind to services so we can get VCAP info
 #	----------------------------------------------------------------
 function main() {
+  #execute the build a basic app and switches
+
   for ((switchIndex = 0; switchIndex < ${#SWITCH_ARRAY[@]}; switchIndex++))
   do
       switch="${SWITCH_ARRAY[$switchIndex]}"
-      runFunctionsForDigitalTwin $1 $switch
+      runFunctionsForEdgeStarter $1 $switch
   done
 }

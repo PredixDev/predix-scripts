@@ -4,6 +4,7 @@ arguments="$*"
 #echo "arguments : $arguments"
 
 source "$rootDir/bash/scripts/predix_services_setup.sh"
+source "$rootDir/bash/scripts/build-basic-app-readargs.sh"
 
 # Reset all variables that might be set
 RUN_CREATE_ANALYTIC_FRAMEWORK=0
@@ -11,77 +12,91 @@ RUN_CREATE_RABBITMQ=0
 USE_RMD_ANALYTICS=0
 USE_RMD_ORCHESTRATION=0
 
-#process all the switches as normal - not all switches are functions, so we take a pass through and set some variables
-while :; do
-		#echo "here$@"
-		case $1 in
-        -af|--create-analytic-framework)
-          RUN_CREATE_ANALYTIC_FRAMEWORK=1
-          SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-af | --create-analytic-framework"
-					SWITCH_ARRAY[SWITCH_INDEX++]="-af"
+function processReadargs() {
+	#process all the switches as normal - not all switches are functions, so we take a pass through and set some variables
+	while :; do
+			processDigitalTwinReadargsSwitch $@
+			if [[ $doShift == 1 ]]; then
+				shift
+			fi
+			shift
+	done
+	printDTVariables
+}
+
+function processDigitalTwinReadargsSwitch() {
+	#process all the switches as normal - not all switches are functions, so we take a pass through and set some variables
+	#echo "digital-twin-readargs $1"
+	case $1 in
+      -af|--create-analytic-framework)
+        RUN_CREATE_ANALYTIC_FRAMEWORK=1
+        SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-af | --create-analytic-framework"
+				SWITCH_ARRAY[SWITCH_INDEX++]="-af"
+        PRINT_USAGE=0
+        LOGIN=1
+        ;;
+      -rmq|--create-rabbitmq)
+        RUN_CREATE_RABBITMQ=1
+        SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-rmq | --create-rabbitmq"
+				SWITCH_ARRAY[SWITCH_INDEX++]="-rmq"
+        PRINT_USAGE=0
+        LOGIN=1
+        ;;
+			-armd|--rmd-analytics)       # Takes an option argument, ensuring it has been specified.
+          USE_RMD_ANALYTICS=1
+          SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-armd | --rmd-analytics"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-armd"
           PRINT_USAGE=0
+          VERIFY_MVN=1
           LOGIN=1
-          ;;
-        -rmq|--create-rabbitmq)
-          RUN_CREATE_RABBITMQ=1
-          SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-rmq | --create-rabbitmq"
-					SWITCH_ARRAY[SWITCH_INDEX++]="-rmq"
+        ;;
+      -fce|--rmd-orchestration)       # Takes an option argument, ensuring it has been specified.
+          USE_RMD_ORCHESTRATION=1
+          SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-fce | --rmd-orchestration"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-fce"
           PRINT_USAGE=0
+          VERIFY_MVN=1
           LOGIN=1
-          ;;
-				-armd|--rmd-analytics)       # Takes an option argument, ensuring it has been specified.
-            USE_RMD_ANALYTICS=1
-            SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-armd | --rmd-analytics"
-						SWITCH_ARRAY[SWITCH_INDEX++]="-armd"
-            PRINT_USAGE=0
-            VERIFY_MVN=1
-            LOGIN=1
-          ;;
-        -fce|--rmd-orchestration)       # Takes an option argument, ensuring it has been specified.
-            USE_RMD_ORCHESTRATION=1
-            SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-fce | --rmd-orchestration"
-						SWITCH_ARRAY[SWITCH_INDEX++]="-fce"
-            PRINT_USAGE=0
-            VERIFY_MVN=1
-            LOGIN=1
-          ;;
-        --)
-				  # End of all options.
-					shift
-					break
-          ;;
-        -?*)
-					doShift=0
-					processSwitchCommon $@
-					if [[ $doShift == 1 ]]; then
-						shift
-					fi
-          ;;
-				*)               # Default case: If no more options then break out of the loop.
-					echo "default" # End of all options.
-          break
-					;;
-    esac
-  	shift
-done
+        ;;
+      --)
+			  # End of all options.
+				shift
+				break
+        ;;
+      -?*)
+				doShift=0
+				SUPPRESS_PRINT_UNKNOWN=1
+				UNKNOWN_SWITCH=0
+				processBuildBasicAppReadargsSwitch $@
+				if [[ $UNKNOWN_SWITCH == 1 ]]; then
+					echo "unknown DT switch=$1"
+				fi
+        ;;
+			*)               # Default case: If no more options then break out of the loop.
+        break
+				;;
+  esac
+}
 
 #echo "Switches=${SWITCH_DESC_ARRAY[*]}"
+function printDTVariables() {
+	if [[ "$RUN_PRINT_VARIABLES" == "0" ]]; then
+		printBBAVariables
+		echo "DIGITAL TWIN:"
+		echo "SERVICES:"
+		echo "RUN_CREATE_ANALYTIC_FRAMEWORK            : $RUN_CREATE_ANALYTIC_FRAMEWORK"
+		echo "RUN_CREATE_RABBITMQ                      : $RUN_CREATE_RABBITMQ"
+	  echo ""
+	  echo "BACK-END:"
+		echo "USE_RMD_ANALYTICS                        : $USE_RMD_ANALYTICS"
+		echo "USE_RMD_ORCHESTRATION                    : $USE_RMD_ORCHESTRATION"
+	  echo ""
+	fi
 
-if [[ "$RUN_PRINT_VARIABLES" == "0" ]]; then
-	printCommonVariables
-  echo "SERVICES:"
-	echo "RUN_CREATE_ANALYTIC_FRAMEWORK            : $RUN_CREATE_ANALYTIC_FRAMEWORK"
-	echo "RUN_CREATE_RABBITMQ                      : $RUN_CREATE_RABBITMQ"
-  echo ""
-  echo "BACK-END:"
-	echo "USE_RMD_ANALYTICS                        : $USE_RMD_ANALYTICS"
-	echo "USE_RMD_ORCHESTRATION                    : $USE_RMD_ORCHESTRATION"
-  echo ""
-fi
+	export RUN_CREATE_ANALYTIC_FRAMEWORK
+	export RUN_CREATE_RABBITMQ
+}
 
-exportCommonVariables
-export RUN_CREATE_ANALYTIC_FRAMEWORK
-export RUN_CREATE_RABBITMQ
 
 function __print_out_usage
 {
@@ -107,7 +122,7 @@ function __print_out_usage
 #			switch to process
 #  Returns:
 #	----------------------------------------------------------------
-function runFunctionForDigitalTwin() {
+function runFunctionsForDigitalTwin() {
 	while :; do
 			runFunctionForCommon $1 $2
 	    case $2 in

@@ -75,23 +75,23 @@ function build-basic-app-data-simulator-main() {
       mvn clean dependency:copy -s $MAVEN_SETTINGS_FILE
     fi
     __append_new_head_log "Deploying the application $DATA_SIMULATOR_APP_NAME" "-" "$logDir"
-    if cf push; then
+    if px push; then
       __append_new_line_log "Successfully deployed!" "$logDir"
     else
       __append_new_line_log "Failed to deploy application. Retrying..." "$logDir"
-      if cf push; then
+      if px push; then
         __append_new_line_log "Successfully deployed!" "$logDir"
       else
-        __error_exit "There was an error pushing using: \"cf push\"" "$logDir"
+        __error_exit "There was an error pushing using: \"px push\"" "$logDir"
       fi
     fi
-    APP_URL=$(cf app $DATA_SIMULATOR_APP_NAME | grep urls | awk -F" " '{print $2}')
+    APP_URL=$(px app $DATA_SIMULATOR_APP_NAME | grep urls | awk -F" " '{print $2}')
     cd ..
   fi
 
   echo "sleep for 30 seconds so we can generate some data"
   sleep 30
-  cf stop $DATA_SIMULATOR_APP_NAME
+  px stop $DATA_SIMULATOR_APP_NAME
 
 
   SUMMARY_TEXTFILE="$logDir/quickstart-summary.txt"
@@ -100,7 +100,7 @@ function build-basic-app-data-simulator-main() {
   echo "--------------------------------------------------"  >> $SUMMARY_TEXTFILE
   echo "Installed DataSimulator back-end microservice to the cloud and updated the manifest file with UAA, Asset and DataExchange info"  >> $SUMMARY_TEXTFILE
   echo "App URL: https://$DATA_SIMULATOR_APP_NAME.run.$CLOUD_ENDPONT" >> $SUMMARY_TEXTFILE
-  echo -e "You can execute 'cf env "$DATA_SIMULATOR_APP_NAME"' to view info about your back-end microservice, and the bound UAA and Asset" >> $SUMMARY_TEXTFILE
+  echo -e "You can execute 'px env "$DATA_SIMULATOR_APP_NAME"' to view info about your back-end microservice, and the bound UAA and Asset" >> $SUMMARY_TEXTFILE
   echo ""  >> $SUMMARY_TEXTFILE
   echo "Note: The simulator is turned on for only 30 seconds.  To generate more time series data please turn on your simulator, e.g. using the predix cli, px start thomas-edison-data-exchange-simulator"  >> $SUMMARY_TEXTFILE
 
