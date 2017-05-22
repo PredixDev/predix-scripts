@@ -93,11 +93,14 @@ function processReadargs() {
 			if [[ $doShift == 1 ]]; then
 				shift
 			fi
-	  	shift
+			if [[ $@ == "" ]]; then
+				break;
+			else
+	  		shift
+			fi
 			#echo "processReadargs $@"
 	done
-
-	if [[ ($RUN_CREATE_MACHINE_CONTAINER == 1) && (! -n $MACHINE_VERSION) ]]; then
+  if [[ ($RUN_CREATE_MACHINE_CONTAINER == 1) && (! -n $MACHINE_VERSION) ]]; then
 	  __error_exit "-cm|--create-machine requires option -machine-version to be set " "$quickstartLogDir"
 	fi
 
@@ -105,6 +108,7 @@ function processReadargs() {
 		MACHINE_VERSION="16.4.2"
 	fi
 	PREDIX_MACHINE_HOME=""$rootDir/PredixMachine$MACHINE_CONTAINER_TYPE
+	#echo "Switches=${SWITCH_DESC_ARRAY[*]}"
 
 	printBBAVariables
 }
@@ -113,7 +117,7 @@ function processBuildBasicAppReadargsSwitch() {
 	switch=$1
 	SUPPRESS_PRINT_UNKNOWN=$2
 	#process all the switches as normal
-		#echo "bba-readargs $1"
+		echo "bba-readargs $1"
 		case $1 in
         -tu|--training-uaa)
           USE_TRAINING_UAA=1
@@ -385,7 +389,6 @@ function processBuildBasicAppReadargsSwitch() {
 					;;
         --)              # End of all options.
 					shift
-					break
           ;;
         -?*)
 					doShift=0
@@ -399,12 +402,10 @@ function processBuildBasicAppReadargsSwitch() {
 				*)
 					# Default case: If no more options then break out of the loop.
 					UNKNOWN_SWITCH=1
-					break
 					;;
     esac
 }
 
-#echo "Switches=${SWITCH_DESC_ARRAY[*]}"
 
 
 function printBBAVariables() {
