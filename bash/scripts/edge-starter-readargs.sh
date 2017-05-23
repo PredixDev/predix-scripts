@@ -16,6 +16,7 @@ source "$rootDir/bash/scripts/build-basic-app-readargs.sh"
 function processReadargs() {
 	#process all the switches as normal
 	while :; do
+			doShift=0
 			processEdgeStarterReadargsSwitch $@
 			if [[ $doShift == 2 ]]; then
 				shift
@@ -24,7 +25,11 @@ function processReadargs() {
 			if [[ $doShift == 1 ]]; then
 				shift
 			fi
-	  	shift
+			if [[ $@ == "" ]]; then
+				break;
+			else
+	  			shift
+			fi
 			#echo "processReadargs $@"
 	done
 	#echo "Switches=${SWITCH_DESC_ARRAY[*]}"
@@ -53,7 +58,6 @@ function processEdgeStarterReadargsSwitch() {
       --)
 			  # End of all options.
 				shift
-				break
         ;;
 			-?*)
 				doShift=0
@@ -65,7 +69,6 @@ function processEdgeStarterReadargsSwitch() {
 				fi
         ;;
 			*)               # Default case: If no more options then break out of the loop.
-        break
 				;;
   esac
 }

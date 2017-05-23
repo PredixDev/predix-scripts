@@ -117,7 +117,7 @@ function processBuildBasicAppReadargsSwitch() {
 	switch=$1
 	SUPPRESS_PRINT_UNKNOWN=$2
 	#process all the switches as normal
-		echo "bba-readargs $1"
+		#echo "bba-readargs $1"
 		case $1 in
         -tu|--training-uaa)
           USE_TRAINING_UAA=1

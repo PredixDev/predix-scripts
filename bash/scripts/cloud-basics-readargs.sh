@@ -32,7 +32,11 @@ function processReadargs() {
 			if [[ $doShift == 1 ]]; then
 				shift
 			fi
-	  	shift
+			if [[ $@ == "" ]]; then
+				break;
+			else
+	  			shift
+			fi
 			#echo "processReadargs $@"
 	done
 
@@ -43,15 +47,16 @@ function processCloudBasicAppReadargsSwitch() {
 	#process all the switches as normal
 	#echo "arg=$1"
   case $1 in
-				-?*)
-					doShift=0
-					processSwitchCommon $@
-					if [[ $UNKNOWN_SWITCH == 1 ]]; then
-						if [[ $SUPPRESS_PRINT_UNKNOWN == 0 ]]; then
-							echo "unknown BBA switch=$1"
-						fi
-					fi
-					;;      *)               # Default case: If no more options then break out of the loop.
-        break;
+		-?*)
+			doShift=0
+			processSwitchCommon $@
+			if [[ $UNKNOWN_SWITCH == 1 ]]; then
+				if [[ $SUPPRESS_PRINT_UNKNOWN == 0 ]]; then
+					echo "unknown BBA switch=$1"
+				fi
+			fi
+			;;
+		*)               # Default case: If no more options then break out of the loop.
+			;;
   esac
 }

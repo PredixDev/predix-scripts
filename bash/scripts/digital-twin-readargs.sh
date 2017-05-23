@@ -15,11 +15,17 @@ USE_RMD_ORCHESTRATION=0
 function processReadargs() {
 	#process all the switches as normal - not all switches are functions, so we take a pass through and set some variables
 	while :; do
+			#echo "processReadargs1 $@"
+			doShift=0
 			processDigitalTwinReadargsSwitch $@
 			if [[ $doShift == 1 ]]; then
 				shift
 			fi
-			shift
+			if [[ $@ == "" ]]; then
+				break;
+			else
+	  		shift
+			fi
 	done
 	printDTVariables
 }
@@ -61,7 +67,6 @@ function processDigitalTwinReadargsSwitch() {
       --)
 			  # End of all options.
 				shift
-				break
         ;;
       -?*)
 				doShift=0
@@ -73,7 +78,6 @@ function processDigitalTwinReadargsSwitch() {
 				fi
         ;;
 			*)               # Default case: If no more options then break out of the loop.
-        break
 				;;
   esac
 }

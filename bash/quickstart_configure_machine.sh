@@ -36,9 +36,11 @@ function local_read_args() {
         echo -e "**************** Usage ***************************"
         echo -e "     ./$0 [ options ]\n"
         echo -e "     options are as below"
+				echo "				[-get-machine-config]						=> Get Machine Configuration"
         echo "        [-predix-machine-home]          => Predix Machine Installation directory"
         echo "        [-timeseries-ingest-url]        => Timeseries Websocket Endpoint URL for Data Ingestion"
         echo "        [-timeseries-zone-id]           => Time Series Zone Id"
+				echo "				[-kitservice-url]								=> Predix Kit Service URL"
         echo "        [-uaa-url]                      => UAA Url"
         echo "        [-uaa-clientid-secret]          => base64 encoded client_id:secret"
 				echo "        [-databus-topics]               => Topics for Databus Adapter. Comma separated list if using more than one topic"
@@ -101,6 +103,13 @@ function local_read_args() {
             exit 1
         fi
         ;;
+			-kitservice-url)
+				PREDIX_KIT_URL="$2"
+        if [ "$PREDIX_KIT_URL" == "" ]; then
+            printf 'ERROR: "-kitservice-url" requires a non-empty option argument.\n' >&2
+            exit 1
+        fi
+				;;
 			-databus-topics)
         DATABUS_TOPICS="$2"
         if [ "$DATABUS_TOPICS" == "" ]; then
@@ -188,6 +197,12 @@ else
 		echo "Updated UAA Client Secret successfully"
 	fi
 
+	if [[ "$PREDIX_KIT_URL" != "" ]]; then
+		sed "s#com.ge.predix.solsvc.edgestarter.predixkit.device.get.url=.*#com.ge.predix.solsvc.edgestarter.predixkit.device.get.url=\"$PREDIX_KIT_URL\"#" com.ge.predix.solsvc.edgestarter.processor.config.config > com.ge.predix.solsvc.edgestarter.processor.config.config.tmp
+		mv com.ge.predix.solsvc.edgestarter.processor.config.config.tmp com.ge.predix.solsvc.edgestarter.processor.config.config
+		echo "Updated Predix Kit Service URL successfully"
+	fi
+
 	if [[ "$PROXY_HOST" != "" ]]; then
 		myProxyEnabled="true"
 		sed "s#proxy.host=.*#proxy.host=\"$PROXY_HOST\"#" org.apache.http.proxyconfigurator-0.config > org.apache.http.proxyconfigurator-0.config.tmp
@@ -202,43 +217,31 @@ else
 	sed "s#proxy.enabled=B.*#proxy.enabled=B\"$myProxyEnabled\"#" org.apache.http.proxyconfigurator-0.config > org.apache.http.proxyconfigurator-0.config.tmp
 	mv org.apache.http.proxyconfigurator-0.config.tmp org.apache.http.proxyconfigurator-0.config
 
-	if [[ ! -z $DATABUS_TOPICS ]]; then
-		TOPIC_ARRAY="["
-		for topic in $(echo $DATABUS_TOPICS | awk -F"," '{for (i=1;i<=NF;i++)print $i}'); do
-			TOPIC_ARRAY="$TOPIC_ARRAY \"$topic\",\\"
-		done
-		TOPIC_ARRAY="$TOPIC_ARRAY ]"
-		echo "TOPIC_ARRAY : $TOPIC_ARRAY"
-		sed "s#com.ge.dspmicro.machineadapter.databus.subscriptions=.*#com.ge.dspmicro.machineadapter.databus.subscriptions=$TOPIC_ARRAY#" com.ge.dspmicro.machineadapter.databus-0.config > com.ge.dspmicro.machineadapter.databus-0.config.tmp
-		mv com.ge.dspmicro.machineadapter.databus-0.config.tmp com.ge.dspmicro.machineadapter.databus-0.config
+#	if [[ ! -z $DATABUS_TOPICS ]]; then
+#		TOPIC_ARRAY="["
+#		for topic in $(echo $DATABUS_TOPICS | awk -F"," '{for (i=1;i<=NF;i++)print $i}'); do
+#			TOPIC_ARRAY="$TOPIC_ARRAY \"$topic\",\\"
+#		done
+#		TOPIC_ARRAY="$TOPIC_ARRAY ]"
+#		echo "TOPIC_ARRAY : $TOPIC_ARRAY"
+#		sed "s#com.ge.dspmicro.machineadapter.databus.subscriptions=.*#com.ge.dspmicro.machineadapter.databus.subscriptions=$TOPIC_ARRAY#" com.ge.dspmicro.machineadapter.databus-0.config > com.ge.dspmicro.machineadapter.databus-0.config.tmp
+#		mv com.ge.dspmicro.machineadapter.databus-0.config.tmp com.ge.dspmicro.machineadapter.databus-0.config
 
-		sed "s#com.ge.dspmicro.hoover.spillway.destination=.*#com.ge.dspmicro.hoover.spillway.destination=\"WS Sender Service\"#" com.ge.dspmicro.hoover.spillway-0.config > com.ge.dspmicro.hoover.spillway-0.config.tmp
-		mv com.ge.dspmicro.hoover.spillway-0.config.tmp com.ge.dspmicro.hoover.spillway-0.config
+#		sed "s#com.ge.dspmicro.hoover.spillway.destination=.*#com.ge.dspmicro.hoover.spillway.destination=\"WS Sender Service\"#" com.ge.dspmicro.hoover.spillway-0.config > com.ge.dspmicro.hoover.spillway-0.config.tmp
+#		mv com.ge.dspmicro.hoover.spillway-0.config.tmp com.ge.dspmicro.hoover.spillway-0.config
 
-		sed "s#com.ge.dspmicro.hoover.spillway.processType=.*#com.ge.dspmicro.hoover.spillway.processType=\"Workshop\"#" com.ge.dspmicro.hoover.spillway-0.config > com.ge.dspmicro.hoover.spillway-0.config.tmp
-		mv com.ge.dspmicro.hoover.spillway-0.config.tmp com.ge.dspmicro.hoover.spillway-0.config
+#		sed "s#com.ge.dspmicro.hoover.spillway.processType=.*#com.ge.dspmicro.hoover.spillway.processType=\"Workshop\"#" com.ge.dspmicro.hoover.spillway-0.config > com.ge.dspmicro.hoover.spillway-0.config.tmp
+#		mv com.ge.dspmicro.hoover.spillway-0.config.tmp com.ge.dspmicro.hoover.spillway-0.config
 
-		count=$(grep "OPCUA_Subscription_2" com.ge.dspmicro.hoover.spillway-0.config | wc -l)
-		echo "Count $count"
-		if [[ $count -gt 0 ]]; then
-			sed -e '/dataSubscriptions/ {n;N;N;N;N;d;}' com.ge.dspmicro.hoover.spillway-0.config > com.ge.dspmicro.hoover.spillway-0.config.tmp
-			mv com.ge.dspmicro.hoover.spillway-0.config.tmp com.ge.dspmicro.hoover.spillway-0.config
-		fi
+#		count=$(grep "PredixKitTopic" com.ge.dspmicro.hoover.spillway-0.config | wc -l)
+#		echo "Count $count"
+#		if [[ $count -gt 0 ]]; then
+#			sed -e '/dataSubscriptions/ {n;N;N;N;N;d;}' com.ge.dspmicro.hoover.spillway-0.config > com.ge.dspmicro.hoover.spillway-0.config.tmp
+#			mv com.ge.dspmicro.hoover.spillway-0.config.tmp com.ge.dspmicro.hoover.spillway-0.config
+#		fi
 
-		sed "s#com.ge.dspmicro.hoover.spillway.dataSubscriptions=.*#com.ge.dspmicro.hoover.spillway.dataSubscriptions=$TOPIC_ARRAY#" com.ge.dspmicro.hoover.spillway-0.config > com.ge.dspmicro.hoover.spillway-0.config.tmp
-		mv com.ge.dspmicro.hoover.spillway-0.config.tmp com.ge.dspmicro.hoover.spillway-0.config
-	fi
-
-	cd $quickstartRootDir
-	cd $PREDIX_MACHINE_HOME/machine/bin/predix
-	if [[ -f setvars.sh ]]; then
-		count=$(grep "unset FWSECURITY" setvars.sh | wc -l)
-		if [[ $count -eq 0 ]]; then
-		  echo "unset FWSECURITY" >> setvars.sh
-		fi
-	else
-		echo "unset FWSECURITY" > setvars.sh
-		chmod 775 setvars.sh
-	fi
+#		sed "s#com.ge.dspmicro.hoover.spillway.dataSubscriptions=.*#com.ge.dspmicro.hoover.spillway.dataSubscriptions=$TOPIC_ARRAY#" com.ge.dspmicro.hoover.spillway-0.config > com.ge.dspmicro.hoover.spillway-0.config.tmp
+#		mv com.ge.dspmicro.hoover.spillway-0.config.tmp com.ge.dspmicro.hoover.spillway-0.config
+#	fi
 	echo "Predix Machine configuration updated successfully"
 fi
