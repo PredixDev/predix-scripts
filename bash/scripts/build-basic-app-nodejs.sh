@@ -88,16 +88,17 @@ npm install passport-predix-oauth --save
 
   # Automagically open the application in browser, based on OS
   if [[ $SKIP_BROWSER == 0 ]]; then
-    apphost=$(px app $FRONT_END_NODEJS_STARTER_APP_NAME | grep urls: | awk '{print $2;}')
+    getUrlForAppName $FRONT_END_NODEJS_STARTER_APP_NAME apphost "https"
+
     case "$(uname -s)" in
        Darwin)
          # OSX
-         open https://$apphost
+         open $apphost
          ;;
 
        CYGWIN*|MINGW32*|MINGW64*|MSYS*)
          # Windows
-         start "" https://$apphost
+         start "" $apphost
          ;;
     esac
 fi

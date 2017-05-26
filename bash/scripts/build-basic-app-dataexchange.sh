@@ -103,7 +103,9 @@ function build-basic-app-dataexchange-main() {
         __error_exit "There was an error pushing using: \"px push\"" "$logDir"
       fi
     fi
-    APP_URL=$(px app $DATAEXCHANGE_APP_NAME | grep urls | awk -F" " '{print $2}')
+
+    getUrlForAppName $DATAEXCHANGE_APP_NAME APP_URL "https"
+
     cd ..
   fi
 

@@ -85,7 +85,7 @@ function build-basic-app-winddata-main() {
         __error_exit "There was an error pushing using: \"px push\"" "$logDir"
       fi
     fi
-    WINDDATA_SERVICE_URL=$(px app $WINDDATA_SERVICE_APP_NAME | grep urls | awk -F" " '{print $2}')
+    getUrlForAppName $WINDDATA_SERVICE_APP_NAME WINDDATA_SERVICE_URL "https"
     cd ..
   fi
 

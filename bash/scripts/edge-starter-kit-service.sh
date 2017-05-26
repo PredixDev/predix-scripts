@@ -25,7 +25,7 @@ fi
 touch "$logDir/quickstart.log"
 
 # ********************************** MAIN **********************************
-function device-kit-service-main() {
+function edge-starter-kit-service-main() {
   __validate_num_arguments 1 $# "\"edge-starter-kit-service.sh\" expected in order: String of Predix Application used to get VCAP configurations" "$logDir"
 
   __append_new_head_log "Build & Deploy Kit Microservice" "-" "$logDir"
@@ -86,7 +86,8 @@ function device-kit-service-main() {
         __error_exit "There was an error pushing using: \"cf push\"" "$logDir"
       fi
     fi
-    APP_URL=$(cf app $KIT_SERVICE_APP_NAME | grep urls | awk -F" " '{print $2}')
+    getUrlForAppName $KIT_SERVICE_APP_NAME APP_URL "https"
+
     cd ..
   fi
 

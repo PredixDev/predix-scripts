@@ -171,7 +171,6 @@ function createAnalyticFrameworkServiceInstance() {
 		# Create instance of Predix Analytic Framework Service
 		#__try_create_predix_service $ANALYTIC_FRAMEWORK_SERVICE_NAME $ANALYTIC_FRAMEWORK_SERVICE_PLAN $ANALYTIC_FRAMEWORK_SERVICE_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET "Predix AF Service"
 		__try_create_service_using_cfcli $ANALYTIC_FRAMEWORK_SERVICE_NAME $ANALYTIC_FRAMEWORK_SERVICE_PLAN $ANALYTIC_FRAMEWORK_SERVICE_INSTANCE_NAME $configParameters "Analytic Framework Service"
-
 	fi
 
 	# Bind Temp App to Analytic framework Instance
@@ -258,9 +257,7 @@ function __setupServices() {
 
 	if [[ ( $RUN_CREATE_SERVICES == 1 || $RUN_CREATE_ANALYTIC_FRAMEWORK == 1 ) ]]; then
 		createAnalyticFrameworkServiceInstance $1
-		if [[ $USE_TRAINING_UAA == 1 ]]; then
-			__addAnalyticFrameworkAuthorities $UAA_CLIENTID_GENERIC
-		fi
+		__addAnalyticFrameworkAuthorities $UAA_CLIENTID_GENERIC
 	fi
 
 	#get some variables for printing purposes below

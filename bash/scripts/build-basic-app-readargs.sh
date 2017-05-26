@@ -664,7 +664,9 @@ function runFunctionsForBasicApp() {
 	          break
 						;;
 	        *)
-            echo 'WARN: Unknown BBA option (ignored) in runFunction: %s\n' "$1 $2" >&2
+						if [[ $SUPPRESS_PRINT_UNKNOWN == 0 ]]; then
+            	echo 'WARN: Unknown BBA option (ignored) in runFunction: %s\n' "$1 $2" >&2
+						fi
             break
 						;;
 	    esac

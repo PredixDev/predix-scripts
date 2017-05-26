@@ -62,7 +62,8 @@ function build-basic-app-websocketserver-main() {
         __error_exit "There was an error pushing using: \"px push\"" "$logDir"
       fi
     fi
-    APP_URL=$(px app $WEBSOCKET_SERVER_APP_NAME | grep urls | awk -F" " '{print $2}')
+    getUrlForAppName $WEBSOCKET_SERVER_APP_NAME APP_URL "https"
+
     cd ..
   fi
 

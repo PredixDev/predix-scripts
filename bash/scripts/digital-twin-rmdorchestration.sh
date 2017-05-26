@@ -64,8 +64,11 @@ function digital-twin-rmdorchestration-main() {
     echo $AF_HOST
     __find_and_replace "predix_orchestration_restHost : .*" "predix_orchestration_restHost : $AF_HOST" "manifest.yml" "$logDir"
 
-     RMD_ANALYTICS_URL=$(px app $RMD_ANALYTICS_APP_NAME| grep urls | awk -F" " '{print $2}')
-    __find_and_replace "{rmdAnalyticsURI}" "$RMD_ANALYTICS_URL" "manifest.yml" "$logDir"
+    getUrlForAppName $RMD_ANALYTICS_APP_NAME RMD_ANALYTICS_URL "https"
+
+     echo "Replacing....analytics URL"
+     echo $RMD_ANALYTICS_URL
+    __find_and_replace "{rmdAnalyticsURI}" "https://$RMD_ANALYTICS_URL" "manifest.yml" "$logDir"
 
     cat manifest.yml
 
@@ -90,7 +93,8 @@ function digital-twin-rmdorchestration-main() {
         __error_exit "There was an error pushing using: \"px push\"" "$logDir"
       fi
     fi
-    APP_URL=$(px app $RMD_ORCHESTRATION_APP_NAME | grep urls | awk -F" " '{print $2}')
+    getUrlForAppName $RMD_ORCHESTRATION_APP_NAME APP_URL "https"
+
     cd ../..
   fi
 

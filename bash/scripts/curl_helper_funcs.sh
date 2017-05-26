@@ -706,7 +706,11 @@ function getUrlForAppName() {
   __validate_num_arguments 3 $# "\"curl_helper_funcs:getUrlForAppName\" expected in order: Name of Predix Application, variable name to store the URL, protocol  " "$logDir"
 
   local _result=$2
-  local _host=$(px app $1 | grep urls | awk -F" " '{print $2}');
+  local _host=$(px app $1 | grep "urls:" | awk -F" " '{print $2}');
+  if [[ -z "$_host" ]]; then
+    _host=$(px app $1 | grep "routes:" | awk -F" " '{print $2}')
+  fi
+
   local _url
   if [ -z "$_host" ]; then
     __error_exit "There was an error getting App URI for: $1" "$logDir"

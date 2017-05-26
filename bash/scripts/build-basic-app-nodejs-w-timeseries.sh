@@ -59,8 +59,11 @@ function build-basic-app-nodejs-w-timeseries-main() {
 
   #    Set the timeseries and asset information to query the services
   __find_and_replace "\#assetMachine: .*" "assetMachine: $ASSET_TYPE" "manifest.yml" "$logDir"
+
+
   if [[ "$USE_WINDDATA_SERVICE" == "1" ]]; then
-    WINDDATA_SERVICE_URL=$(px app $WINDDATA_SERVICE_APP_NAME | grep urls | awk -F" " '{print $2}')
+    getUrlForAppName $WINDDATA_SERVICE_APP_NAME WINDDATA_SERVICE_URL "https"
+
     __find_and_replace "\#windServiceURL: .*" "windServiceURL: https://$WINDDATA_SERVICE_URL" "manifest.yml" "$logDir"
   fi
 
@@ -116,16 +119,17 @@ npm install passport-predix-oauth --save
 
   # Automagically open the application in browser, based on OS
   if [[ $SKIP_BROWSER == 0 ]]; then
-    apphost=$(px app $FRONT_END_NODEJS_STARTER_APP_NAME | grep urls: | awk '{print $2;}')
+    getUrlForAppName $FRONT_END_NODEJS_STARTER_APP_NAME apphost "https"
+
     case "$(uname -s)" in
        Darwin)
          # OSX
-         open https://$apphost
+         open $apphost
          ;;
 
        CYGWIN*|MINGW32*|MINGW64*|MSYS*)
          # Windows
-         start "" https://$apphost
+         start "" $apphost
          ;;
     esac
 fi

@@ -53,7 +53,8 @@ function digital-twin-rmdanalytics-main() {
     __find_and_replace "{clientId}" "$UAA_CLIENTID_GENERIC" "manifest.yml" "$logDir"
     __find_and_replace "{secret}" "$UAA_CLIENTID_GENERIC_SECRET" "manifest.yml" "$logDir"
 
-    DATAEXCHANGE_URL=$(px app $DATAEXCHANGE_APP_NAME | grep urls | awk -F" " '{print $2}')
+    getUrlForAppName $DATAEXCHANGE_APP_NAME DATAEXCHANGE_URL "https"
+
     __find_and_replace "predix_fdh_restHost: .*" "predix_fdh_restHost: $DATAEXCHANGE_URL" "manifest.yml" "$logDir"
 
     cat manifest.yml
@@ -79,7 +80,8 @@ function digital-twin-rmdanalytics-main() {
         __error_exit "There was an error pushing using: \"px push\"" "$logDir"
       fi
     fi
-    APP_URL=$(px app $RMD_ANALYTICS_APP_NAME | grep urls | awk -F" " '{print $2}')
+    getUrlForAppName $RMD_ANALYTICS_APP_NAME APP_URL "https"
+
     cd ..
   fi
 

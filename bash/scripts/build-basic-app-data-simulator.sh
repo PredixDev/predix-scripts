@@ -85,7 +85,9 @@ function build-basic-app-data-simulator-main() {
         __error_exit "There was an error pushing using: \"px push\"" "$logDir"
       fi
     fi
-    APP_URL=$(px app $DATA_SIMULATOR_APP_NAME | grep urls | awk -F" " '{print $2}')
+
+    getUrlForAppName $DATA_SIMULATOR_APP_NAME APP_URL "https"
+
     cd ..
   fi
 
@@ -102,6 +104,6 @@ function build-basic-app-data-simulator-main() {
   echo "App URL: https://$DATA_SIMULATOR_APP_NAME.run.$CLOUD_ENDPONT" >> $SUMMARY_TEXTFILE
   echo -e "You can execute 'px env "$DATA_SIMULATOR_APP_NAME"' to view info about your back-end microservice, and the bound UAA and Asset" >> $SUMMARY_TEXTFILE
   echo ""  >> $SUMMARY_TEXTFILE
-  echo "Note: The simulator is turned on for only 30 seconds.  To generate more time series data please turn on your simulator, e.g. using the predix cli, px start thomas-edison-data-exchange-simulator"  >> $SUMMARY_TEXTFILE
+  echo "Note: The simulator is turned on for only 30 seconds.  To generate more time series data please turn on your simulator, e.g. using the predix cli, px start $APP_URL"  >> $SUMMARY_TEXTFILE
 
 }

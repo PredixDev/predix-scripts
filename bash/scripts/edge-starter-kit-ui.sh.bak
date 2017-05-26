@@ -18,7 +18,6 @@ source "$rootDir/bash/scripts/predix_services_setup.sh"
 trap "trap_ctrlc" 2
 
 GIT_DIR="$rootDir/predix-webapp-starter"
-BUILD_APP_TEXTFILE="$logDir/build-basic-app-summary.txt"
 
 if ! [ -d "$logDir" ]; then
   mkdir "$logDir"
@@ -29,8 +28,8 @@ touch "$logDir/quickstart.log"
 SUMMARY_TEXTFILE="$logDir/quickstart-summary.txt"
 
 # ********************************** MAIN **********************************
-function build-basic-app-polymerseed-rmd-main() {
-  __validate_num_arguments 1 $# "\"build-basic-app-polymerseed.sh\" expected in order: String of Predix Application used to get VCAP configurations" "$logDir"
+function edge-starter-kit-ui-main() {
+  __validate_num_arguments 1 $# "\"edge-starter-kit-ui.sh\" expected in order: String of Predix Application used to get VCAP configurations" "$logDir"
 
   __append_new_head_log "Build & Deploy Predix UI Polymer Starter which is based on Node.js Starter Front-End Microservice" "-" "$logDir"
 
@@ -76,7 +75,11 @@ function build-basic-app-polymerseed-rmd-main() {
   __find_and_replace "\#loginBase64ClientCredential: .*" "loginBase64ClientCredential: $MYLOGIN_SECRET" "manifest.yml" "$logDir"
   #    Set the timeseries and asset information to query the services
   if [[ "$USE_WINDDATA_SERVICE" == "1" ]]; then
-    getUrlForAppName $WINDDATA_SERVICE_APP_NAME WINDDATA_SERVICE_URL "https"
+    WINDDATA_SERVICE_URL=$(px app $WINDDATA_SERVICE_APP_NAME | grep "urls:" | awk -F" " '{print $2}')
+    if [[ $WINDDATA_SERVICE_URL == "" ]]; then
+      WINDDATA_SERVICE_URL=$(px app $WINDDATA_SERVICE_APP_NAME | grep "routes:" | awk -F" " '{print $2}')
+    fi
+
     __find_and_replace "\#windServiceURL: .*" "windServiceURL: https://$WINDDATA_SERVICE_URL" "manifest.yml" "$logDir"
   fi
   if [[ "$USE_POLYMER_SEED_RMD" == "1" ]]; then
@@ -137,31 +140,24 @@ function build-basic-app-polymerseed-rmd-main() {
 
   # Automagically open the application in browser, based on OS
   if [[ $SKIP_BROWSER == 0 ]]; then
-    getUrlForAppName $FRONT_END_POLYMER_SEED_APP_NAME apphost "https"
+    apphost=$(px app $FRONT_END_POLYMER_SEED_APP_NAME | grep "urls:" | awk '{print $2;}')
+    if [[ $apphost == "" ]]; then
+      apphost=$(px app $FRONT_END_POLYMER_SEED_APP_NAME | grep "routes:" | awk -F" " '{print $2}')
+    fi
+
     case "$(uname -s)" in
        Darwin)
          # OSX
-         open $apphost
+         open https://$apphost
          ;;
 
        CYGWIN*|MINGW32*|MINGW64*|MSYS*)
          # Windows
-         start "" $apphost
+         start "" https://$apphost
          ;;
     esac
 fi
 
-  # Generate the build-basic-app-summary.txt
-  cd "$rootDir"
-  if [ -f "$BUILD_APP_TEXTFILE" ]
-  then
-    __append_new_line_log "Deleting existing summary file \"$BUILD_APP_TEXTFILE\"..." "$logDir"
-    if rm -f "$BUILD_APP_TEXTFILE"; then
-      __append_new_line_log "Successfully deleted!" "$logDir"
-    else
-      __error_exit "There was an error deleting the file: \"$BUILD_APP_TEXTFILE\"" "$logDir"
-    fi
-  fi
 
   if __echo_run px start $FRONT_END_POLYMER_SEED_APP_NAME; then
     __append_new_line_log "$FRONT_END_POLYMER_SEED_APP_NAME started!" "$logDir" 1>&2
