@@ -171,3 +171,5 @@ EDGE_MANAGER_UAA_URL="https://9274a009-9af1-4c5d-a0bb-dfe07771e29c.predix-uaa.ru
 EDGE_MANAGER_SHARED_CLIENT_SECRET="c2hhcmVkLXRlbmFudC1hcHAtY2xpZW50Okk1NXpLbUFGMFNfQUdkbAo="
 EDGE_DEVICE_NAME="$INSTANCE_PREPENDER-workshopedisondevice1"
 EDGE_DEVICE_ID="$INSTANCE_PREPENDER-workshopedisondevice1"
+
+PREDIX_KIT_PROPERTY_FILE="/usr/local/kit/edge-to-cloud.json"

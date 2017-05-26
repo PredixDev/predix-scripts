@@ -69,7 +69,7 @@ do
         if [ -n "${arguments[$i]}" ]; then
           i=$((i+1))
           APP_SCRIPT=${arguments[$i]}
-          SWITCH_ARRAY[SWITCH_INDEX++]="-script | --app-script"
+          #SWITCH_ARRAY[SWITCH_INDEX++]="-script | --app-script"
           PRINT_USAGE=0
        else
           printf 'ERROR: "-i or --instance-appender" requires a non-empty option argument.\n' >&2
@@ -190,25 +190,25 @@ function processSwitchCommon() {
 
 function printCommonVariables() {
 	if [[ "$RUN_PRINT_VARIABLES" == "0" ]]; then
-    echo "COMMON CONFIGURATIONS:"
-	  echo "quickstartRootDir                        : $quickstartRootDir"
-	  echo "APP_SCRIPT                               : $APP_SCRIPT"
-	  echo "SCRIPT_READARGS                          : $SCRIPT_READARGS"
-	  echo "BINDING_APP                              : $BINDING_APP"
-	  echo "BRANCH                                   : $BRANCH"
-	  echo "CONTINUE_FROM                            : $CONTINUE_FROM"
-	  echo "CONTINUE_FROM_SWITCH                     : $CONTINUE_FROM_SWITCH"
-	  echo "INSTANCE_PREPENDER                       : $INSTANCE_PREPENDER"
-	  echo "QUIET_MODE                               : $QUIET_MODE"
-	  echo "RUN_COMPILE_REPO                         : $RUN_COMPILE_REPO"
-	  echo "RUN_DELETE_SERVICES                      : $RUN_DELETE_SERVICES"
-    echo "SKIP_ALL_DONE                            : $SKIP_ALL_DONE"
-    echo "SKIP_BROWSER                             : $SKIP_BROWSER"
-    echo "SKIP_INTERACTIVE                         : $SKIP_INTERACTIVE"
+    echo "  COMMON CONFIGURATIONS:"
+	  echo "    quickstartRootDir                        : $quickstartRootDir"
+	  echo "    APP_SCRIPT                               : $APP_SCRIPT"
+	  echo "    SCRIPT_READARGS                          : $SCRIPT_READARGS"
+	  echo "    BINDING_APP                              : $BINDING_APP"
+	  echo "    BRANCH                                   : $BRANCH"
+	  echo "    CONTINUE_FROM                            : $CONTINUE_FROM"
+	  echo "    CONTINUE_FROM_SWITCH                     : $CONTINUE_FROM_SWITCH"
+	  echo "    INSTANCE_PREPENDER                       : $INSTANCE_PREPENDER"
+	  echo "    QUIET_MODE                               : $QUIET_MODE"
+	  echo "    RUN_COMPILE_REPO                         : $RUN_COMPILE_REPO"
+	  echo "    RUN_DELETE_SERVICES                      : $RUN_DELETE_SERVICES"
+    echo "    SKIP_ALL_DONE                            : $SKIP_ALL_DONE"
+    echo "    SKIP_BROWSER                             : $SKIP_BROWSER"
+    echo "    SKIP_INTERACTIVE                         : $SKIP_INTERACTIVE"
 	  echo ""
-	  echo "BACK-END:"
-	  echo "MAVEN_SETTINGS_FILE                      : $MAVEN_SETTINGS_FILE"
-	  echo "VERIFY_MVN                               : $VERIFY_MVN"
+	  echo "  BACK-END:"
+	  echo "    MAVEN_SETTINGS_FILE                      : $MAVEN_SETTINGS_FILE"
+	  echo "    VERIFY_MVN                               : $VERIFY_MVN"
 	  echo ""
 	fi
 }

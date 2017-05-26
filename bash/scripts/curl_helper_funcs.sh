@@ -715,7 +715,12 @@ function getUrlForAppName() {
   if [ -z "$_host" ]; then
     __error_exit "There was an error getting App URI for: $1" "$logDir"
   else
-    _url=$3://$_host
+    if [[ $3 == "" ]]; then
+      _url=$_host
+    else
+      _url=$3://$_host
+    fi 
+	
     eval $_result="'$_url'"
     __append_new_line_log "App URI copied from environment variables: $_url" "$logDir"
   fi

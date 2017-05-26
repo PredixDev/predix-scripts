@@ -68,7 +68,7 @@ function digital-twin-rmdorchestration-main() {
 
      echo "Replacing....analytics URL"
      echo $RMD_ANALYTICS_URL
-    __find_and_replace "{rmdAnalyticsURI}" "https://$RMD_ANALYTICS_URL" "manifest.yml" "$logDir"
+    __find_and_replace "{rmdAnalyticsURI}" "$RMD_ANALYTICS_URL" "manifest.yml" "$logDir"
 
     cat manifest.yml
 

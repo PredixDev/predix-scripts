@@ -53,7 +53,7 @@ function digital-twin-rmdanalytics-main() {
     __find_and_replace "{clientId}" "$UAA_CLIENTID_GENERIC" "manifest.yml" "$logDir"
     __find_and_replace "{secret}" "$UAA_CLIENTID_GENERIC_SECRET" "manifest.yml" "$logDir"
 
-    getUrlForAppName $DATAEXCHANGE_APP_NAME DATAEXCHANGE_URL "https"
+    getUrlForAppName $DATAEXCHANGE_APP_NAME DATAEXCHANGE_URL ""
 
     __find_and_replace "predix_fdh_restHost: .*" "predix_fdh_restHost: $DATAEXCHANGE_URL" "manifest.yml" "$logDir"
 

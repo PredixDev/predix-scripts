@@ -86,14 +86,14 @@ function processDigitalTwinReadargsSwitch() {
 function printDTVariables() {
 	if [[ "$RUN_PRINT_VARIABLES" == "0" ]]; then
 		printBBAVariables
-		echo "DIGITAL TWIN:"
-		echo "SERVICES:"
-		echo "RUN_CREATE_ANALYTIC_FRAMEWORK            : $RUN_CREATE_ANALYTIC_FRAMEWORK"
-		echo "RUN_CREATE_RABBITMQ                      : $RUN_CREATE_RABBITMQ"
+		echo "  DIGITAL TWIN:"
+		echo "  SERVICES:"
+		echo "    RUN_CREATE_ANALYTIC_FRAMEWORK            : $RUN_CREATE_ANALYTIC_FRAMEWORK"
+		echo "    RUN_CREATE_RABBITMQ                      : $RUN_CREATE_RABBITMQ"
 	  echo ""
-	  echo "BACK-END:"
-		echo "USE_RMD_ANALYTICS                        : $USE_RMD_ANALYTICS"
-		echo "USE_RMD_ORCHESTRATION                    : $USE_RMD_ORCHESTRATION"
+	  echo "  BACK-END:"
+		echo "    USE_RMD_ANALYTICS                        : $USE_RMD_ANALYTICS"
+		echo "    USE_RMD_ORCHESTRATION                    : $USE_RMD_ORCHESTRATION"
 	  echo ""
 	fi
 

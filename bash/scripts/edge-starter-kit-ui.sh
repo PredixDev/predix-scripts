@@ -17,8 +17,6 @@ source "$rootDir/bash/scripts/predix_services_setup.sh"
 
 trap "trap_ctrlc" 2
 
-#GIT_DIR="$rootDir/predix-webapp-starter"
-
 if ! [ -d "$logDir" ]; then
   mkdir "$logDir"
   chmod 744 "$logDir"
