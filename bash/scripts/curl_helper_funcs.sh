@@ -612,7 +612,7 @@ function getTimeseriesIngestUri() {
 }
 function getTimeseriesZoneId() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesZoneId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
-  if TIMESERIES_ZONE_ID=$(px env $TEMP_APP | sed '/VCAP_APPLICATION/q' | sed '$ d' | sed '$ d' | tail -n +5 | jq -r '."VCAP_SERVICES"."predix-timeseries"[].credentials.query."zone-http-header-value"'); then
+  if TIMESERIES_ZONE_ID=$(px env $TEMP_APP | sed '/VCAP_APPLICATION/q' | sed '$ d' | sed '$ d' | sed  '/System-Provided/,$!d' | sed '/System-Provided/d' | jq -r '."VCAP_SERVICES"."predix-timeseries"[].credentials.query."zone-http-header-value"'); then
     if [[ "$TIMESERIES_ZONE_ID" == "" ]] ; then
       __error_exit "The TIMESERIES_ZONE_ID was not found for \"$1\"..." "$logDir"
     fi
@@ -633,21 +633,21 @@ function getAssetUri() {
 }
 function getAssetZoneId() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getAssetZoneId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
-  if ASSET_ZONE_ID=$(px env $1 | sed '/VCAP_APPLICATION/q' | sed '$ d' | sed '$ d' | tail -n +5 | jq -r '."VCAP_SERVICES"."predix-asset"[].credentials.zone."http-header-value"'); then
+  if ASSET_ZONE_ID=$(px env $1 | sed '/VCAP_APPLICATION/q' | sed '$ d' | sed '$ d' | sed  '/System-Provided/,$!d' | sed '/System-Provided/d' | jq -r '."VCAP_SERVICES"."predix-asset"[].credentials.zone."http-header-value"'); then
   	if [[ "$ASSET_ZONE_ID" == "" ]] ; then
 	    __error_exit "The Asset Zone ID was not found for \"$1\"..." "$logDir"
 	fi
     	__append_new_line_log "ASSET_ZONE_ID copied from VCAP environment variables!" "$logDir"
 	export ASSET_ZONE_ID="${ASSET_ZONE_ID}"
   else
-	__error_exit "There was an error getting ASSET_ZONE_ID using command px env $1 | sed '/VCAP_APPLICATION/q' | sed '$ d' | sed '$ d' | tail -n +5 | jq -r '.\"VCAP_SERVICES\".\"predix-asset\"[].credentials.zone.\"http-header-value\"'" "$logDir"
+	__error_exit "There was an error getting ASSET_ZONE_ID using command px env $1 | sed '/VCAP_APPLICATION/q' | sed '$ d' | sed '$ d' | sed  '/System-Provided/,$!d' | sed '/System-Provided/d' | jq -r '.\"VCAP_SERVICES\".\"predix-asset\"[].credentials.zone.\"http-header-value\"'" "$logDir"
   fi
 }
 
 
 function getAFUri() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getAFUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
-  if AF_URI=$(px env $1 | sed '/VCAP_APPLICATION/q' | sed '$ d' | sed '$ d' | tail -n +5 |  jq -r '."VCAP_SERVICES"."predix-analytics-framework"[].credentials."execution_uri"'); then
+  if AF_URI=$(px env $1 | sed '/VCAP_APPLICATION/q' | sed '$ d' | sed '$ d' | sed  '/System-Provided/,$!d' | sed '/System-Provided/d' |  jq -r '."VCAP_SERVICES"."predix-analytics-framework"[].credentials."execution_uri"'); then
 		__append_new_line_log "AF URI copied from environment variables! $AF_URI" "$logDir"
 	else
 		__error_exit "There was an error getting AF URI..." "$logDir"
@@ -657,7 +657,7 @@ function getAFUri() {
 function getAFZoneId() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getAFZoneId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
 
-  if AF_ZONE_ID=$(px env $1 | sed '/VCAP_APPLICATION/q' | sed '$ d' | sed '$ d' | tail -n +5 |  jq -r '."VCAP_SERVICES"."predix-analytics-framework"[].credentials."zone-http-header-value"'); then
+  if AF_ZONE_ID=$(px env $1 | sed '/VCAP_APPLICATION/q' | sed '$ d' | sed '$ d' | sed  '/System-Provided/,$!d' | sed '/System-Provided/d' |  jq -r '."VCAP_SERVICES"."predix-analytics-framework"[].credentials."zone-http-header-value"'); then
 	  if [[ "$AF_ZONE_ID" == "" ]] ; then
 	    __error_exit "The AF Zone ID was not found for \"$1\"..." "$logDir"
 	  fi
