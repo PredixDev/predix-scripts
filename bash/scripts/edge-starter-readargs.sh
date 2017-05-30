@@ -10,6 +10,7 @@ source "$rootDir/bash/scripts/predix_services_setup.sh"
 RUN_CREATE_CLIENT_DEVICE_ID=0
 USE_KIT_SERVICE=0
 USE_KIT_UI=0
+SET_KIT_DEVICE_LOGIN=0
 SET_KIT_DEVICE_PERSONAL=0
 
 source "$rootDir/bash/scripts/build-basic-app-readargs.sh"
@@ -84,6 +85,13 @@ function processEdgeStarterReadargsSwitch() {
         PRINT_USAGE=0
         LOGIN=1
         ;;
+		-kitlogin|--kit-device-login)
+       SET_KIT_DEVICE_LOGIN=1
+			 SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-kitlogin|--kit-device-login"
+			 SWITCH_ARRAY[SWITCH_INDEX++]="-kitlogin"
+       PRINT_USAGE=0
+       LOGIN=1
+       ;;
 		-kitpca|--kit-device-personal-cloud-app)
        SET_KIT_DEVICE_PERSONAL=1
 			 SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-kitpca|--kit-device-personal-cloud-app"
@@ -129,13 +137,15 @@ function printEdgeStarterVariables() {
 		echo "    USE_KIT_UI                               : $USE_KIT_UI"
 		echo ""
 	  echo "  DEVICE:"
-	  echo "    SET_KIT_DEVICE_PERSONAL                  : $SET_KIT_DEVICE_PERSONAL"
+		echo "    SET_KIT_DEVICE_LOGIN                     : $SET_KIT_DEVICE_LOGIN"
+		echo "    SET_KIT_DEVICE_PERSONAL                  : $SET_KIT_DEVICE_PERSONAL"
 	  echo ""
 	fi
 
 	export RUN_CREATE_CLIENT_DEVICE_ID
 	export USE_KIT_SERVICE
 	export USE_KIT_UI
+	export SET_KIT_DEVICE_LOGIN
 	export SET_KIT_DEVICE_PERSONAL
 	export RUN_CREATE_ASSET_MODEL_KIT
 	export RUN_CREATE_ASSET_MODEL_KIT_FILE
@@ -155,6 +165,7 @@ function __print_out_usage
 	echo "[-cidd|        --create-client-id-for-device]     => Create a client id for Device"
 	echo "[-kitsvc|      --create-kit-service]              => Create a Kit-Service"
 	echo "[-kitui|       --create-kit-ui]                   => Create a Kit-UI"
+	echo "[-kitlogin|      --kit-device-login]              => Login to Device"
 	echo "[-kitpca|      --kit-device-personal-cloud-app]   => Put Device in Personal Cloud App mode"
 	echo -e "*** examples\n"
 	echo -e "./$SCRIPT_NAME                                 => Run all switches"
@@ -197,6 +208,13 @@ function runFunctionsForEdgeStarter() {
 						getPredixAssetInfo $1
 						if [[ ( $RUN_CREATE_ASSET_MODEL_KIT == 1 ) ]]; then
 							assetModelKit $1
+						fi
+	          break
+						;;
+					-kitlogin|--kit-device-login)
+						source "$rootDir/bash/scripts/edge-starter-kit-device-login.sh"
+						if [[ ( $SET_KIT_DEVICE_LOGIN == 1 ) ]]; then
+							edge-starter-kit-device-login-main $1
 						fi
 	          break
 						;;

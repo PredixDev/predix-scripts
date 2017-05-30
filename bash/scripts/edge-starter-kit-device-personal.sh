@@ -31,18 +31,21 @@ function edge-starter-kit-device-personal-main() {
 
   __append_new_head_log "Put Device in Personal Cloud App mode" "-" "$logDir"
 
-  cd /usr/local/bin
-  getUrlForAppName $FRONT_END_KIT_APP_NAME APP_URL "https"
+  __append_new_line_log "hostname is `hostname`" "$logDir"
+  __append_new_line_log "current dir is'  `pwd`" "$logDir"
 
-  __find_and_replace "VIEW_IN_CLOUD_URL=*" "VIEW_IN_CLOUD_URL=$APP_URL" "$PREDIX_KIT_PROPERTY_FILE" "$logDir"
-  __find_and_replace "KIT_SERVICE_URL=*" "KIT_SERVICE_URL=$APP_URL" "$PREDIX_KIT_PROPERTY_FILE" "$logDir"
+  getUrlForAppName $FRONT_END_KIT_APP_NAME APP_URL "https"
+  echo "APP_URL=$APP_URL"
+
+  __find_and_replace "registration_complete = .*" "registration_complete = False" "$PREDIX_KIT_PROPERTY_FILE" "$logDir"
+  __find_and_replace "view_in_cloud_url = .*" "view_in_cloud_url = $APP_URL" "$PREDIX_KIT_PROPERTY_FILE" "$logDir"
+  __find_and_replace "kit_service_url = .*" "kit_service_url = $APP_URL" "$PREDIX_KIT_PROPERTY_FILE" "$logDir"
   cat $PREDIX_KIT_PROPERTY_FILE
-  cd $rootDir
 
   echo ""  >> $SUMMARY_TEXTFILE
   echo "Put Device in Personal Cloud App mode"  >> $SUMMARY_TEXTFILE
   echo "--------------------------------------------------"  >> $SUMMARY_TEXTFILE
-  echo "Set new VIEW_IN_CLOUD_URL=$APP_URL in $PREDIX_KIT_PROPERTY_FILE" >> $SUMMARY_TEXTFILE
-  echo "Set new KIT_SERVICE_URL=$APP_URL in $PREDIX_KIT_PROPERTY_FILE" >> $SUMMARY_TEXTFILE
+  echo "Set new view_in_cloud_url=$APP_URL in $PREDIX_KIT_PROPERTY_FILE" >> $SUMMARY_TEXTFILE
+  echo "Set new kit_service_url=$APP_URL in $PREDIX_KIT_PROPERTY_FILE" >> $SUMMARY_TEXTFILE
   echo "" >> $SUMMARY_TEXTFILE
 }

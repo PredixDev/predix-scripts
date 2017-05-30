@@ -27,6 +27,7 @@ function run_mac_setup() {
 			fi
 		fi
 		SETUP_MAC="$LOCAL_SETUP_URL/$LOCAL_SETUP_BRANCH/setup-mac.sh"
+		echo "SETUP_MAC=$SETUP_MAC"
     bash <(curl -s -L $SETUP_MAC) $TOOLS_SWITCHES
   fi
 }

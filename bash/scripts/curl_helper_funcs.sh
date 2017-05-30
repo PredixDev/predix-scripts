@@ -640,7 +640,7 @@ function getAssetZoneId() {
     	__append_new_line_log "ASSET_ZONE_ID copied from VCAP environment variables!" "$logDir"
 	export ASSET_ZONE_ID="${ASSET_ZONE_ID}"
   else
-	__error_exit "There was an error getting ASSET_ZONE_ID using command px env $1 | sed '/VCAP_APPLICATION/q' | sed '$ d' | sed '$ d' | tail -n +5 | jq -r '."VCAP_SERVICES"."predix-asset"[].credentials.zone."http-header-value"'" "$logDir"
+	__error_exit "There was an error getting ASSET_ZONE_ID using command px env $1 | sed '/VCAP_APPLICATION/q' | sed '$ d' | sed '$ d' | tail -n +5 | jq -r '.\"VCAP_SERVICES\".\"predix-asset\"[].credentials.zone.\"http-header-value\"'" "$logDir"
   fi
 }
 
@@ -719,8 +719,8 @@ function getUrlForAppName() {
       _url=$_host
     else
       _url=$3://$_host
-    fi 
-	
+    fi
+
     eval $_result="'$_url'"
     __append_new_line_log "App URI copied from environment variables: $_url" "$logDir"
   fi
