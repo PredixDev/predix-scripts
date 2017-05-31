@@ -154,7 +154,7 @@ function __createUaaLoginClient
 #	----------------------------------------------------------------
 function __createDeviceClient
 {
-  __validate_num_arguments 3 $# "\"curl_helper_funcs:__createUaaLoginClient\" expected in order: UAA_URI ClientId ClientIdSecret" "$logDir"
+  __validate_num_arguments 3 $# "\"curl_helper_funcs:__createDeviceClient\" expected in order: UAA_URI ClientId ClientIdSecret" "$logDir"
   dataBinary="{\"client_id\":\"$2\",\"client_secret\":\"$3\",\"scope\":[\"uaa.none\",\"openid\"],\"authorized_grant_types\":[\"client_credentials\",\"authorization_code\",\"refresh_token\"],\"authorities\":[\"openid\",\"uaa.none\",\"uaa.resource\"],\"autoapprove\":[\"openid\"],\"allowedproviders\":[\"uaa\"]}"
   __createUaaClient $1 $2 $3 $dataBinary
 }
@@ -569,7 +569,7 @@ function getUaaUrl() {
     if [[ "$uaaURL" == "" ]] ; then
       __error_exit "The UAA URL was not found for \"$1\"..." "$logDir"
     fi
-    __append_new_line_log "UAA URL copied from VCAP environmental variables!" "$logDir"
+    __append_new_line_log "UAA URL=$uaaURL copied from VCAP environmental variables!" "$logDir"
     export UAA_URL="${uaaURL}"
   else
     __error_exit "There was an error getting the UAA URL..." "$logDir"
@@ -582,7 +582,7 @@ function getTimeseriesIngestUri() {
   	if [[ "$TIMESERIES_INGEST_URI" == "" ]] ; then
   		__error_exit "The TIMESERIES_INGEST_URI was not found for \"$1\"..." "$logDir"
   	fi
-    __append_new_line_log " TIMESERIES_INGEST_URI copied from VCAP environmental variables!" "$logDir"
+    __append_new_line_log " TIMESERIES_INGEST_URI=$TIMESERIES_INGEST_URI copied from VCAP environmental variables!" "$logDir"
     export TIMESERIES_INGEST_URI="${TIMESERIES_INGEST_URI}"
   else
   	__error_exit "There was an error getting TIMESERIES_INGEST_URI..." "$logDir"
@@ -604,7 +604,7 @@ function getTimeseriesIngestUri() {
   	if [[ "$TIMESERIES_INGEST_URI" == "" ]] ; then
   		__error_exit "The TIMESERIES_INGEST_URI was not found for \"$TEMP_APP\"..." "$logDir"
   	fi
-    __append_new_line_log " TIMESERIES_INGEST_URI copied from VCAP environmental variables!" "$logDir"
+    __append_new_line_log " TIMESERIES_INGEST_URI=$TIMESERIES_INGEST_URI copied from VCAP environmental variables!" "$logDir"
     export TIMESERIES_INGEST_URI="${TIMESERIES_INGEST_URI}"
   else
   	__error_exit "There was an error getting TIMESERIES_INGEST_URI..." "$logDir"
@@ -617,7 +617,7 @@ function getTimeseriesZoneId() {
     if [[ "$TIMESERIES_ZONE_ID" == "" ]] ; then
       __error_exit "The TIMESERIES_ZONE_ID was not found for \"$1\"..." "$logDir"
     fi
-    __append_new_line_log "TIMESERIES_ZONE_ID copied from VCAP environmental variables!" "$logDir"
+    __append_new_line_log "TIMESERIES_ZONE_ID=$TIMESERIES_ZONE_ID copied from VCAP environmental variables!" "$logDir"
     export TIMESERIES_ZONE_ID="${TIMESERIES_ZONE_ID}"
 	else
 		__error_exit "There was an error getting TIMESERIES_ZONE_ID..." "$logDir"
@@ -634,16 +634,17 @@ function getAssetUri() {
 }
 function getAssetZoneId() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getAssetZoneId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
-  echo "getAssetZoneId"
   VCAP_JSON=$(getVCAPJSON $1)
-  if ASSET_ZONE_ID=$(echo $VCAP_JSON | jq -r '."VCAP_SERVICES"."predix-asset"[].credentials.zone."http-header-value"'); then
+  #note double quotes needed because of dash
+  #note square brackets needed for jq 1.3 compatibility and jenkins still has that sometimes
+  if ASSET_ZONE_ID=$(echo $VCAP_JSON | jq -r '.["VCAP_SERVICES"]["predix-asset"][].credentials.zone["http-header-value"]'); then
   	if [[ "$ASSET_ZONE_ID" == "" ]] ; then
 	    __error_exit "The Asset Zone ID was not found for \"$1\"..." "$logDir"
-	fi
-    	__append_new_line_log "ASSET_ZONE_ID copied from VCAP environment variables!" "$logDir"
-	export ASSET_ZONE_ID="${ASSET_ZONE_ID}"
+    fi
+    __append_new_line_log "ASSET_ZONE_ID=$ASSET_ZONE_ID copied from VCAP environment variables!" "$logDir"
+    export ASSET_ZONE_ID="${ASSET_ZONE_ID}"
   else
-	__error_exit "There was an error getting ASSET_ZONE_ID using command echo $VCAP_JSON | jq -r '.\"VCAP_SERVICES\".\"predix-asset\"[].credentials.zone.\"http-header-value\"'" "$logDir"
+    __error_exit "There was an error getting ASSET_ZONE_ID using command echo $VCAP_JSON | jq -r '.[\"VCAP_SERVICES\"][\"predix-asset\"][].credentials.zone[\"http-header-value\"]'" "$logDir"
   fi
 }
 
@@ -682,7 +683,7 @@ function getAFZoneId() {
 	  if [[ "$AF_ZONE_ID" == "" ]] ; then
 	    __error_exit "The AF Zone ID was not found for \"$1\"..." "$logDir"
 	  fi
-    __append_new_line_log "AF_ZONE_ID copied from VCAP environment variables!" "$logDir"
+    __append_new_line_log "AF_ZONE_ID=$AF_ZONE_ID copied from VCAP environment variables!" "$logDir"
 		export AF_ZONE_ID="${AF_ZONE_ID}"
 	else
 	  __error_exit "There was an error getting AF_ZONE_ID..." "$logDir"

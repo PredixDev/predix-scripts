@@ -194,6 +194,9 @@ function createRabbitMQInstance() {
 
 function createDeviceService() {
   __append_new_head_log "Create Client for Devices" "-" "$logDir"
+	if [[ "$UAA_URL" == "" ]]; then
+		getUaaUrl $1
+	fi
 	__createDeviceClient "$UAA_URL" "$UAA_CLIENTID_DEVICE" "$UAA_CLIENTID_DEVICE_SECRET"
 	__addTimeseriesAuthorities $UAA_CLIENTID_DEVICE
 }
