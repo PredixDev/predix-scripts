@@ -28,7 +28,6 @@ SUMMARY_TEXTFILE="$logDir/quickstart-summary.txt"
 # ********************************** MAIN **********************************
 function edge-starter-kit-device-login-main() {
   __validate_num_arguments 1 $# "\"edge-starter-kit-device-login.sh\" expected in order: String of Predix Application used to get VCAP configurations" "$logDir"
-
   __append_new_head_log "Log in to the device" "-" "$logDir"
   TARGETDEVICEIP=""
 	TARGETDEVICEUSER=""
