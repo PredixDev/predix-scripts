@@ -613,7 +613,7 @@ function getTimeseriesIngestUri() {
 function getTimeseriesZoneId() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesZoneId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
   VCAP_JSON=$(getVCAPJSON $1)
-  if TIMESERIES_ZONE_ID=$( echo $VCAP_JSON | jq -r '."VCAP_SERVICES"."predix-timeseries"[].credentials.query."zone-http-header-value"'); then
+  if TIMESERIES_ZONE_ID=$( echo $VCAP_JSON | jq -r '.["VCAP_SERVICES"]["predix-timeseries"][].credentials.query["zone-http-header-value"]'); then
     if [[ "$TIMESERIES_ZONE_ID" == "" ]] ; then
       __error_exit "The TIMESERIES_ZONE_ID was not found for \"$1\"..." "$logDir"
     fi
@@ -652,7 +652,7 @@ function getAssetZoneId() {
 function getAFUri() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getAFUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
   VCAP_JSON=$(getVCAPJSON $1)
-  if AF_URI=$(echo $VCAP_JSON |  jq -r '."VCAP_SERVICES"."predix-analytics-framework"[].credentials."execution_uri"'); then
+  if AF_URI=$(echo $VCAP_JSON |  jq -r '.["VCAP_SERVICES"]["predix-analytics-framework"][].credentials["execution_uri"]'); then
 		__append_new_line_log "AF URI copied from environment variables! $AF_URI" "$logDir"
 	else
 		__error_exit "There was an error getting AF URI..." "$logDir"
@@ -679,7 +679,7 @@ function getVCAPJSON() {
 function getAFZoneId() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getAFZoneId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
   VCAP_JSON=$(getVCAPJSON $1)
-  if AF_ZONE_ID=$(echo $VCAP_JSON |  jq -r '."VCAP_SERVICES"."predix-analytics-framework"[].credentials."zone-http-header-value"'); then
+  if AF_ZONE_ID=$(echo $VCAP_JSON |  jq -r '.["VCAP_SERVICES"]["predix-analytics-framework"][].credentials["zone-http-header-value"]'); then
 	  if [[ "$AF_ZONE_ID" == "" ]] ; then
 	    __error_exit "The AF Zone ID was not found for \"$1\"..." "$logDir"
 	  fi
@@ -709,7 +709,7 @@ function getAcsZoneId() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getAcsZoneId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
 
   # Get the Zone ID from the environment variables (for use when querying Asset data)
-  if acsZoneId=$(predix si $1 | tail -n +2  | jq -r 'predix-asset.zone."http-header-value"'); then
+  if acsZoneId=$(predix si $1 | tail -n +2  | jq -r 'predix-acs.zone["http-header-value"]'); then
     if [[ "$acsZoneId" == "" ]]; then
       __error_exit "The Access Control Service Zone ID was not found for \"$1\"..." "$logDir"
     fi
