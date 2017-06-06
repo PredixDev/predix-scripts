@@ -36,7 +36,7 @@ function local_read_args() {
         echo -e "**************** Usage ***************************"
         echo -e "     ./$0 [ options ]\n"
         echo -e "     options are as below\n"
-	echo "	     [-get-machine-config]           => Get Machine Configuration"
+	echo "[-get-machine-config]           => Get Machine Configuration"
         echo "        [-predix-machine-home]          => Predix Machine Installation directory"
         echo "        [-timeseries-ingest-url]        => Timeseries Websocket Endpoint URL for Data Ingestion"
         echo "        [-timeseries-zone-id]           => Time Series Zone Id"
