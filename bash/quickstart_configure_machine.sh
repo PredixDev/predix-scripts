@@ -103,12 +103,12 @@ function local_read_args() {
             exit 1
         fi
         ;;
-			-kitservice-url)
-				PREDIX_KIT_URL="$2"
-        if [ "$PREDIX_KIT_URL" == "" ]; then
+				-kitservice-url)
+					PREDIX_KIT_URL="$2"
+					if [ "$PREDIX_KIT_URL" == "" ]; then
             printf 'ERROR: "-kitservice-url" requires a non-empty option argument.\n' >&2
             exit 1
-        fi
+					fi
 				;;
 			-databus-topics)
         DATABUS_TOPICS="$2"

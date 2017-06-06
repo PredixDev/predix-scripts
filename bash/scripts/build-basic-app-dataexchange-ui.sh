@@ -60,7 +60,7 @@ function build-basic-app-dataexchange-ui-main() {
 #    Set the service clientid label
   __find_and_replace "\uaa_service_label: .*" "uaa_service_label: $UAA_SERVICE_NAME" "manifest.yml" "$logDir"
 
-  getUrlForAppName $DATAEXCHANGE_APP_NAME APP_URL "https"
+  getUrlForAppName $DATAEXCHANGE_APP_NAME DATAEXCHANGE_URL "https"
 
   __find_and_replace "\#dataExServiceUrl: .*" "dataExServiceUrl: https://$DATAEXCHANGE_URL" "manifest.yml" "$logDir"
 
