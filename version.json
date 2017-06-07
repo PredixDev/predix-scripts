@@ -1,14 +1,14 @@
 {
   "name": "Predix Scripts",
-  "version": "1.1.32",
+  "version": "1.1.34",
   "private": true,
   "dependencies": {
-    "local-setup": "https://github.com/PredixDev/local-setup.git#1.1.32",
-    "Predix-HelloWorld-WebApp": "https://github.com/PredixDev/Predix-HelloWorld-WebApp.git#1.1.32",
-    "predix-nodejs-starter": "https://github.com/PredixDev/predix-nodejs-starter.git#1.1.32",
-    "predix-machine-templates": "https://github.com/PredixDev/predix-machine-templates.git#1.1.32",
-    "predix-machine-container-url": "https://raw.githubusercontent.com/PredixDev/predix-machine-templates/develop/PredixMachineDebug-16.4.2.zip#1.1.32",
-    "predix-machine-template-processor": "https://github.com/PredixDev/predix-machine-template-processor.git#1.1.32"
+    "local-setup": "https://github.com/PredixDev/local-setup.git#1.1.34",
+    "Predix-HelloWorld-WebApp": "https://github.com/PredixDev/Predix-HelloWorld-WebApp.git#1.1.34",
+    "predix-nodejs-starter": "https://github.com/PredixDev/predix-nodejs-starter.git#1.1.34",
+    "predix-machine-templates": "https://github.com/PredixDev/predix-machine-templates.git#1.1.34",
+    "predix-machine-container-url": "https://raw.githubusercontent.com/PredixDev/predix-machine-templates/develop/PredixMachineDebug-16.4.2.zip#1.1.34",
+    "predix-machine-template-processor": "https://github.com/PredixDev/predix-machine-template-processor.git#1.1.34"
   },
   "author": "rishabhtulsian,swapnavad,susheelchoudhari"
 }

@@ -34,6 +34,7 @@ function __find_and_replace
 	fi
 }
 
+
 #	----------------------------------------------------------------
 #	Function for finding and replacing a pattern found in a file
 #		Accepts 4 argument:

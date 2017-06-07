@@ -39,7 +39,9 @@ function edge-starter-kit-device-personal-main() {
 
   __find_and_replace "registration_complete = .*" "registration_complete = False" "$PREDIX_KIT_PROPERTY_FILE" "$logDir"
   __find_and_replace "view_in_cloud_url = .*" "view_in_cloud_url = $APP_URL" "$PREDIX_KIT_PROPERTY_FILE" "$logDir"
+  __find_and_replace "default_kit_service_url" "default_kit_service_xxx" "$PREDIX_KIT_PROPERTY_FILE" "$logDir"
   __find_and_replace "kit_service_url = .*" "kit_service_url = $APP_URL" "$PREDIX_KIT_PROPERTY_FILE" "$logDir"
+  __find_and_replace "default_kit_service_xxx" "default_kit_service_url" "$PREDIX_KIT_PROPERTY_FILE" "$logDir"
   cat $PREDIX_KIT_PROPERTY_FILE
 
   echo ""  >> $SUMMARY_TEXTFILE
