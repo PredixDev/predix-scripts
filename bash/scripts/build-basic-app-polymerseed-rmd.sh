@@ -77,7 +77,7 @@ function build-basic-app-polymerseed-rmd-main() {
   #    Set the timeseries and asset information to query the services
   if [[ "$USE_WINDDATA_SERVICE" == "1" ]]; then
     getUrlForAppName $WINDDATA_SERVICE_APP_NAME WINDDATA_SERVICE_URL "https"
-    __find_and_replace "\#windServiceURL: .*" "windServiceURL: https://$WINDDATA_SERVICE_URL" "manifest.yml" "$logDir"
+    __find_and_replace "\#windServiceURL: .*" "windServiceURL: $WINDDATA_SERVICE_URL" "manifest.yml" "$logDir"
   fi
   if [[ "$USE_POLYMER_SEED_RMD" == "1" ]]; then
     getUrlForAppName $RMD_DATASOURCE_APP_NAME RMD_DATASOURCE_URL "https"
@@ -101,7 +101,7 @@ function build-basic-app-polymerseed-rmd-main() {
   setJsonProperty ".development.assetURL" $ASSET_URI "server/localConfig.json" "$logDir"
   setJsonProperty ".development.timeseriesURL" $TIMESERIES_QUERY_URI "server/localConfig.json" "$logDir"
   if [[ "$USE_WINDDATA_SERVICE" == "1" ]]; then
-    setJsonProperty ".development.windServiceURL" https://$WINDDATA_SERVICE_URL "server/localConfig.json" "$logDir"
+    setJsonProperty ".development.windServiceURL" $WINDDATA_SERVICE_URL "server/localConfig.json" "$logDir"
   fi
   if [[ "$USE_POLYMER_SEED_RMD" == "1" ]]; then
     # 4 args: jsonPath, string value, JSON filename, log directory

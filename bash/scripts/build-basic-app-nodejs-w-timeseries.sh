@@ -64,7 +64,7 @@ function build-basic-app-nodejs-w-timeseries-main() {
   if [[ "$USE_WINDDATA_SERVICE" == "1" ]]; then
     getUrlForAppName $WINDDATA_SERVICE_APP_NAME WINDDATA_SERVICE_URL "https"
 
-    __find_and_replace "\#windServiceURL: .*" "windServiceURL: https://$WINDDATA_SERVICE_URL" "manifest.yml" "$logDir"
+    __find_and_replace "\#windServiceURL: .*" "windServiceURL: $WINDDATA_SERVICE_URL" "manifest.yml" "$logDir"
   fi
 
   cat manifest.yml
@@ -79,7 +79,7 @@ function build-basic-app-nodejs-w-timeseries-main() {
   __find_and_replace ".*assetURL\":.*" "    \"assetURL\": \"$assetURI/$ASSET_TYPE\"," "server/localConfig.json" "$logDir"
   __find_and_replace ".*timeseriesURL\":.*" "    \"timeseriesURL\": \"$TIMESERIES_QUERY_URI\"," "server/localConfig.json" "$logDir"
   if [[ "$USE_WINDDATA_SERVICE" == "1" ]]; then
-    __find_and_replace ".*windServiceURL\": .*" "    \"windServiceURL\": \"https://$WINDDATA_SERVICE_URL\"" "server/localConfig.json" "$logDir"
+    __find_and_replace ".*windServiceURL\": .*" "    \"windServiceURL\": \"$WINDDATA_SERVICE_URL\"" "server/localConfig.json" "$logDir"
   fi
 
   cat server/localConfig.json
