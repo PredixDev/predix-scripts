@@ -243,5 +243,17 @@ else
 #		sed "s#com.ge.dspmicro.hoover.spillway.dataSubscriptions=.*#com.ge.dspmicro.hoover.spillway.dataSubscriptions=$TOPIC_ARRAY#" com.ge.dspmicro.hoover.spillway-0.config > com.ge.dspmicro.hoover.spillway-0.config.tmp
 #		mv com.ge.dspmicro.hoover.spillway-0.config.tmp com.ge.dspmicro.hoover.spillway-0.config
 #	fi
+	sed "s#com.ge.dspmicro.storeforward.databasePassword.encrypted=.*#com.ge.dspmicro.storeforward.databasePassword.encrypted=\"\"#" com.ge.dspmicro.storeforward-0.config > com.ge.dspmicro.storeforward-0.config.tmp
+	mv com.ge.dspmicro.storeforward-0.config.tmp com.ge.dspmicro.storeforward-0.config
+
+	sed "s#com.ge.dspmicro.storeforward.encryptionPassword.encrypted=.*#com.ge.dspmicro.storeforward.encryptionPassword.encrypted=\"\"#" com.ge.dspmicro.storeforward-0.config > com.ge.dspmicro.storeforward-0.config.tmp
+	mv com.ge.dspmicro.storeforward-0.config.tmp com.ge.dspmicro.storeforward-0.config
+
+	sed "s#com.ge.dspmicro.storeforward.databasePassword.encrypted=.*#com.ge.dspmicro.storeforward.databasePassword.encrypted=\"\"#" com.ge.dspmicro.storeforward-taskstatus.config > com.ge.dspmicro.storeforward-taskstatus.config.tmp
+	mv com.ge.dspmicro.storeforward-taskstatus.config.tmp com.ge.dspmicro.storeforward-taskstatus.config
+
+	sed "s#com.ge.dspmicro.storeforward.encryptionPassword.encrypted=.*#com.ge.dspmicro.storeforward.encryptionPassword.encrypted=\"\"#" com.ge.dspmicro.storeforward-taskstatus.config > com.ge.dspmicro.storeforward-taskstatus.config.tmp
+	mv com.ge.dspmicro.storeforward-taskstatus.config.tmp com.ge.dspmicro.storeforward-taskstatus.config
+	
 	echo "Predix Machine configuration updated successfully"
 fi
