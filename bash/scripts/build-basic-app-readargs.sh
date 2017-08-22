@@ -11,6 +11,7 @@ RUN_CREATE_SERVICES=0
 RUN_CREATE_ACS=0
 RUN_CREATE_ANALYTIC_FRAMEWORK=0
 RUN_CREATE_ASSET=0
+RUN_CREATE_MOBILE=0
 RUN_CREATE_TIMESERIES=0
 RUN_CREATE_UAA=0
 RUN_CREATE_ASSET_MODEL_DEVICE1=0
@@ -34,8 +35,8 @@ USE_POLYMER_SEED_ASSET=0
 USE_POLYMER_SEED_TIMESERIES=0
 USE_POLYMER_SEED_RMD=0
 USE_DATAEXCHANGE_UI=0
-MACHINE_CONTAINER_TYPE="Debug"
-
+MACHINE_CONTAINER_TYPE="EdgeStarter"
+MACHINE_CUSTOM_IMAGE_NAME="PredixMachineDebug"
 function __print_out_usage
 {
 	echo -e "Usage:\n"
@@ -73,7 +74,6 @@ function __print_out_usage
   echo "[-mt|      --machine-transfer]              => Transfer the configured Machine container to desired device"
 
 
-
 	echo -e "*** examples\n"
 	echo -e "./$SCRIPT_NAME -uaa -asset -ts              => install services"
 	echo -e "./$SCRIPT_NAME -uaa -asset -ts -nodestarter => only services and front-end app deployed"
@@ -105,10 +105,13 @@ function processReadargs() {
 	fi
 
 	if [[ "$MACHINE_VERSION" == "" ]]; then
-		MACHINE_VERSION="16.4.2"
+		MACHINE_VERSION="17.1.2"
 	fi
-	PREDIX_MACHINE_HOME=""$rootDir/PredixMachine$MACHINE_CONTAINER_TYPE
-	#echo "Switches=${SWITCH_DESC_ARRAY[*]}"
+	if [[ "$MACHINE_CONTAINER_TYPE" == "Custom" ]]; then
+		PREDIX_MACHINE_HOME="$rootDir/$MACHINE_CUSTOM_IMAGE_NAME"
+	else
+		PREDIX_MACHINE_HOME="$rootDir/PredixMachine$MACHINE_CONTAINER_TYPE"
+	fi
 
 	printBBAVariables
 }
@@ -175,10 +178,17 @@ function processBuildBasicAppReadargsSwitch() {
           PRINT_USAGE=0
           LOGIN=1
           ;;
-        -asset|--create-asset)
+				-asset|--create-asset)
           RUN_CREATE_ASSET=1
           SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-asset | --create-asset"
 					SWITCH_ARRAY[SWITCH_INDEX++]="-asset"
+          PRINT_USAGE=0
+          LOGIN=1
+          ;;
+				-mobile|--create-mobile)
+          RUN_CREATE_MOBILE=1
+          SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-mobile | --create-mobile"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-mobile"
           PRINT_USAGE=0
           LOGIN=1
           ;;
@@ -256,6 +266,16 @@ function processBuildBasicAppReadargsSwitch() {
             shift
           else
             printf 'ERROR: "machine-container-type" requires a argument[AGENT|AGENT_DEBUG|PROV|DEBUG|TECH|CONN|CUSTOM].\n' >&2
+            exit 1
+          fi
+          ;;
+				-custom-image-name)
+          if [ -n "$2" ]; then
+            MACHINE_CUSTOM_IMAGE_NAME=$2
+            doShift=1
+            shift
+          else
+						printf 'ERROR: "custom-image-name" requires a argument when machine-container-type is CUSTOM.\n' >&2
             exit 1
           fi
           ;;
@@ -417,7 +437,8 @@ function printBBAVariables() {
 	  echo "    CUSTOM_UAA_INSTANCE                      : $CUSTOM_UAA_INSTANCE"
 	  echo "    RUN_CREATE_SERVICES                      : $RUN_CREATE_SERVICES"
 	  echo "    RUN_CREATE_ACS                           : $RUN_CREATE_ACS"
-	  echo "    RUN_CREATE_ASSET                         : $RUN_CREATE_ASSET"
+		echo "    RUN_CREATE_ASSET                         : $RUN_CREATE_ASSET"
+		echo "    RUN_CREATE_MOBILE                        : $RUN_CREATE_MOBILE"
 	  echo "    RUN_CREATE_TIMESERIES                    : $RUN_CREATE_TIMESERIES"
 	  echo "    RUN_CREATE_UAA                           : $RUN_CREATE_UAA"
 	  echo "    USE_TRAINING_UAA                         : $USE_TRAINING_UAA"
@@ -446,13 +467,14 @@ function printBBAVariables() {
 	  echo "    USE_DATAEXCHANGE_UI                      : $USE_DATAEXCHANGE_UI"
 	  echo ""
 	  echo "  MACHINE:"
-	  echo "    PREDIX_MACHINE_HOME			 : $PREDIX_MACHINE_HOME"
+	  echo "    PREDIX_MACHINE_HOME			 								 : $PREDIX_MACHINE_HOME"
 	  echo "    RUN_MACHINE_CONFIG                       : $RUN_MACHINE_CONFIG"
 	  echo "    RUN_CREATE_MACHINE_CONTAINER             : $RUN_CREATE_MACHINE_CONTAINER"
 	  echo "    RUN_EDGE_MANAGER_SETUP                   : $RUN_EDGE_MANAGER_SETUP"
 	  echo "    MACHINE_VERSION                          : $MACHINE_VERSION"
 	  echo "    MACHINE_CONTAINER_TYPE                   : $MACHINE_CONTAINER_TYPE"
 	  echo "    RUN_MACHINE_TRANSFER                     : $RUN_MACHINE_TRANSFER"
+		echo "    MACHINE_CUSTOM_IMAGE_NAME                : $MACHINE_CUSTOM_IMAGE_NAME"
 	  echo ""
 	fi
 
@@ -464,6 +486,7 @@ function printBBAVariables() {
 	export RUN_CREATE_ACS
 	export RUN_CREATE_ANALYTIC_FRAMEWORK
 	export RUN_CREATE_ASSET
+	export RUN_CREATE_MOBILE
 	export RUN_CREATE_ASSET_MODEL_DEVICE1
 	export RUN_CREATE_ASSET_MODEL_RMD
 	export RUN_CREATE_ASSET_MODEL_RMD_FILE
@@ -490,6 +513,7 @@ function printBBAVariables() {
 	export USE_DATAEXCHANGE_UI
 	export PREDIX_MACHINE_HOME
 	export MACHINE_CONTAINER_TYPE
+	export MACHINE_CUSTOM_IMAGE_NAME
 	export MACHINE_VERSION
 	export ENDPOINT
 

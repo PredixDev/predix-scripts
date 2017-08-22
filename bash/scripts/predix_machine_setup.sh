@@ -55,17 +55,17 @@ if [ "$2" == "1" ]; then
 
 	#download the predix machine container
 	if [[ ! -d "$PREDIX_MACHINE_HOME" ]]; then
-		getRepoURL "predix-machine-container-url" MACHINE_CONTAINER_URL ../version.json
-		echo "MACHINE_CONTAINER_URL : $MACHINE_CONTAINER_URL"
-		if [[ "$MACHINE_CONTAINER_URL" != "" ]]; then
-			__echo_run  curl $MACHINE_CONTAINER_URL -o $MACHINE_CONTAINER_ZIP_NAME
+		__echo_run  mvn org.apache.maven.plugins:maven-dependency-plugin:2.6:copy -Dartifact=predix-machine-containers:PredixMachine$MACHINE_CONTAINER_TYPE:$MACHINE_VERSION:zip  -s $MAVEN_SETTINGS_FILE -DoutputDirectory=.
+
+		#getRepoURL "predix-machine-container-url" MACHINE_CONTAINER_URL ../version.json
+		#echo "MACHINE_CONTAINER_URL : $MACHINE_CONTAINER_URL"
+		#if [[ "$MACHINE_CONTAINER_URL" != "" ]]; then
+			#__echo_run  curl $MACHINE_CONTAINER_URL -o $MACHINE_CONTAINER_ZIP_NAME
 
 			#Unzip the original PredixMachine container
 			#rm -rf "$PREDIX_MACHINE_HOME"
-			if [[ ! -d "$PREDIX_MACHINE_HOME" ]]; then
-				__echo_run unzip $MACHINE_CONTAINER_ZIP_NAME  -d "$PREDIX_MACHINE_HOME"
-			fi
-		fi
+			__echo_run unzip $MACHINE_CONTAINER_ZIP_NAME  -d "$PREDIX_MACHINE_HOME"
+		#fi
 	else
 		echo "Warning: PredixMachineHome already exists, did not download and unzip new machine file. $PREDIX_MACHINE_HOME" "$logDir"
 	fi

@@ -19,6 +19,7 @@ SKIP_INTERACTIVE=0
 QUIET_MODE=0
 VERIFY_MVN=0
 PRINT_USAGE=1
+VERIFY_ARTIFACTORY=0
 RUN_PRINT_VARIABLES=0
 verbose=0 # Variables to be evaluated as shell arithmetic should be initialized to a default or validated beforehand.
 
@@ -177,6 +178,15 @@ function processSwitchCommon() {
 			RUN_PRINT_VARIABLES=1
 			LOGIN=1
 			;;
+    -va|--verify-artifactory)
+  			if [ -n "$2" ]; then
+  				VERIFY_ARTIFACTORY=1
+  				shift
+  				doShift=1
+  			else
+  				printf 'verify-artifactory not set using default' >&2
+  			fi
+  			;;
 		*)               # Default case: If no more options then break out of the loop.
       UNKNOWN_SWITCH=1;
 			#break
@@ -209,6 +219,7 @@ function printCommonVariables() {
 	  echo "  BACK-END:"
 	  echo "    MAVEN_SETTINGS_FILE                      : $MAVEN_SETTINGS_FILE"
 	  echo "    VERIFY_MVN                               : $VERIFY_MVN"
+    echo "    VERIFY_ARTIFACTORY                       : $VERIFY_ARTIFACTORY"
 	  echo ""
 	fi
 }
@@ -230,6 +241,7 @@ function exportCommonVariables() {
 	export QUIET_MODE
 	export VERIFY_MVN
 	export ENDPOINT
+  export VERIFY_ARTIFACTORY
 }
 
 function __print_out_common_usage
@@ -247,6 +259,7 @@ function __print_out_common_usage
   echo "[-s|       --maven-settings]                => location of mvn settings.xml file, default is ~/.m2/settings.xml"
   echo "[-script|  --app-script]                    => Script that contains application specific behavior"
   echo "[-ba|      --binding-app]                   => Push an app for binding, to get VCAP"
+  echo "[-va|      --verify-artifactory]            => Flag to indicate artifiactory settings for user are required"
 
 	echo -e "*** examples\n"
 	echo -e "./$SCRIPT_NAME -cf -switch-to-continue-from => pick up from the provided switch"

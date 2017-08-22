@@ -152,6 +152,21 @@ function createAssetService() {
   fi
 }
 
+function createMobileService() {
+	__append_new_head_log "Create Mobile Service Instance" "-" "$logDir"
+
+	if [[ $RUN_DELETE_SERVICES -eq 1 ]]; then
+	   __try_delete_service $MOBILE_INSTANCE_NAME
+	fi
+
+	# Create instance of Predix Asset Service
+	__try_create_predix_service $MOBILE_SERVICE_NAME $MOBILE_SERVICE_PLAN $MOBILE_INSTANCE_NAME $UAA_INSTANCE_NAME \"\" $UAA_CLIENTID_GENERIC_SECRET "Predix Mobile"
+
+	# Bind Temp App to Asset Instance
+	#__try_bind $1 $MOBILE_INSTANCE_NAME
+
+}
+
 function createAnalyticFrameworkServiceInstance() {
 	__append_new_head_log "Create Analytic Framework Service Instance" "-" "$logDir"
 
@@ -244,6 +259,10 @@ function __setupServices() {
 		fi
 	fi
 
+	if [[ ( $RUN_CREATE_SERVICES == 1 || $RUN_CREATE_MOBILE == 1 ) ]]; then
+		createMobileService $1
+	fi
+
 	if [[ ( $RUN_CREATE_SERVICES == 1 || $RUN_CREATE_TIMESERIES == 1 ) ]]; then
 		createTimeseries $1
 		if [[ $USE_TRAINING_UAA == 1 ]]; then
@@ -295,4 +314,5 @@ function __setupServices() {
 	echo "TimeSeries ZoneID: $TIMESERIES_ZONE_ID" >> $SUMMARY_TEXTFILE
 	echo "Asset URL:  $assetURI" >> $SUMMARY_TEXTFILE
 	echo "Asset Zone ID: $ASSET_ZONE_ID" >> $SUMMARY_TEXTFILE
+	echo "Mobile Zone ID: $MOBILE_ZONE_ID" >> $SUMMARY_TEXTFILE
 }

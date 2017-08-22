@@ -60,16 +60,30 @@ __try_create_predix_service() {
   if __service_exists $3 ; then
     echo -n "Service $3 already exists" # Do nothing
   else
-    echo -e "\n$ px create-service $1 $2 $3 $4 --client-id $5 --client-secret $6\n"
-    if px cs $1 $2 $3 $4 --client-id $5 --client-secret $6; then
-    	__append_new_line_log "$7 service instance successfully created!" "$logDir"
+    if [[ $5 == \"\" ]]; then
+      echo -e "\n$ px create-service $1 $2 $3 $4 --client-secret $6\n"
+      if px cs $1 $2 $3 $4 --client-secret $6; then
+    	   __append_new_line_log "$7 service instance successfully created!" "$logDir"
+      else
+    	   __append_new_line_log "Couldn't create $7 service. Retrying..." "$logDir"
+    	   if px cs $1 $2 $3 $4 --client-secret $6; then
+    		     __append_new_line_log "$7 service instance successfully created!" "$logDir"
+    	   else
+    		     __error_exit "Couldn't create $7 service instance..." "$logDir"
+    	   fi
+      fi
     else
-    	__append_new_line_log "Couldn't create $7 service. Retrying..." "$logDir"
-    	if px cs $1 $2 $3 $4 --client-id $5 --client-secret $6; then
-    		__append_new_line_log "$7 service instance successfully created!" "$logDir"
-    	else
-    		__error_exit "Couldn't create $7 service instance..." "$logDir"
-    	fi
+      echo -e "\n$ px create-service $1 $2 $3 $4 --client-id $5 --client-secret $6\n"
+      if px cs $1 $2 $3 $4 --client-id $5 --client-secret $6; then
+    	   __append_new_line_log "$7 service instance successfully created!" "$logDir"
+      else
+    	   __append_new_line_log "Couldn't create $7 service. Retrying..." "$logDir"
+    	   if px cs $1 $2 $3 $4 --client-id $5 --client-secret $6; then
+    		     __append_new_line_log "$7 service instance successfully created!" "$logDir"
+    	   else
+    		     __error_exit "Couldn't create $7 service instance..." "$logDir"
+    	   fi
+      fi
     fi
   fi
 }

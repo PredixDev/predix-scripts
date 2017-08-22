@@ -50,5 +50,7 @@ function edge-starter-kit-device-login-main() {
     edge-starter-kit-device-personal-main $1
   fi
 
+  echo "If the ssh command and script ran well your Personal Cloud App should be ready. If not, you can resolve the error and re-run this script." >> "$SUMMARY_TEXTFILE"
+  echo "If the script ran without errors, return to the Device Web App and refresh.  In the Edge To Cloud tab register with your new Personal Cloud App.  Data will be sent to your personal Predix Time Series (charges may incur)." >> "$SUMMARY_TEXTFILE"
   echo "" >> $SUMMARY_TEXTFILE
 }

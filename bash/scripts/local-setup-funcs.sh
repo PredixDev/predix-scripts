@@ -229,3 +229,13 @@ function getGitRepo() {
 		__error_exit "There was an error cloning the repo \"$1\". Is the repo listed in version.json?  Also, be sure to have permissions to the repo, or SSH keys created for your account" "$localSetupLogDir"
 	fi
 }
+
+
+function getArtifactoryKey() {
+	validate_num_arguments 2 $# "\"local-setup-funcs:getArtifactoryKey\" calls the artifactory with user credentails to get apikey" "$localSetupLogDir"
+	source bash/scripts/curl_helper_funcs.sh
+	ARTIFACTORY_BASIC_AUTH=$(echo -ne $1:$2 | base64)
+	responseCurl=`curl --silent "https://artifactory.predix.io/artifactory/api/security/apiKey" -H "Authorization: Basic $ARTIFACTORY_BASIC_AUTH" -H "Content-Type: application/x-www-form-urlencoded"`
+  apiKey=$( __jsonval "$responseCurl" "apiKey" )
+	echo "$apiKey"
+}

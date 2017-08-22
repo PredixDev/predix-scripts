@@ -125,7 +125,7 @@ function __checkUaaClient
 function __createUaaAppClient
 {
   __validate_num_arguments 3 $# "\"curl_helper_funcs:__createUaaAppClient\" expected in order: UAA_URI ClientId ClientIdSecret" "$logDir"
-  dataBinary="{\"client_id\":\"$2\",\"client_secret\":\"$3\",\"scope\":[\"acs.policies.read\",\"acs.policies.write\",\"acs.attributes.read\",\"uaa.none\",\"openid\"],\"authorized_grant_types\":[\"client_credentials\",\"authorization_code\",\"refresh_token\",\"password\"],\"authorities\":[\"openid\",\"uaa.none\",\"uaa.resource\"],\"autoapprove\":[\"openid\"],\"allowedproviders\":[\"uaa\"]}"
+  dataBinary="{\"client_id\":\"$2\",\"client_secret\":\"$3\",\"scope\":[\"acs.policies.read\",\"acs.policies.write\",\"acs.attributes.read\",\"uaa.none\",\"openid\"],\"authorized_grant_types\":[\"client_credentials\",\"refresh_token\",\"password\"],\"authorities\":[\"openid\",\"uaa.none\",\"uaa.resource\"],\"autoapprove\":[\"openid\"],\"allowedproviders\":[\"uaa\"]}"
   __createUaaClient $1 $2 $3 $dataBinary
 }
 
@@ -140,7 +140,7 @@ function __createUaaAppClient
 function __createUaaLoginClient
 {
   __validate_num_arguments 3 $# "\"curl_helper_funcs:__createUaaLoginClient\" expected in order: UAA_URI ClientId ClientIdSecret" "$logDir"
-  dataBinary="{\"client_id\":\"$2\",\"client_secret\":\"$3\",\"scope\":[\"uaa.none\",\"openid\"],\"authorized_grant_types\":[\"client_credentials\",\"authorization_code\",\"refresh_token\"],\"authorities\":[\"openid\",\"uaa.none\",\"uaa.resource\"],\"autoapprove\":[\"openid\"],\"allowedproviders\":[\"uaa\"]}"
+  dataBinary="{\"client_id\":\"$2\",\"client_secret\":\"$3\",\"scope\":[\"uaa.none\",\"openid\"],\"authorized_grant_types\":[\"client_credentials\",\"authorization_code\",\"refresh_token\"],\"authorities\":[\"openid\",\"uaa.none\",\"uaa.resource\"],\"autoapprove\":[\"openid\"],\"allowedproviders\":[\"uaa\"],\"redirect_uri\":[\"https://*.predix.io/**\",\"http://localhost:5000/**\"]}"
   __createUaaClient $1 $2 $3 $dataBinary
 }
 
@@ -155,7 +155,7 @@ function __createUaaLoginClient
 function __createDeviceClient
 {
   __validate_num_arguments 3 $# "\"curl_helper_funcs:__createDeviceClient\" expected in order: UAA_URI ClientId ClientIdSecret" "$logDir"
-  dataBinary="{\"client_id\":\"$2\",\"client_secret\":\"$3\",\"scope\":[\"uaa.none\",\"openid\"],\"authorized_grant_types\":[\"client_credentials\",\"authorization_code\",\"refresh_token\"],\"authorities\":[\"openid\",\"uaa.none\",\"uaa.resource\"],\"autoapprove\":[\"openid\"],\"allowedproviders\":[\"uaa\"]}"
+  dataBinary="{\"client_id\":\"$2\",\"client_secret\":\"$3\",\"scope\":[\"uaa.none\",\"openid\"],\"authorized_grant_types\":[\"client_credentials\",\"authorization_code\",\"refresh_token\"],\"authorities\":[\"openid\",\"uaa.none\",\"uaa.resource\"],\"autoapprove\":[\"openid\"],\"allowedproviders\":[\"uaa\"],\"redirect_uri\":[\"https://*.predix.io/**\",\"http://localhost:5000/**\"]}"
   __createUaaClient $1 $2 $3 $dataBinary
 }
 
@@ -647,7 +647,6 @@ function getAssetZoneId() {
     __error_exit "There was an error getting ASSET_ZONE_ID using command echo $VCAP_JSON | jq -r '.[\"VCAP_SERVICES\"][\"predix-asset\"][].credentials.zone[\"http-header-value\"]'" "$logDir"
   fi
 }
-
 
 function getAFUri() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getAFUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"

@@ -254,6 +254,6 @@ else
 
 	sed "s#com.ge.dspmicro.storeforward.encryptionPassword.encrypted=.*#com.ge.dspmicro.storeforward.encryptionPassword.encrypted=\"\"#" com.ge.dspmicro.storeforward-taskstatus.config > com.ge.dspmicro.storeforward-taskstatus.config.tmp
 	mv com.ge.dspmicro.storeforward-taskstatus.config.tmp com.ge.dspmicro.storeforward-taskstatus.config
-	
+		
 	echo "Predix Machine configuration updated successfully"
 fi

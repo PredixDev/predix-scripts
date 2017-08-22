@@ -76,16 +76,27 @@ function edge-starter-kit-service-main() {
       mvn clean dependency:copy -s $MAVEN_SETTINGS_FILE
     fi
     __append_new_head_log "Deploying the application $KIT_SERVICE_APP_NAME" "-" "$logDir"
-    if cf push; then
-      __append_new_line_log "Successfully deployed!" "$logDir"
+
+    # modified for artifactory setup
+    if cf push $KIT_SERVICE_APP_NAME --no-start ; then
+      __append_new_line_log "Successfully pushed application!" "$logDir"
     else
       __append_new_line_log "Failed to deploy application. Retrying..." "$logDir"
-      if cf push; then
-        __append_new_line_log "Successfully deployed!" "$logDir"
+      if cf push $KIT_SERVICE_APP_NAME --no-start ; then
+        __append_new_line_log "Successfully pushed application!" "$logDir"
       else
         __error_exit "There was an error pushing using: \"cf push\"" "$logDir"
       fi
     fi
+    cf set-env $KIT_SERVICE_APP_NAME ARTIFACTORY_USERNAME $ARTIFACTORY_USERNAME
+    cf set-env $KIT_SERVICE_APP_NAME ARTIFACTORY_APIKEY $ARTIFACTORY_APIKEY
+
+    if cf restart $KIT_SERVICE_APP_NAME ; then
+      __append_new_line_log "Successfully starting application!" "$logDir"
+    else
+        __error_exit "There was an error starting deploying using: \"cf restart\"" "$logDir"
+    fi
+
     getUrlForAppName $KIT_SERVICE_APP_NAME APP_URL "https"
 
     cd ..

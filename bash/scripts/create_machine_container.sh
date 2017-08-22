@@ -46,14 +46,24 @@ function create_machine_container-main() {
     fi
     unzip -q $MACHINE_SDK_ZIP
     cd $MACHINE_SDK/utilities/containers
-    echo "Generating Machine Container of type : $MACHINE_CONTAINER_TYPE"
+    echo "Generating Machine Container of type : $MACHINE_CONTAINER_TYPE $CUSTOM_IMAGE_NAME"
     echo "ECLIPSE_TAR_FILENAME : $ECLIPSE_TAR_FILENAME"
-    if [[ -f "GenerateContainers.sh" ]]; then
-      echo "./GenerateContainers.sh -e ../../../$ECLIPSE_TAR_FILENAME -c $(echo $MACHINE_CONTAINER_TYPE | tr 'a-z' 'A-Z')"
-      ./GenerateContainers.sh -e ../../../$ECLIPSE_TAR_FILENAME -c "$(echo $MACHINE_CONTAINER_TYPE | tr 'a-z' 'A-Z')"
-    elif [[ -f "GenerateContainers" ]]; then
-      echo "./GenerateContainers ../../../$ECLIPSE_TAR_FILENAME -$(echo $MACHINE_CONTAINER_TYPE | tr 'a-z' 'A-Z')"
-      ./GenerateContainers ../../../$ECLIPSE_TAR_FILENAME "-$(echo $MACHINE_CONTAINER_TYPE | tr 'a-z' 'A-Z')"
+    if [[ "$MACHINE_CONTAINER_TYPE" != "Custom" ]]; then
+      if [[ -f "GenerateContainers.sh" ]]; then
+        echo "./GenerateContainers.sh -e ../../../$ECLIPSE_TAR_FILENAME -c $(echo $MACHINE_CONTAINER_TYPE | tr 'a-z' 'A-Z')"
+        ./GenerateContainers.sh -e ../../../$ECLIPSE_TAR_FILENAME -c "$(echo $MACHINE_CONTAINER_TYPE | tr 'a-z' 'A-Z')"
+      elif [[ -f "GenerateContainers" ]]; then
+        echo "./GenerateContainers ../../../$ECLIPSE_TAR_FILENAME -$(echo $MACHINE_CONTAINER_TYPE | tr 'a-z' 'A-Z')"
+        ./GenerateContainers ../../../$ECLIPSE_TAR_FILENAME "-$(echo $MACHINE_CONTAINER_TYPE | tr 'a-z' 'A-Z')"
+      fi
+    else
+      if [[ -f "GenerateContainers.sh" ]]; then
+        echo "./GenerateContainers.sh -e ../../../$ECLIPSE_TAR_FILENAME -c $(echo $MACHINE_CONTAINER_TYPE | tr 'a-z' 'A-Z') $CUSTOM_IMAGES_DIR/$MACHINE_CUSTOM_IMAGE_NAME.img"
+        ./GenerateContainers.sh -e ../../../$ECLIPSE_TAR_FILENAME -c "$(echo $MACHINE_CONTAINER_TYPE | tr 'a-z' 'A-Z')" "$CUSTOM_IMAGES_DIR/$MACHINE_CUSTOM_IMAGE_NAME.img"
+      elif [[ -f "GenerateContainers" ]]; then
+        echo "./GenerateContainers ../../../$ECLIPSE_TAR_FILENAME -$(echo $MACHINE_CONTAINER_TYPE | tr 'a-z' 'A-Z') $CUSTOM_IMAGES_DIR/$MACHINE_CUSTOM_IMAGE_NAME.img"
+        ./GenerateContainers ../../../$ECLIPSE_TAR_FILENAME "-$(echo $MACHINE_CONTAINER_TYPE | tr 'a-z' 'A-Z')" "$CUSTOM_IMAGES_DIR/$MACHINE_CUSTOM_IMAGE_NAME.img"
+      fi
     fi
     cd "$ROOT_DIR"
     if [ "$MACHINE_CONTAINER_TYPE" = "Agent" ]; then
@@ -67,11 +77,20 @@ function create_machine_container-main() {
     elif [ "$MACHINE_CONTAINER_TYPE" = "Conn" ]; then
         CONTAINER_NAME="connectivity"
     elif [ "$MACHINE_CONTAINER_TYPE" = "Tech" ]; then
-        CONTAINER_NAME"=technician"
+        CONTAINER_NAME="technician"
+    elif [[ "$MACHINE_CONTAINER_TYPE" == "Custom" ]]; then
+        CONTAINER_NAME="$CUSTOM_IMAGE_NAME"
     elif  [ "$MACHINE_CONTAINER_TYPE" = "Default" ]; then
         CONTAINER_NAME="default"
     fi
-    MACHINE_HOME="$MACHINE_SDK/utilities/containers/PredixMachine-$CONTAINER_NAME-$MACHINE_VERSION"
+    if [[ "$MACHINE_CONTAINER_TYPE" == "Custom" ]]; then
+  		MACHINE_HOME="$rootDir/$MACHINE_SDK/utilities/containers/PredixMachine-$MACHINE_CUSTOM_IMAGE_NAME.img-$MACHINE_VERSION"
+      PREDIX_MACHINE_ZIPNAME="$MACHINE_CUSTOM_IMAGE_NAME.zip"
+  	else
+  		MACHINE_HOME="$rootDir/$MACHINE_SDK/utilities/containers/PredixMachine$MACHINE_CONTAINER_TYPE-$MACHINE_VERSION"
+      PREDIX_MACHINE_ZIPNAME="PredixMachine$MACHINE_CONTAINER_TYPE-$MACHINE_VERSION.zip"
+  	fi
+
     #fetchVCAPSInfo
     #echo "TRUSTED_ISSUER_ID     : $TRUSTED_ISSUER_ID"
     #echo "UAA URL               : $UAA_URL"
@@ -81,9 +100,9 @@ function create_machine_container-main() {
     #echo "ASSET_ZONE_ID         : $ASSET_ZONE_ID"
     #"$rootDir/machineconfig.sh" "$TRUSTED_ISSUER_ID" "$TIMESERIES_INGEST_URI" "$TIMESERIES_ZONE_ID" "$MACHINE_HOME"
     cd $MACHINE_HOME
-    rm -rf ../../../../PredixMachine$MACHINE_CONTAINER_TYPE-$MACHINE_VERSION.zip
-    zip -r ../../../../PredixMachine$MACHINE_CONTAINER_TYPE-$MACHINE_VERSION.zip .
-    __append_new_line_log "PredixMachine tar ball available at location `pwd`/PredixMachine$MACHINE_CONTAINER_TYPE-$MACHINE_VERSION.zip" "$logDir"
+    rm -rf ../../../../$PREDIX_MACHINE_ZIPNAME
+    zip -r ../../../../$PREDIX_MACHINE_ZIPNAME .
+    __append_new_line_log "PredixMachine tar ball available at location $rootDir/$PREDIX_MACHINE_ZIPNAME" "$logDir"
     echo "Created Machine container successfully"
   else
     __error_exit "The $MACHINE_SDK_ZIP not found. Check the maven settings file or the Machine Version you provided" "$logDir"

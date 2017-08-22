@@ -117,8 +117,33 @@ if [[ $VERIFY_MVN == 1 ]]; then
   checkmvnsettings $MAVEN_SETTINGS_FILE
   assertmvn $MAVEN_SETTINGS_FILE
 fi
-
 source "$quickstartRootDir/bash/scripts/variables.sh"
+
+#Artifactory settings
+if [[ $VERIFY_ARTIFACTORY == 1 ]]; then
+  if [[ "$ARTIFACTORY_USERNAME" == "" ]]; then
+    echo "Apps and Services in the Predix Cloud need unique artifactory information"
+    read -p "Enter your predix.io artifactory username >" INPUT
+    export ARTIFACTORY_USERNAME="${INPUT:-$ARTIFACTORY_USERNAME}"
+
+    #echo "******************************"
+    #echo "In the next step please enter the Apikey for the artifactory.To create a new apikey follow these steps"
+    #echo "Login to artifactory, click on the left side Welcome <username>."
+    #echo "This is open a User Profile page."
+    #echo "Enter your current Password and click UnLock."
+    #echo "The Api Key box will be popluated with the APIKey,then use clipboard icon to copy this apikey."
+    #echo "******************************"
+    #read -p "Enter your predix.io artifactory apikey >" INPUT
+    #export ARTIFACTORY_APIKEY="${INPUT:-$ARTIFACTORY_APIKEY}"
+
+    read -p "Enter your predix.io artifactory password >" INPUT
+    ARTIFACTORY_PASSWORD="${INPUT:-$ARTIFACTORY_PASSWORD}"
+    artifactoryKey=$( getArtifactoryKey "$ARTIFACTORY_USERNAME" "$ARTIFACTORY_PASSWORD" )
+    export ARTIFACTORY_APIKEY=$artifactoryKey
+  else
+    echo "Artifactory user information detected"
+  fi
+fi
 
 #Note: sourcing subfiles carries variables forward and allows us to have the --continue-from feature
 if [[ "$RUN_PRINT_VCAPS" == "1" ]]; then
@@ -127,7 +152,7 @@ if [[ "$RUN_PRINT_VCAPS" == "1" ]]; then
   echo "Printed the info from VCAPS : "  >> $SUMMARY_TEXTFILE
 fi
 # Instantiate, configure, and push the following Predix services: Timeseries, Asset, and UAA.
-if [[ ( $RUN_CREATE_SERVICES == 1 || $RUN_CREATE_UAA == 1 || $RUN_CREATE_ASSET == 1 || $RUN_CREATE_TIMESERIES == 1 || $RUN_CREATE_ACS == 1 || $RUN_CREATE_ANALYTIC_FRAMEWORK == 1) ]]; then
+if [[ ( $RUN_CREATE_SERVICES == 1 || $RUN_CREATE_UAA == 1 || $RUN_CREATE_ASSET == 1 || $RUN_CREATE_MOBILE == 1 ||$RUN_CREATE_TIMESERIES == 1 || $RUN_CREATE_ACS == 1 || $RUN_CREATE_ANALYTIC_FRAMEWORK == 1) ]]; then
   source "$quickstartRootDir/bash/scripts/predix_services_setup.sh"
   __setupServices "$TEMP_APP"
 fi
@@ -141,6 +166,7 @@ fi
 function allDone() {
   echo "SUMMARY_TEXTFILE=$SUMMARY_TEXTFILE"
   cat $SUMMARY_TEXTFILE
+  echo "Artifactory information username "$ARTIFACTORY_USERNAME " with ApiKey "$ARTIFACTORY_APIKEY
   __append_new_head_log "Clearing the locale" "-" "$quickstartLogDir"
   px config --locale CLEAR
 }

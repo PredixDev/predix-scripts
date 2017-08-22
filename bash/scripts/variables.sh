@@ -134,6 +134,16 @@ ASSET_SERVICE_PLAN="Free"
 #Name of your Asset instance - default already set
 ASSET_INSTANCE_NAME="$INSTANCE_PREPENDER-asset"
 
+############# Predix Mobile Configurations ##############
+
+#The name of the Mobile service you are binding to - default already set
+MOBILE_SERVICE_NAME="predix-mobile"
+
+#Name of the Asset plan (eg: Free) - default already set
+MOBILE_SERVICE_PLAN="Free"
+
+#Name of your Mobile instance - default already set
+MOBILE_INSTANCE_NAME="$INSTANCE_PREPENDER-mobile"
 
 RABBITMQ_SERVICE_INSTANCE_NAME="$INSTANCE_PREPENDER-rmq"
 RABBITMQ_SERVICE_PLAN="standard"
