@@ -136,7 +136,7 @@ if [[ $VERIFY_ARTIFACTORY == 1 ]]; then
     #read -p "Enter your predix.io artifactory apikey >" INPUT
     #export ARTIFACTORY_APIKEY="${INPUT:-$ARTIFACTORY_APIKEY}"
 
-    read -p "Enter your predix.io artifactory password >" INPUT
+    read -p "Enter your predix.io artifactory password >" -s INPUT
     ARTIFACTORY_PASSWORD="${INPUT:-$ARTIFACTORY_PASSWORD}"
     artifactoryKey=$( getArtifactoryKey "$ARTIFACTORY_USERNAME" "$ARTIFACTORY_PASSWORD" )
     export ARTIFACTORY_APIKEY=$artifactoryKey
