@@ -160,7 +160,6 @@ function __print_out_usage
 
   echo -e "Device options are as below"
   echo "configurations:"
-	-amkit | --create-asset-model-kit
 	echo "[-amkit |      --create-asset-model-kit]          => Setup default asset model"
 	echo "[-cidd|        --create-client-id-for-device]     => Create a client id for Device"
 	echo "[-kitsvc|      --create-kit-service]              => Create a Kit-Service"
