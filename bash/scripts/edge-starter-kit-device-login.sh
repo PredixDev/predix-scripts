@@ -43,7 +43,7 @@ function edge-starter-kit-device-login-main() {
     echo "Any network, proxy, permissions or other errors should be investigated relative to the device, not your personal computer."
     echo "Logged in to device with username=$TARGETDEVICEUSER@TARGETDEVICEIP" >> "$SUMMARY_TEXTFILE"
 
-    __echo_run ssh -tt $TARGETDEVICEUSER@$TARGETDEVICEIP "pwd; hostname; source /etc/profile; rm -rf kit-cloud; export DYLD_INSERT_LIBRARIES=; bash -l <( curl https://raw.githubusercontent.com/PredixDev/kit-cloud-app/$BRANCH/scripts/quickstart-kit-cloud-app.sh) -o -kitpca --skip-setup -b $BRANCH -i $INSTANCE_PREPENDER"
+    __echo_run ssh -tt -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no  $TARGETDEVICEUSER@$TARGETDEVICEIP "pwd; hostname; source /etc/profile; rm -rf kit-cloud; export DYLD_INSERT_LIBRARIES=; curl -s https://raw.githubusercontent.com/PredixDev/kit-cloud-app/master/scripts/quickstart-kit-cloud-app.sh | bash /dev/stdin -o -kitpca --skip-setup -b $BRANCH -i $INSTANCE_PREPENDER"
     pwd
   else
     source "$rootDir/bash/scripts/edge-starter-kit-device-personal.sh"
