@@ -42,8 +42,8 @@ function edge-starter-kit-device-login-main() {
     echo "Once you ssh in to the device, you are running in the context of the Predix Dev Kit."
     echo "Any network, proxy, permissions or other errors should be investigated relative to the device, not your personal computer."
     echo "Logged in to device with username=$TARGETDEVICEUSER@TARGETDEVICEIP" >> "$SUMMARY_TEXTFILE"
-
-    __echo_run ssh -tt -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no  $TARGETDEVICEUSER@$TARGETDEVICEIP "pwd; hostname; source /etc/profile; rm -rf kit-cloud; export DYLD_INSERT_LIBRARIES=; curl -s https://raw.githubusercontent.com/PredixDev/kit-cloud-app/master/scripts/quickstart-kit-cloud-app.sh | bash /dev/stdin -o -kitpca --skip-setup -b $BRANCH -i $INSTANCE_PREPENDER"
+    getUrlForAppName $FRONT_END_KIT_APP_NAME APP_URL "https"
+    __echo_run ssh -tt -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no  $TARGETDEVICEUSER@$TARGETDEVICEIP "pwd; hostname; source /etc/profile; rm -rf kit-cloud; export DYLD_INSERT_LIBRARIES=; curl -s https://raw.githubusercontent.com/PredixDev/kit-cloud-app/$BRANCH/scripts/quickstart-kit-cloud-app.sh | bash /dev/stdin -o -kitpca --skip-setup -b $BRANCH -i $INSTANCE_PREPENDER -kit-app-url $APP_URL"
     pwd
   else
     source "$rootDir/bash/scripts/edge-starter-kit-device-personal.sh"

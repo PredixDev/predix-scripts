@@ -34,15 +34,19 @@ function edge-starter-kit-device-personal-main() {
   __append_new_line_log "hostname is `hostname`" "$logDir"
   __append_new_line_log "current dir is'  `pwd`" "$logDir"
 
-  getUrlForAppName $FRONT_END_KIT_APP_NAME APP_URL "https"
-  echo "APP_URL=$APP_URL"
+  #getUrlForAppName $FRONT_END_KIT_APP_NAME APP_URL "https"
+  echo "APP_URL=$KIT_APP_URL"
 
   __find_and_replace "registration_complete = .*" "registration_complete = False" "$PREDIX_KIT_PROPERTY_FILE" "$logDir"
-  __find_and_replace "view_in_cloud_url = .*" "view_in_cloud_url = $APP_URL" "$PREDIX_KIT_PROPERTY_FILE" "$logDir"
+  __find_and_replace "view_in_cloud_url = .*" "view_in_cloud_url = $KIT_APP_URL" "$PREDIX_KIT_PROPERTY_FILE" "$logDir"
   __find_and_replace "default_kit_service_url" "default_kit_service_xxx" "$PREDIX_KIT_PROPERTY_FILE" "$logDir"
-  __find_and_replace "kit_service_url = .*" "kit_service_url = $APP_URL" "$PREDIX_KIT_PROPERTY_FILE" "$logDir"
+  __find_and_replace "kit_service_url = .*" "kit_service_url = $KIT_APP_URL" "$PREDIX_KIT_PROPERTY_FILE" "$logDir"
   __find_and_replace "default_kit_service_xxx" "default_kit_service_url" "$PREDIX_KIT_PROPERTY_FILE" "$logDir"
   cat $PREDIX_KIT_PROPERTY_FILE
+  #getTimeseriesZoneId $FRONT_END_KIT_APP_NAME
+  #getTrustedIssuerId $FRONT_END_KIT_APP_NAME
+
+  #/usr/local/PredixMachine/quickstart_configure_machine.sh -predix-machine-home /usr/local/PredixMachine -kitservice-url $APP_URL -uaa-clientid-secret $(echo "$UAA_CLIENTID_DEVICE:$UAA_CLIENTID_DEVICE_SECRET" | base64) -timeseries-zone-id $TIMESERIES_ZONE_ID -uaa-url $UAA_URL
 
   echo ""  >> $SUMMARY_TEXTFILE
   echo "Put Device in Personal Cloud App mode"  >> $SUMMARY_TEXTFILE

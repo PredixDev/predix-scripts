@@ -12,7 +12,7 @@ USE_KIT_SERVICE=0
 USE_KIT_UI=0
 SET_KIT_DEVICE_LOGIN=0
 SET_KIT_DEVICE_PERSONAL=0
-
+KIT_APP_URL=""
 source "$rootDir/bash/scripts/build-basic-app-readargs.sh"
 
 
@@ -99,6 +99,9 @@ function processEdgeStarterReadargsSwitch() {
        PRINT_USAGE=0
        LOGIN=1
        ;;
+		-kit-app-url)
+			 KIT_APP_URL="$2"
+			 ;;
       --)
 			  # End of all options.
 				shift
@@ -139,6 +142,7 @@ function printEdgeStarterVariables() {
 	  echo "  DEVICE:"
 		echo "    SET_KIT_DEVICE_LOGIN                     : $SET_KIT_DEVICE_LOGIN"
 		echo "    SET_KIT_DEVICE_PERSONAL                  : $SET_KIT_DEVICE_PERSONAL"
+		echo "		KIT_APP_URL															 : $KIT_APP_URL"
 	  echo ""
 	fi
 
@@ -147,6 +151,7 @@ function printEdgeStarterVariables() {
 	export USE_KIT_UI
 	export SET_KIT_DEVICE_LOGIN
 	export SET_KIT_DEVICE_PERSONAL
+	export KIT_APP_URL
 	export RUN_CREATE_ASSET_MODEL_KIT
 	export RUN_CREATE_ASSET_MODEL_KIT_FILE
 	export RUN_CREATE_ASSET_MODEL_KIT_METADATA_FILE
