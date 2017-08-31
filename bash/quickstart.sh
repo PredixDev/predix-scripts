@@ -138,7 +138,8 @@ if [[ $VERIFY_ARTIFACTORY == 1 ]]; then
 
     read -p "Enter your predix.io artifactory password >" -s INPUT
     ARTIFACTORY_PASSWORD="${INPUT:-$ARTIFACTORY_PASSWORD}"
-    artifactoryKey=$( getArtifactoryKey "$ARTIFACTORY_USERNAME" "$ARTIFACTORY_PASSWORD" )
+
+    artifactoryKey=$( fetchArtifactoryKey "$ARTIFACTORY_USERNAME" "$ARTIFACTORY_PASSWORD" )
     export ARTIFACTORY_APIKEY=$artifactoryKey
   else
     echo "Artifactory user information detected"

@@ -230,6 +230,35 @@ function getGitRepo() {
 	fi
 }
 
+# method to fetch API KEY for artifactory
+function fetchArtifactoryKey(){
+	echo "in here"
+	validate_num_arguments 2 $# "\"local-setup-funcs:getArtifactoryKey\" calls the artifactory with user credentails to get apikey" "$localSetupLogDir"
+	artifactoryKey=$( getArtifactoryKey "$1" "$2" )
+  #echo " fetching ARTIFACTORY KEY in first attempt"  $artifactoryKey
+	if [[ -z "${artifactoryKey// }" ]]; then
+		echo "ARTIFACTORY KEY empty, attempting to create..."
+		artifactoryKey=$( postArtifactoryKey "$1" "$2" )
+	fi
+
+	## 2 attempt report error
+	if [[ -z "${artifactoryKey// }" ]]; then
+		echo "ARTIFACTORY KEY is not set. Machine RPM update will not be fetched "
+	fi
+	#echo "ARTIFACTORY KEY is" $artifactoryKey
+	echo "$artifactoryKey"
+
+}
+
+function postArtifactoryKey() {
+	validate_num_arguments 2 $# "\"local-setup-funcs:getArtifactoryKey\" calls the artifactory with user credentails to get apikey" "$localSetupLogDir"
+	source bash/scripts/curl_helper_funcs.sh
+	ARTIFACTORY_BASIC_AUTH=$(echo -ne $1:$2 | base64)
+	responseCurl=`curl -X POST --silent "https://artifactory.predix.io/artifactory/api/security/apiKey" -H "Authorization: Basic $ARTIFACTORY_BASIC_AUTH" -H "Content-Type: application/x-www-form-urlencoded"`
+  apiKey=$( __jsonval "$responseCurl" "apiKey" )
+	# if api key not found create one .
+	echo "$apiKey"
+}
 
 function getArtifactoryKey() {
 	validate_num_arguments 2 $# "\"local-setup-funcs:getArtifactoryKey\" calls the artifactory with user credentails to get apikey" "$localSetupLogDir"
@@ -237,5 +266,6 @@ function getArtifactoryKey() {
 	ARTIFACTORY_BASIC_AUTH=$(echo -ne $1:$2 | base64)
 	responseCurl=`curl --silent "https://artifactory.predix.io/artifactory/api/security/apiKey" -H "Authorization: Basic $ARTIFACTORY_BASIC_AUTH" -H "Content-Type: application/x-www-form-urlencoded"`
   apiKey=$( __jsonval "$responseCurl" "apiKey" )
+	# if api key not found create one .
 	echo "$apiKey"
 }

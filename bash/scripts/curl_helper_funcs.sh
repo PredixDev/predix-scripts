@@ -125,7 +125,7 @@ function __checkUaaClient
 function __createUaaAppClient
 {
   __validate_num_arguments 3 $# "\"curl_helper_funcs:__createUaaAppClient\" expected in order: UAA_URI ClientId ClientIdSecret" "$logDir"
-  dataBinary="{\"client_id\":\"$2\",\"client_secret\":\"$3\",\"scope\":[\"acs.policies.read\",\"acs.policies.write\",\"acs.attributes.read\",\"uaa.none\",\"openid\"],\"authorized_grant_types\":[\"client_credentials\",\"refresh_token\",\"password\"],\"authorities\":[\"openid\",\"uaa.none\",\"uaa.resource\"],\"autoapprove\":[\"openid\"],\"allowedproviders\":[\"uaa\"]}"
+  dataBinary="{\"client_id\":\"$2\",\"client_secret\":\"$3\",\"scope\":[\"acs.policies.read\",\"acs.policies.write\",\"acs.attributes.read\",\"uaa.none\",\"openid\"],\"authorized_grant_types\":[\"client_credentials\"],\"authorities\":[\"openid\",\"uaa.none\",\"uaa.resource\"],\"autoapprove\":[\"openid\"],\"allowedproviders\":[\"uaa\"]}"
   __createUaaClient $1 $2 $3 $dataBinary
 }
 
@@ -750,7 +750,10 @@ function getUrlForAppName() {
 # Takes one argument: variable name in which to store result.
 function getRedisServiceName() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getRedisServiceName\" expected in order: variable name to store the result  " "$logDir"
-  local redisName=$(px m | grep redis | awk -F" " '{print $1}')
+  echo "px m | grep $REDIS_SERVICE_NAME_REG | awk -F" " '{print $1}' | head -n 1"
+  local redisName=$(px m | grep $REDIS_SERVICE_NAME_REG | awk -F" " '{print $1}' | head -n 1)
+  echo $redisName
+  #local redisName=$(px m | grep redis | awk -F" " '{print $1}')
   local result=$1
   if [ -x "$redisName" ]; then
     __error_exit "Error find the redis service. If redis is not available in your org/space, please file a support ticket."
@@ -758,4 +761,5 @@ function getRedisServiceName() {
     eval $result="'$redisName'"
     __append_new_line_log "Redis service name found: $redisName" "$logDir"
   fi
+
 }

@@ -19,6 +19,7 @@ __try_bind() {
 
 __try_create_service_using_cfcli() {
   echo "__try_create_service_using_cfcli $1 $2 $3 $4 $5"
+
   if __service_exists $3 ; then
     echo -n "Service $3 already exists" # Do nothing
   else
@@ -27,7 +28,7 @@ __try_create_service_using_cfcli() {
     	__append_new_line_log "$5 service instance successfully created!" "$logDir"
     else
     	__append_new_line_log "Couldn't create $5 service. Retrying..." "$logDir"
-    	if cf cs $1 $2 $3 -c $4; then
+    	if cf cs $redisName $2 $3 -c $4; then
     		__append_new_line_log "$5 service instance successfully created!" "$logDir"
     	else
     		__error_exit "Couldn't create $5 service instance..." "$logDir"

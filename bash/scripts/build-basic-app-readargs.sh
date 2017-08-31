@@ -467,7 +467,7 @@ function printBBAVariables() {
 	  echo "    USE_DATAEXCHANGE_UI                      : $USE_DATAEXCHANGE_UI"
 	  echo ""
 	  echo "  MACHINE:"
-	  echo "    PREDIX_MACHINE_HOME			 								 : $PREDIX_MACHINE_HOME"
+	  echo "    PREDIX_MACHINE_HOME			     : $PREDIX_MACHINE_HOME"
 	  echo "    RUN_MACHINE_CONFIG                       : $RUN_MACHINE_CONFIG"
 	  echo "    RUN_CREATE_MACHINE_CONTAINER             : $RUN_CREATE_MACHINE_CONTAINER"
 	  echo "    RUN_EDGE_MANAGER_SETUP                   : $RUN_EDGE_MANAGER_SETUP"

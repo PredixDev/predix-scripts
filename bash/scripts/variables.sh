@@ -154,7 +154,10 @@ ANALYTIC_FRAMEWORK_SERVICE_NAME="predix-analytics-framework"
 ANALYTIC_FRAMEWORK_SERVICE_PLAN="Free"
 
 REDIS_INSTANCE_NAME="$INSTANCE_PREPENDER-redis"
-REDIS_SERVICE_NAME="redis"
+# In case of multiple instances of redis
+# carrot top ^ is regex to serach for instance of redix that starts with redis
+REDIS_SERVICE_NAME_REG="^redis"
+REDIS_SERVICE_NAME=""
 REDIS_SERVICE_PLAN="shared-vm"
 
 #Predix Enable modbus configuration using Modbus simulator
