@@ -261,6 +261,8 @@ function __print_out_common_usage
   echo "[-script|  --app-script]                    => Script that contains application specific behavior"
   echo "[-ba|      --binding-app]                   => Push an app for binding, to get VCAP"
   echo "[-va|      --verify-artifactory]            => Flag to indicate artifiactory settings for user are required"
+  echo "predix version= `predix --version`"
+  echo "px version= `px --version`"
 
 	echo -e "*** examples\n"
 	echo -e "./$SCRIPT_NAME -cf -switch-to-continue-from => pick up from the provided switch"
