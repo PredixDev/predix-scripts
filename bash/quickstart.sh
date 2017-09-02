@@ -122,25 +122,7 @@ source "$quickstartRootDir/bash/scripts/variables.sh"
 #Artifactory settings
 if [[ $VERIFY_ARTIFACTORY == 1 ]]; then
   if [[ "$ARTIFACTORY_USERNAME" == "" ]]; then
-    echo "Apps and Services in the Predix Cloud need unique artifactory information"
-    read -p "Enter your predix.io artifactory username >" INPUT
-    export ARTIFACTORY_USERNAME="${INPUT:-$ARTIFACTORY_USERNAME}"
-
-    #echo "******************************"
-    #echo "In the next step please enter the Apikey for the artifactory.To create a new apikey follow these steps"
-    #echo "Login to artifactory, click on the left side Welcome <username>."
-    #echo "This is open a User Profile page."
-    #echo "Enter your current Password and click UnLock."
-    #echo "The Api Key box will be popluated with the APIKey,then use clipboard icon to copy this apikey."
-    #echo "******************************"
-    #read -p "Enter your predix.io artifactory apikey >" INPUT
-    #export ARTIFACTORY_APIKEY="${INPUT:-$ARTIFACTORY_APIKEY}"
-
-    read -p "Enter your predix.io artifactory password >" -s INPUT
-    ARTIFACTORY_PASSWORD="${INPUT:-$ARTIFACTORY_PASSWORD}"
-
-    artifactoryKey=$( fetchArtifactoryKey "$ARTIFACTORY_USERNAME" "$ARTIFACTORY_PASSWORD" )
-    export ARTIFACTORY_APIKEY=$artifactoryKey
+    fetchArtifactoryKey
   else
     echo "Artifactory user information detected"
   fi

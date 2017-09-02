@@ -29,6 +29,7 @@ USE_DATA_SIMULATOR=0
 USE_RMD_DATASOURCE=0
 USE_NODEJS_STARTER=0
 USE_NODEJS_STARTER_W_TIMESERIES=0
+USE_MOBILE_STARTER=0
 USE_POLYMER_SEED=0
 USE_POLYMER_SEED_UAA=0
 USE_POLYMER_SEED_ASSET=0
@@ -315,6 +316,13 @@ function processBuildBasicAppReadargsSwitch() {
           PRINT_USAGE=0
           LOGIN=1
           ;;
+				-ms|--mobile-starter)
+          USE_MOBILE_STARTER=1
+          SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-ms | --mobile-starter"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-ms"
+          PRINT_USAGE=0
+          LOGIN=1
+          ;;
         -ps|--polymer-seed)
           USE_POLYMER_SEED=1
           SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-ps | --polymer-seed"
@@ -459,13 +467,17 @@ function printBBAVariables() {
 	  echo "  FRONT-END:"
 		echo "    USE_NODEJS_STARTER                       : $USE_NODEJS_STARTER"
 		echo "    USE_NODEJS_STARTER_W_TIMESERIES          : $USE_NODEJS_STARTER_W_TIMESERIES"
-	  echo "    USE_POLYMER_SEED                         : $USE_POLYMER_SEED"
+		echo "    USE_MOBILE_STARTER                       : $USE_MOBILE_STARTER"
+		echo "    USE_POLYMER_SEED                         : $USE_POLYMER_SEED"
 	  echo "    USE_POLYMER_SEED_UAA                     : $USE_POLYMER_SEED_UAA"
 	  echo "    USE_POLYMER_SEED_ASSET                   : $USE_POLYMER_SEED_ASSET"
 	  echo "    USE_POLYMER_SEED_TIMESERIES              : $USE_POLYMER_SEED_TIMESERIES"
 	  echo "    USE_POLYMER_SEED_RMD                     : $USE_POLYMER_SEED_RMD"
 	  echo "    USE_DATAEXCHANGE_UI                      : $USE_DATAEXCHANGE_UI"
 	  echo ""
+		echo "  MOBILE:"
+		echo "    USE_MOBILE_STARTER                       : $USE_MOBILE_STARTER"
+		echo ""
 	  echo "  MACHINE:"
 	  echo "    PREDIX_MACHINE_HOME			     : $PREDIX_MACHINE_HOME"
 	  echo "    RUN_MACHINE_CONFIG                       : $RUN_MACHINE_CONFIG"
@@ -505,6 +517,7 @@ function printBBAVariables() {
 	export USE_RMD_DATASOURCE
 	export USE_NODEJS_STARTER
 	export USE_NODEJS_STARTER_W_TIMESERIES
+	export USE_MOBILE_STARTER
 	export USE_POLYMER_SEED
 	export USE_POLYMER_SEED_UAA
 	export USE_POLYMER_SEED_ASSET
@@ -606,6 +619,13 @@ function runFunctionsForBasicApp() {
 					    build-basic-app-nodejs-w-timeseries-main $1
 					  fi
 	          break
+						;;
+					-ms|--mobile-starter)
+						if [[ $USE_MOBILE_STARTER -eq 1 ]]; then
+							source "$rootDir/bash/scripts/build-basic-app-mobilestarter.sh"
+							build-basic-app-mobilestarter-main $1
+						fi
+						break
 						;;
 	        -ps|--polymer-seed)
 						if [[ $USE_POLYMER_SEED -eq 1 ]]; then

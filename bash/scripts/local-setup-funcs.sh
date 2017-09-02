@@ -13,7 +13,7 @@ function run_mac_setup() {
 	__readDependency "local-setup" LOCAL_SETUP_URL LOCAL_SETUP_BRANCH
 
   echo "Let's start by verifying that you have the required tools installed."
-  read -p "Should we install the required tools if not already installed? ($TOOLS) > " -t 30 answer
+  read -p "Should we install the required tools if not already installed? ($TOOLS) > " -t 300 answer
   if [[ -z $answer ]]; then
       echo -n "Specify (yes/no)> "
       read answer
@@ -232,25 +232,54 @@ function getGitRepo() {
 
 # method to fetch API KEY for artifactory
 function fetchArtifactoryKey(){
-	echo "in here"
-	validate_num_arguments 2 $# "\"local-setup-funcs:getArtifactoryKey\" calls the artifactory with user credentails to get apikey" "$localSetupLogDir"
-	artifactoryKey=$( getArtifactoryKey "$1" "$2" )
+	validate_num_arguments 0 $# "\"local-setup-funcs:getArtifactoryKey\" calls the artifactory with user credentails to get apikey" "$localSetupLogDir"
+	echo "Apps and Services in the Predix Cloud need unique artifactory information"
+	read -p "Enter your predix.io artifactory username >" INPUT
+	export ARTIFACTORY_USERNAME="${INPUT:-$ARTIFACTORY_USERNAME}"
+
+	#echo "******************************"
+	#echo "In the next step please enter the Apikey for the artifactory.To create a new apikey follow these steps"
+	#echo "Login to artifactory, click on the left side Welcome <username>."
+	#echo "This is open a User Profile page."
+	#echo "Enter your current Password and click UnLock."
+	#echo "The Api Key box will be popluated with the APIKey,then use clipboard icon to copy this apikey."
+	#echo "******************************"
+	#read -p "Enter your predix.io artifactory apikey >" INPUT
+	#export ARTIFACTORY_APIKEY="${INPUT:-$ARTIFACTORY_APIKEY}"
+
+	read -p "Enter your predix.io artifactory password >" -s INPUT
+	ARTIFACTORY_PASSWORD="${INPUT:-$ARTIFACTORY_PASSWORD}"
+	artifactoryKey=$( getArtifactoryKey "$ARTIFACTORY_USERNAME" "$ARTIFACTORY_PASSWORD" )
   #echo " fetching ARTIFACTORY KEY in first attempt"  $artifactoryKey
 	if [[ -z "${artifactoryKey// }" ]]; then
-		echo "ARTIFACTORY KEY empty, attempting to create..."
-		artifactoryKey=$( postArtifactoryKey "$1" "$2" )
+		#echo "ARTIFACTORY KEY empty, attempting to create..."
+		echo ""
+		echo "artifactory apikey not found, will try to create one"
+		artifactoryKey=$( postArtifactoryKey "$ARTIFACTORY_USERNAME" "$ARTIFACTORY_PASSWORD" )
+		if [[ -z "${artifactoryKey// }" ]]; then
+			echo ""
+			echo "Artifactory apikey not created, perhaps you already have one. Please try your predix.io username and password again, maybe you mistyped it earlier."
+			read -p "Enter your predix.io artifactory username >" INPUT
+	    export ARTIFACTORY_USERNAME="${INPUT:-$ARTIFACTORY_USERNAME}"
+			read -p "Enter your predix.io artifactory password >" -s INPUT
+			ARTIFACTORY_PASSWORD="${INPUT:-$ARTIFACTORY_PASSWORD}"
+			artifactoryKey=$( getArtifactoryKey "$ARTIFACTORY_USERNAME" "$ARTIFACTORY_PASSWORD" )
+		fi
 	fi
 
 	## 2 attempt report error
 	if [[ -z "${artifactoryKey// }" ]]; then
-		echo "ARTIFACTORY KEY is not set. Machine RPM update will not be fetched "
+		artifactoryKey="unknown"
+		echo ""
+		echo "ARTIFACTORY APIKEY is not set. Predix RPM package updates will not be fetched, but critical Dev Kit functionality will still work.  To try again later, re-run this script."
 	fi
-	#echo "ARTIFACTORY KEY is" $artifactoryKey
-	echo "$artifactoryKey"
-
+	echo ""
+	echo "Artifactory Key is $artifactoryKey"
+	export ARTIFACTORY_APIKEY=$artifactoryKey
 }
 
 function postArtifactoryKey() {
+	#this function cannot echo things otherwise it will get assigned to the calling variable
 	validate_num_arguments 2 $# "\"local-setup-funcs:getArtifactoryKey\" calls the artifactory with user credentails to get apikey" "$localSetupLogDir"
 	source bash/scripts/curl_helper_funcs.sh
 	ARTIFACTORY_BASIC_AUTH=$(echo -ne $1:$2 | base64)
@@ -261,11 +290,11 @@ function postArtifactoryKey() {
 }
 
 function getArtifactoryKey() {
+	#this function cannot echo things otherwise it will get assigned to the calling variable
 	validate_num_arguments 2 $# "\"local-setup-funcs:getArtifactoryKey\" calls the artifactory with user credentails to get apikey" "$localSetupLogDir"
 	source bash/scripts/curl_helper_funcs.sh
 	ARTIFACTORY_BASIC_AUTH=$(echo -ne $1:$2 | base64)
 	responseCurl=`curl --silent "https://artifactory.predix.io/artifactory/api/security/apiKey" -H "Authorization: Basic $ARTIFACTORY_BASIC_AUTH" -H "Content-Type: application/x-www-form-urlencoded"`
   apiKey=$( __jsonval "$responseCurl" "apiKey" )
-	# if api key not found create one .
 	echo "$apiKey"
 }

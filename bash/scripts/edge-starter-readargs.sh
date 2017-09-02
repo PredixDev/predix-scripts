@@ -97,7 +97,7 @@ function processEdgeStarterReadargsSwitch() {
 			 SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-kitpca|--kit-device-personal-cloud-app"
 			 SWITCH_ARRAY[SWITCH_INDEX++]="-kitpca"
        PRINT_USAGE=0
-       LOGIN=1
+       LOGIN=0
        ;;
 		-kit-app-url)
 			 KIT_APP_URL="$2"
@@ -128,21 +128,21 @@ function printEdgeStarterVariables() {
 		echo "  UAA CONFIGURATIONS:"
 		echo "    RUN_CREATE_CLIENT_DEVICE_ID              : $RUN_CREATE_CLIENT_DEVICE_ID"
 		echo ""
-	  echo "  ASSET-MODEL:"
-	  echo "    RUN_CREATE_ASSET_MODEL_KIT               : $RUN_CREATE_ASSET_MODEL_KIT"
-	  echo "    RUN_CREATE_ASSET_MODEL_KIT_METADATA_FILE : $RUN_CREATE_ASSET_MODEL_KIT_METADATA_FILE"
-	  echo "    RUN_CREATE_ASSET_MODEL_KIT_FILE          : $RUN_CREATE_ASSET_MODEL_KIT_FILE"
+		echo "  ASSET-MODEL:"
+		echo "    RUN_CREATE_ASSET_MODEL_KIT               : $RUN_CREATE_ASSET_MODEL_KIT"
+		echo "    RUN_CREATE_ASSET_MODEL_KIT_METADATA_FILE : $RUN_CREATE_ASSET_MODEL_KIT_METADATA_FILE"
+		echo "    RUN_CREATE_ASSET_MODEL_KIT_FILE          : $RUN_CREATE_ASSET_MODEL_KIT_FILE"
 		echo ""
 		echo "  BACK-END:"
 		echo "    USE_KIT_SERVICE                          : $USE_KIT_SERVICE"
 		echo ""
-	  echo "  FRONT-END:"
+		echo "  FRONT-END:"
 		echo "    USE_KIT_UI                               : $USE_KIT_UI"
 		echo ""
-	  echo "  DEVICE:"
+		echo "  DEVICE:"
 		echo "    SET_KIT_DEVICE_LOGIN                     : $SET_KIT_DEVICE_LOGIN"
 		echo "    SET_KIT_DEVICE_PERSONAL                  : $SET_KIT_DEVICE_PERSONAL"
-		echo "		KIT_APP_URL															 : $KIT_APP_URL"
+		echo "	  KIT_APP_URL			   : $KIT_APP_URL"
 	  echo ""
 	fi
 

@@ -30,6 +30,8 @@ FRONT_END_POLYMER_SEED_TIMESERIES_APP_NAME="$INSTANCE_PREPENDER-predix-webapp-st
 FRONT_END_POLYMER_SEED_RMD_APP_NAME="$INSTANCE_PREPENDER-predix-webapp-starter"
 FRONT_END_DATAEXCHANGE_UI_APP_NAME="$INSTANCE_PREPENDER-data-exchange-ui"
 FRONT_END_KIT_APP_NAME="$INSTANCE_PREPENDER-kit-app"
+# Name for your Mobile Application
+MOBILE_STARTER_APP_NAME="$INSTANCE_PREPENDER-predix-mobile-starter"
 
 ############### UAA Configurations ###############
 
