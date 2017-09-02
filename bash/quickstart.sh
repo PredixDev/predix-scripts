@@ -68,6 +68,16 @@ if [[ ! "$SCRIPT_READARGS" == "" ]]; then
 else
   echo "unable to call SCRIPT_READARGS as nothing is defined"
 fi
+
+if [[ $PREDIX_CLI_MIN == 1 ]]; then
+  predixcliversion=`predix --version | cut -d' ' -f3 | cut -d'-' -f3`
+  echo "-->> Predix CLI Version : $predixcliversion"
+  min=$(echo $predixcliversion $PREDIX_CLI_MIN_VALUE | awk '{if ($1 < $2) print $1; else print $2}')
+  if [[ $min == $predixcliversion && $predixcliversion != $PREDIX_CLI_MIN_VALUE ]]; then
+    __error_exit "Minimum version of Predix CLI=$PREDIX_CLI_MIN_VALUE is required. Current version is $predixcliversion" "$quickstartLogDir"
+  fi
+fi
+
 if [[ ( $LOGIN == 1 ) ]]; then
     #Check px login and target Space
     org="`px target | grep -i Org | awk '{print $2}'`"

@@ -37,7 +37,7 @@ __try_bind() {
 #     nothing
 #	----------------------------------------------------------------
 __try_create_service_using_cfcli() {
-  __validate_num_arguments 5 $# "\"predix_funcs:__try_create_predix_service\" expected in order: service name, pricing plan, instance name, -c json string, service name for log" "$logDir"
+  __validate_num_arguments 5 $# "\"predix_funcs:__try_create_service_using_cfcli\" expected in order: service name, pricing plan, instance name, -c json string, service name for log" "$logDir"
   echo "__try_create_service_using_cfcli $1 $2 $3 $4 $5"
 
   if __service_exists $3 ; then

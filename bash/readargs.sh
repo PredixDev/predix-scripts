@@ -19,6 +19,7 @@ SKIP_INTERACTIVE=0
 QUIET_MODE=0
 VERIFY_MVN=0
 PRINT_USAGE=1
+PREDIX_CLI_MIN=1
 VERIFY_ARTIFACTORY=0
 RUN_PRINT_VARIABLES=0
 verbose=0 # Variables to be evaluated as shell arithmetic should be initialized to a default or validated beforehand.
@@ -178,6 +179,17 @@ function processSwitchCommon() {
 			RUN_PRINT_VARIABLES=1
 			LOGIN=1
 			;;
+    -pxclimin|--predix-cli-min)
+  			if [ -n "$2" ]; then
+  				PREDIX_CLI_MIN=1
+          PREDIX_CLI_MIN_VALUE=$2
+  				shift
+  				doShift=1
+  			else
+          printf 'ERROR: "-pxclimin or --predix-cli-min" requires a non-empty option argument.\n' >&2
+          exit 1
+  			fi
+  			;;
     -va|--verify-artifactory)
   			if [ -n "$2" ]; then
   				VERIFY_ARTIFACTORY=1
@@ -210,6 +222,7 @@ function printCommonVariables() {
 	  echo "    CONTINUE_FROM_SWITCH                     : $CONTINUE_FROM_SWITCH"
     echo "    LOGIN                                    : $LOGIN"
     echo "    INSTANCE_PREPENDER                       : $INSTANCE_PREPENDER"
+    echo "    PREDIX_CLI_MIN                           : $PREDIX_CLI_MIN_VALUE"
 	  echo "    QUIET_MODE                               : $QUIET_MODE"
 	  echo "    RUN_COMPILE_REPO                         : $RUN_COMPILE_REPO"
 	  echo "    RUN_DELETE_SERVICES                      : $RUN_DELETE_SERVICES"
@@ -221,30 +234,29 @@ function printCommonVariables() {
 	  echo "    MAVEN_SETTINGS_FILE                      : $MAVEN_SETTINGS_FILE"
 	  echo "    VERIFY_MVN                               : $VERIFY_MVN"
     echo "    VERIFY_ARTIFACTORY                       : $VERIFY_ARTIFACTORY"
-    	echo "predix version= `predix --version`"
-  	echo "px version= `px --version`"
 	  echo ""
 	fi
 }
 
 function exportCommonVariables() {
-	export SCRIPT_READARGS
-	export INSTANCE_PREPENDER
-	export APP_SCRIPT
+  export BRANCH
+  export APP_SCRIPT
 	export BINDING_APP
 	export CONTINUE_FROM
 	export CONTINUE_FROM_SWITCH
-	export SWITCH_DESC_ARRAY
+  export ENDPOINT
+  export INSTANCE_PREPENDER
+	export MAVEN_SETTINGS_FILE
+  export PREDIX_CLI_MIN
+  export QUIET_MODE
 	export RUN_DELETE_SERVICES
-	export BRANCH
   export SKIP_BROWSER
   export SKIP_INTERACTIVE
-	export MAVEN_SETTINGS_FILE
-	export SKIP_SERVICES
-	export QUIET_MODE
+  export SKIP_SERVICES
+	export SCRIPT_READARGS
+  export SWITCH_DESC_ARRAY
 	export VERIFY_MVN
-	export ENDPOINT
-  export VERIFY_ARTIFACTORY
+	export VERIFY_ARTIFACTORY
 }
 
 function __print_out_common_usage
@@ -254,14 +266,15 @@ function __print_out_common_usage
 
   echo -e "Common options are as below"
   echo "[-b|       --branch]                        => Github Branch, default is master"
+  echo "[-ba|      --binding-app]                   => Push an app for binding, to get VCAP"
   echo "[-cc|      --clean-compile]                 => Force clean and compile for java repos"
   echo "[-cf|      --continue-from]                 => Continue quickstart from the switch provided.  e.g. -cf --nodejs-starter"
   echo "[-ds|      --delete-services]               => Delete the service instances previously created"
   echo "[-h|       --help]                          => Print usage"
   echo "[-i|       --instance-prepender]            => Instance appender to identify your service and application instances"
   echo "[-s|       --maven-settings]                => location of mvn settings.xml file, default is ~/.m2/settings.xml"
+  echo "[-pxclimin|--predix-cli-min]                => minimum version of predix-cli required"
   echo "[-script|  --app-script]                    => Script that contains application specific behavior"
-  echo "[-ba|      --binding-app]                   => Push an app for binding, to get VCAP"
   echo "[-va|      --verify-artifactory]            => Flag to indicate artifiactory settings for user are required"
 
 	echo -e "*** examples\n"

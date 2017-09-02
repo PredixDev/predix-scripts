@@ -24,6 +24,7 @@ SKIP_SERVICES=0
 RUN_CREATE_MACHINE_CONTAINER=0
 USE_WINDDATA_SERVICE=0
 USE_DATAEXCHANGE=0
+USE_DATAEXCHANGE_UI=0
 USE_WEBSOCKET_SERVER=0
 USE_DATA_SIMULATOR=0
 USE_RMD_DATASOURCE=0
@@ -35,7 +36,6 @@ USE_POLYMER_SEED_UAA=0
 USE_POLYMER_SEED_ASSET=0
 USE_POLYMER_SEED_TIMESERIES=0
 USE_POLYMER_SEED_RMD=0
-USE_DATAEXCHANGE_UI=0
 MACHINE_CONTAINER_TYPE="EdgeStarter"
 MACHINE_CUSTOM_IMAGE_NAME="PredixMachineDebug"
 function __print_out_usage
@@ -255,6 +255,13 @@ function processBuildBasicAppReadargsSwitch() {
           VERIFY_MVN=1
           LOGIN=0
           ;;
+				-dxui|--data-exchange-ui)
+          USE_DATAEXCHANGE_UI=1
+          SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-dxui | --data-exchange-ui"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-dxui"
+          PRINT_USAGE=0
+          LOGIN=1
+          ;;
         -machine-container-type)
           if [ -n "$2" ]; then
             if [[ $2 =~ ^("Agent"|"Agent_Debug"|"Prov"|"Debug"|"Tech"|"Conn"|"Custom"|"AGENT"|"AGENT_DEBUG"|"PROV"|"DEBUG"|"TECH"|"CONN"|"CUSTOM")$ ]]; then
@@ -358,13 +365,6 @@ function processBuildBasicAppReadargsSwitch() {
           PRINT_USAGE=0
           LOGIN=1
           ;;
-        -dxui|--data-exchange-ui)
-          USE_DATAEXCHANGE_UI=1
-          SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-dxui | --data-exchange-ui"
-					SWITCH_ARRAY[SWITCH_INDEX++]="-dxui"
-          PRINT_USAGE=0
-          LOGIN=1
-          ;;
         -wd|--wind-data)       # Takes an option argument, ensuring it has been specified.
             USE_WINDDATA_SERVICE=1
             SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-wd | --wind-data"
@@ -465,6 +465,7 @@ function printBBAVariables() {
 	  echo "    USE_WINDDATA_SERVICE                     : $USE_WINDDATA_SERVICE"
 	  echo ""
 	  echo "  FRONT-END:"
+		echo "    USE_DATAEXCHANGE_UI                      : $USE_DATAEXCHANGE_UI"
 		echo "    USE_NODEJS_STARTER                       : $USE_NODEJS_STARTER"
 		echo "    USE_NODEJS_STARTER_W_TIMESERIES          : $USE_NODEJS_STARTER_W_TIMESERIES"
 		echo "    USE_MOBILE_STARTER                       : $USE_MOBILE_STARTER"
@@ -473,7 +474,6 @@ function printBBAVariables() {
 	  echo "    USE_POLYMER_SEED_ASSET                   : $USE_POLYMER_SEED_ASSET"
 	  echo "    USE_POLYMER_SEED_TIMESERIES              : $USE_POLYMER_SEED_TIMESERIES"
 	  echo "    USE_POLYMER_SEED_RMD                     : $USE_POLYMER_SEED_RMD"
-	  echo "    USE_DATAEXCHANGE_UI                      : $USE_DATAEXCHANGE_UI"
 	  echo ""
 		echo "  MOBILE:"
 		echo "    USE_MOBILE_STARTER                       : $USE_MOBILE_STARTER"
@@ -512,6 +512,7 @@ function printBBAVariables() {
 	export RUN_MACHINE_TRANSFER
 	export USE_WINDDATA_SERVICE
 	export USE_DATAEXCHANGE
+	export USE_DATAEXCHANGE_UI
 	export USE_WEBSOCKET_SERVER
 	export USE_DATA_SIMULATOR
 	export USE_RMD_DATASOURCE
@@ -523,7 +524,6 @@ function printBBAVariables() {
 	export USE_POLYMER_SEED_ASSET
 	export USE_POLYMER_SEED_TIMESERIES
 	export USE_POLYMER_SEED_RMD
-	export USE_DATAEXCHANGE_UI
 	export PREDIX_MACHINE_HOME
 	export MACHINE_CONTAINER_TYPE
 	export MACHINE_CUSTOM_IMAGE_NAME
@@ -586,6 +586,30 @@ function runFunctionsForBasicApp() {
 						fi
 	          break
 						;;
+					-cm|--create-machine)
+						if [[ $RUN_CREATE_MACHINE_CONTAINER -eq 1 ]]; then
+							source "$rootDir/bash/scripts/create_machine_container.sh"
+							create_machine_container-main
+						fi
+	          break
+						;;
+					-dx|--data-exchange)       # Takes an option argument, ensuring it has been specified.
+						if [[ $USE_DATAEXCHANGE -eq 1 ]]; then
+					    source "$rootDir/bash/scripts/build-basic-app-dataexchange.sh"
+					    build-basic-app-dataexchange-main $1
+					  fi
+	          break
+						;;
+					-dxui|--data-exchange-ui)
+						if [[ $USE_DATAEXCHANGE_UI -eq 1 ]]; then
+					    source "$rootDir/bash/scripts/build-basic-app-dataexchange-ui.sh"
+					    build-basic-app-dataexchange-ui-main $1
+					  fi
+	          break
+						;;
+					-em|--edge-manager)
+	          break
+						;;
 	        -mc|--machine-config)
 						# Build Predix Machine container using properties from Predix Services Created above
 					  if [[ $RUN_MACHINE_CONFIG -eq 1 ]] || [[ $RUN_MACHINE_TRANSFER -eq 1 ]]; then
@@ -596,15 +620,12 @@ function runFunctionsForBasicApp() {
 	        -mt|--machine-transfer)
 	          break
 						;;
-	        -cm|--create-machine)
-						if [[ $RUN_CREATE_MACHINE_CONTAINER -eq 1 ]]; then
-							source "$rootDir/bash/scripts/create_machine_container.sh"
-							create_machine_container-main
+					-ms|--mobile-starter)
+						if [[ $USE_MOBILE_STARTER -eq 1 ]]; then
+							source "$rootDir/bash/scripts/build-basic-app-mobilestarter.sh"
+							build-basic-app-mobilestarter-main $1
 						fi
-	          break
-						;;
-	        -em|--edge-manager)
-	          break
+						break
 						;;
 					-nodestarter|--nodejs-starter)
 						if [[ $USE_NODEJS_STARTER -eq 1 ]]; then
@@ -619,13 +640,6 @@ function runFunctionsForBasicApp() {
 					    build-basic-app-nodejs-w-timeseries-main $1
 					  fi
 	          break
-						;;
-					-ms|--mobile-starter)
-						if [[ $USE_MOBILE_STARTER -eq 1 ]]; then
-							source "$rootDir/bash/scripts/build-basic-app-mobilestarter.sh"
-							build-basic-app-mobilestarter-main $1
-						fi
-						break
 						;;
 	        -ps|--polymer-seed)
 						if [[ $USE_POLYMER_SEED -eq 1 ]]; then
@@ -662,25 +676,11 @@ function runFunctionsForBasicApp() {
 					  fi
 	          break
 						;;
-	        -dxui|--data-exchange-ui)
-						if [[ $USE_DATAEXCHANGE_UI -eq 1 ]]; then
-					    source "$rootDir/bash/scripts/build-basic-app-dataexchange-ui.sh"
-					    build-basic-app-dataexchange-ui-main $1
-					  fi
-	          break
-						;;
 	        -wd|--wind-data)       # Takes an option argument, ensuring it has been specified.
 						if [[ $USE_WINDDATA_SERVICE -eq 1 ]]; then
 							source "$rootDir/bash/scripts/build-basic-app-winddata.sh"
 							build-basic-app-winddata-main $1
 						fi
-	          break
-						;;
-	        -dx|--data-exchange)       # Takes an option argument, ensuring it has been specified.
-						if [[ $USE_DATAEXCHANGE -eq 1 ]]; then
-					    source "$rootDir/bash/scripts/build-basic-app-dataexchange.sh"
-					    build-basic-app-dataexchange-main $1
-					  fi
 	          break
 						;;
 	        -wss|--websocket-server)       # Takes an option argument, ensuring it has been specified.
