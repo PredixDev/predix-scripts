@@ -211,7 +211,7 @@ function __createUaaClient
 
         if [ ${#errorAttribute} -gt 3 ]; then
           if [ "$errorDescriptionAttribute" != "Client already exists: $2" ]; then
-            __error_exit "The request failed to successfully create or reuse the Client ID" "$logDir"
+            __error_exit "The request failed to successfully create or reuse the Client ID. error=$errorDescriptionAttribute response=$errorAttribute" "$logDir"
           else
             __append_new_line_log "Successfully re-using existing Client ID: \"$2\"" "$logDir"
           fi

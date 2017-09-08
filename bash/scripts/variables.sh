@@ -45,25 +45,33 @@ UAA_USER_EMAIL="app_user_1@ge.com"
 UAA_USER_PASSWORD="app_user_1"
 
 # The secret of the Admin client ID (Administrator Credentails)
-UAA_ADMIN_SECRET="secret"
+if [[ UAA_ADMIN_SECRET != "" ]]; then
+	UAA_ADMIN_SECRET="secret"
+fi
 
 # The generic client ID that will be created with necessary UAA scope/autherities
 UAA_CLIENTID_LOGIN="login_client_id"
 
 # The generic client ID password
-UAA_CLIENTID_LOGIN_SECRET="secret"
+if [[ UAA_CLIENTID_LOGIN_SECRET != "" ]]; then
+	UAA_CLIENTID_LOGIN_SECRET="secret"
+fi
 
 # The generic client ID that will be created with necessary UAA scope/autherities
 UAA_CLIENTID_GENERIC="app_client_id"
 
 # The generic client ID password
-UAA_CLIENTID_GENERIC_SECRET="secret"
+if [[ UAA_CLIENTID_GENERIC_SECRET != "" ]]; then
+	UAA_CLIENTID_GENERIC_SECRET="secret"
+fi
 
 # The machine generic client ID that will be created with necessary UAA scope/autherities
 UAA_CLIENTID_DEVICE="device_client_id"
 
 # The machine generic client ID password
-UAA_CLIENTID_DEVICE_SECRET="secret"
+if [[ UAA_CLIENTID_DEVICE_SECRET != "" ]]; then
+	UAA_CLIENTID_DEVICE_SECRET="secret"
+fi
 
 ############# Predix Asset Configurations #############
 
