@@ -45,7 +45,7 @@ UAA_USER_EMAIL="app_user_1@ge.com"
 UAA_USER_PASSWORD="app_user_1"
 
 # The secret of the Admin client ID (Administrator Credentails)
-if [[ UAA_ADMIN_SECRET != "" ]]; then
+if [[ $UAA_ADMIN_SECRET == "" ]]; then
 	UAA_ADMIN_SECRET="secret"
 fi
 
@@ -53,7 +53,7 @@ fi
 UAA_CLIENTID_LOGIN="login_client_id"
 
 # The generic client ID password
-if [[ UAA_CLIENTID_LOGIN_SECRET != "" ]]; then
+if [[ $UAA_CLIENTID_LOGIN_SECRET == "" ]]; then
 	UAA_CLIENTID_LOGIN_SECRET="secret"
 fi
 
@@ -61,7 +61,7 @@ fi
 UAA_CLIENTID_GENERIC="app_client_id"
 
 # The generic client ID password
-if [[ UAA_CLIENTID_GENERIC_SECRET != "" ]]; then
+if [[ $UAA_CLIENTID_GENERIC_SECRET == "" ]]; then
 	UAA_CLIENTID_GENERIC_SECRET="secret"
 fi
 
@@ -69,7 +69,7 @@ fi
 UAA_CLIENTID_DEVICE="device_client_id"
 
 # The machine generic client ID password
-if [[ UAA_CLIENTID_DEVICE_SECRET != "" ]]; then
+if [[ $UAA_CLIENTID_DEVICE_SECRET == "" ]]; then
 	UAA_CLIENTID_DEVICE_SECRET="secret"
 fi
 
