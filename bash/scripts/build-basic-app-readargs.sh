@@ -6,11 +6,16 @@ arguments="$*"
 # Reset all variables that might be set
 USE_TRAINING_UAA=0
 CUSTOM_UAA_INSTANCE=""
+CUSTOM_ASSET_INSTANCE=""
+CUSTOM_TIMESERIES_INSTANCE=""
+CUSTOM_ASSET_INSTANCE=""
+CUSTOM_TIMESERIES_INSTANCE=""
 RUN_DELETE_SERVICES=0
 RUN_CREATE_SERVICES=0
 RUN_CREATE_ACS=0
 RUN_CREATE_ANALYTIC_FRAMEWORK=0
 RUN_CREATE_ASSET=0
+RUN_CREATE_EVENT_HUB=0
 RUN_CREATE_MOBILE=0
 RUN_CREATE_TIMESERIES=0
 RUN_CREATE_UAA=0
@@ -49,6 +54,7 @@ function __print_out_usage
   echo "[-acs|     --create-acs]                    => Create the access control service instance"
   echo "[-af|      --create-analytic-framework]     => Create the analytic framework service instance"
   echo "[-asset|   --create-asset]                  => Create the asset service instance"
+	echo "[-eh|   --create-event-hub]                  => Create the asset service instance"
   echo "[-ts|      --create-timeseries]             => Create the time series service instance"
   echo "[-tu|      --training-uaa]                  => Use a Training UAA Instance. Default does not use the Training UAA instance"
   echo "[-uaa|     --create-uaa]                    => Create the uaa service instance"
@@ -76,10 +82,10 @@ function __print_out_usage
 
 
 	echo -e "*** examples\n"
-	echo -e "./$SCRIPT_NAME -uaa -asset -ts              => install services"
-	echo -e "./$SCRIPT_NAME -uaa -asset -ts -nodestarter => only services and front-end app deployed"
-	echo -e "./$SCRIPT_NAME -uaa -asset -ts -mc          => only services deployed and predix machine configured"
-	echo -e "./$SCRIPT_NAME -uaa -asset -ts -mc -cc -mt  => create services, machine config, compile repos and transfer machine container"
+	echo -e "./$SCRIPT_NAME -uaa -asset -ts -eh             => install services"
+	echo -e "./$SCRIPT_NAME -uaa -asset -ts -eh -nodestarter => only services and front-end app deployed"
+	echo -e "./$SCRIPT_NAME -uaa -asset -ts -mc -eh         => only services deployed and predix machine configured"
+	echo -e "./$SCRIPT_NAME -uaa -asset -ts -mc -cc -eh -mt  => create services, machine config, compile repos and transfer machine container"
 }
 
 function processReadargs() {
@@ -128,7 +134,7 @@ function processBuildBasicAppReadargsSwitch() {
           SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-tu | --training-uaa"
           PRINT_USAGE=0
           ;;
-        -custom-uaa)
+				-cuaa|--custom-uaa)
           if [ -n "$2" ]; then
               CUSTOM_UAA_INSTANCE=$2
               SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-custom-uaa"
@@ -140,6 +146,42 @@ function processBuildBasicAppReadargsSwitch() {
               exit 1
           fi
           ;;
+					-casset|--custom-asset)
+	          if [ -n "$2" ]; then
+	              CUSTOM_ASSET_INSTANCE=$2
+	              SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-custom-asset"
+	              PRINT_USAGE=0
+								doShift=1
+	              shift
+	          else
+	              printf 'ERROR: "-custom-asset" requires a non-empty option argument.\n' >&2
+	              exit 1
+	          fi
+	          ;;
+					-caeventhub|--custom-event-hub)
+	          if [ -n "$2" ]; then
+	              CUSTOM_EVENTHUB_INSTANCE=$2
+	              SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-custom-event-hub"
+	              PRINT_USAGE=0
+								doShift=1
+	              shift
+	          else
+	              printf 'ERROR: "-custom-event-hub" requires a non-empty option argument.\n' >&2
+	              exit 1
+	          fi
+	          ;;
+					-cts|--custom-timeseries)
+	          if [ -n "$2" ]; then
+	              CUSTOM_TIMESERIES_INSTANCE=$2
+	              SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-custom-timeseries"
+	              PRINT_USAGE=0
+								doShift=1
+	              shift
+	          else
+	              printf 'ERROR: "-custom-timeseries" requires a non-empty option argument.\n' >&2
+	              exit 1
+	          fi
+	          ;;
         -ds|--delete-services)
           RUN_DELETE_SERVICES=1
           SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-ds | --delete-services"
@@ -183,6 +225,13 @@ function processBuildBasicAppReadargsSwitch() {
           RUN_CREATE_ASSET=1
           SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-asset | --create-asset"
 					SWITCH_ARRAY[SWITCH_INDEX++]="-asset"
+          PRINT_USAGE=0
+          LOGIN=1
+          ;;
+				-eh|--create-event-hub)
+          RUN_CREATE_EVENT_HUB=1
+          SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-eh | --create-event-hub"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-eh"
           PRINT_USAGE=0
           LOGIN=1
           ;;
@@ -442,10 +491,13 @@ function printBBAVariables() {
 	  echo ""
 		echo "BUILD-BASIC-APP:"
 		echo "  SERVICES:"
-	  echo "    CUSTOM_UAA_INSTANCE                      : $CUSTOM_UAA_INSTANCE"
+		echo "    CUSTOM_UAA_INSTANCE                      : $CUSTOM_UAA_INSTANCE"
+		echo "    CUSTOM_ASSET_INSTANCE                    : $CUSTOM_ASSET_INSTANCE"
+		echo "    CUSTOM_TIMESERIES_INSTANCE               : $CUSTOM_TIMESERIES_INSTANCE"
 	  echo "    RUN_CREATE_SERVICES                      : $RUN_CREATE_SERVICES"
 	  echo "    RUN_CREATE_ACS                           : $RUN_CREATE_ACS"
 		echo "    RUN_CREATE_ASSET                         : $RUN_CREATE_ASSET"
+		echo "    RUN_CREATE_EVENT_HUB                     : $RUN_CREATE_EVENT_HUB"
 		echo "    RUN_CREATE_MOBILE                        : $RUN_CREATE_MOBILE"
 	  echo "    RUN_CREATE_TIMESERIES                    : $RUN_CREATE_TIMESERIES"
 	  echo "    RUN_CREATE_UAA                           : $RUN_CREATE_UAA"
@@ -492,12 +544,15 @@ function printBBAVariables() {
 
 	exportCommonVariables
 	export CUSTOM_UAA_INSTANCE
+	export CUSTOM_ASSET_INSTANCE
+	export CUSTOM_TIMESERIES_INSTANCE
 	export USE_TRAINING_UAA
 	export RUN_DELETE_SERVICES
 	export RUN_CREATE_SERVICES
 	export RUN_CREATE_ACS
 	export RUN_CREATE_ANALYTIC_FRAMEWORK
 	export RUN_CREATE_ASSET
+	export RUN_CREATE_EVENT_HUB
 	export RUN_CREATE_MOBILE
 	export RUN_CREATE_ASSET_MODEL_DEVICE1
 	export RUN_CREATE_ASSET_MODEL_RMD

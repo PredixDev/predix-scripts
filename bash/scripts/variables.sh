@@ -111,6 +111,9 @@ if [[ -n "$CUSTOM_UAA_INSTANCE" ]]; then
 else
 	UAA_INSTANCE_NAME="$INSTANCE_PREPENDER-uaa"
 fi
+
+
+
 ############# Predix TimeSeries Configurations ##############
 
 #The name of the TimeSeries service you are binding to - default already set
@@ -119,8 +122,14 @@ TIMESERIES_SERVICE_NAME="predix-timeseries"
 #Name of the TimeSeries plan (eg: Free) - default already set
 TIMESERIES_SERVICE_PLAN="Free"
 
+
 #Name of your TimeSeries instance - default already set
-TIMESERIES_INSTANCE_NAME="$INSTANCE_PREPENDER-time-series"
+if [[ -n "$CUSTOM_TIMESERIES_INSTANCE" ]]; then
+	TIMESERIES_INSTANCE_NAME="$CUSTOM_TIMESERIES_INSTANCE"
+else
+	TIMESERIES_INSTANCE_NAME="$INSTANCE_PREPENDER-time-series"
+fi
+
 
 ############# Predix Access Control Service Configurations ##############
 
@@ -138,11 +147,28 @@ ACCESS_CONTROL_SERVICE_INSTANCE_NAME="$INSTANCE_PREPENDER-acs"
 #The name of the Asset service you are binding to - default already set
 ASSET_SERVICE_NAME="predix-asset"
 
+#The name of the Eventhub service you are binding to - default already set
+EVENTHUB_SERVICE_NAME="predix-event-hub"
+
 #Name of the Asset plan (eg: Free) - default already set
 ASSET_SERVICE_PLAN="Free"
 
+#Name of the EventHub plan (eg: Free) - default already set
+EVENTHUB_SERVICE_PLAN="Free"
+
 #Name of your Asset instance - default already set
-ASSET_INSTANCE_NAME="$INSTANCE_PREPENDER-asset"
+if [[ -n "$CUSTOM_ASSET_INSTANCE" ]]; then
+	ASSET_INSTANCE_NAME="$CUSTOM_ASSET_INSTANCE"
+else
+	ASSET_INSTANCE_NAME="$INSTANCE_PREPENDER-asset"
+fi
+
+#Name of your eventhub instance - default already set
+if [[ -n "$CUSTOM_EVENTHUB_INSTANCE" ]]; then
+	EVENTHUB_INSTANCE_NAME="$CUSTOM_EVENTHUB_INSTANCE"
+else
+	EVENTHUB_INSTANCE_NAME="$INSTANCE_PREPENDER-eventhub"
+fi
 
 ############# Predix Mobile Configurations ##############
 

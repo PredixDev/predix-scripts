@@ -193,8 +193,6 @@ function processSwitchCommon() {
     -va|--verify-artifactory)
   			if [ -n "$2" ]; then
   				VERIFY_ARTIFACTORY=1
-  				shift
-  				doShift=1
   			else
   				printf 'verify-artifactory not set using default' >&2
   			fi

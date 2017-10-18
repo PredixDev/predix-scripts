@@ -152,6 +152,29 @@ function createAssetService() {
   fi
 }
 
+function createEventHubService() {
+	__append_new_head_log "Create Event Hub Service Instance" "-" "$logDir"
+
+	if [[ $RUN_DELETE_SERVICES -eq 1 ]]; then
+	   __try_delete_service $EVENTHUB_INSTANCE_NAME
+	fi
+
+	if [[ "$TRUSTED_ISSUER_ID" == "" ]]; then
+    getTrustedIssuerId $1
+  fi
+
+	if [[ $USE_TRAINING_UAA == 1 ]]; then
+		configParameters="{\"trustedIssuerIds\":[\"$TRUSTED_ISSUER_ID\"]}"
+		__try_create_service_using_cfcli $ASSET_SERVICE_NAME $ASSET_SERVICE_PLAN $ASSET_INSTANCE_NAME $configParameters "Predix Asset Service"
+	else
+		# Create instance of Predix Asset Service
+		__try_create_predix_service $EVENTHUB_SERVICE_NAME $EVENTHUB_SERVICE_PLAN $EVENTHUB_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET "Predix Event Hub"
+	fi
+
+	# Bind Temp App to Asset Instance
+	__try_bind $1 $EVENTHUB_INSTANCE_NAME
+}
+
 function createMobileService() {
 	__append_new_head_log "Create Mobile Service Instance" "-" "$logDir"
 
@@ -269,7 +292,12 @@ function __setupServices() {
 			__addTimeseriesAuthorities $UAA_CLIENTID_GENERIC
 		fi
 	fi
-
+	if [[ ( $RUN_CREATE_SERVICES == 1 || $RUN_CREATE_EVENT_HUB == 1 ) ]]; then
+		createEventHubService $1
+		if [[ $USE_TRAINING_UAA == 1 ]]; then
+			__addEventHubAuthorities $UAA_CLIENTID_GENERIC
+		fi
+	fi
 	if [[ ( $RUN_CREATE_SERVICES == 1 || $RUN_CREATE_ACS == 1 ) ]]; then
 		createACSService $1
 		if [[ $USE_TRAINING_UAA == 1 ]]; then
@@ -288,6 +316,9 @@ function __setupServices() {
 	fi
 	if [[ "$TIMESERIES_QUERY_URI" == "" ]]; then
 		getTimeseriesQueryUri $1
+	fi
+	if [[ "$TIMESERIES_ZONE_ID" == "" ]]; then
+		getTimeseriesZoneId $1
 	fi
 
 	cd "$rootDir"

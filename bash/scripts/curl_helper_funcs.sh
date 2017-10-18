@@ -245,6 +245,29 @@ function __addTimeseriesAuthorities {
       __updateUaaClient "$uaaURL" "$1" _arrayScope[@] _arrayScope[@]
   fi
 }
+
+#	----------------------------------------------------------------
+#	Function for adding Eventhub Authorities
+#		Accepts 1 arguments:
+#     String of UAA ClientId
+#	----------------------------------------------------------------
+function __addEventHubAuthorities {
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:__addEventHubAuthorities\" expected in order: Client Id " "$logDir"
+
+  if [[ "$UAA_URL" == "" ]]; then
+    getUaaUrl $TEMP_APP
+  fi
+  if [[ "$EVENTHUB_ZONE_ID" == "" ]]; then
+    getEventHubZoneId $TEMP_APP
+  fi
+  __append_new_line_log "Add Eventhub Authorities: EventHubZoneId=$EVENTHUB_ZONE_ID" "$logDir"
+  ## check if the client exists
+  __checkUaaClient $UAA_URL $1 getResponseStatus
+  if [[ $getResponseStatus -eq 200 ]]; then
+      _arrayScope=("eventhub.zones.$EVENTHUB_ZONE_ID.query" "eventhub.zones.$EVENTHUB_ZONE_ID.ingest" "eventhub.zones.$EVENTHUB_ZONE_ID.user")
+      __updateUaaClient "$uaaURL" "$1" _arrayScope[@] _arrayScope[@]
+  fi
+}
 #	----------------------------------------------------------------
 #	Function for adding ACS Authorities
 #		Accepts 1 arguments:
@@ -623,7 +646,19 @@ function getTimeseriesZoneId() {
 		__error_exit "There was an error getting TIMESERIES_ZONE_ID..." "$logDir"
 	fi
 }
-
+function getEventHubZoneId() {
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getEventHubZoneId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
+  VCAP_JSON=$(getVCAPJSON $1)
+  if EVENTHUB_ZONE_ID=$( echo $VCAP_JSON | jq -r '.["VCAP_SERVICES"]["predix-event-hub"][].credentials.query["zone-http-header-value"]'); then
+    if [[ "$EVENTHUB_ZONE_ID" == "" ]] ; then
+      __error_exit "The EVENTHUB_ZONE_ID was not found for \"$1\"..." "$logDir"
+    fi
+    __append_new_line_log "EVENTHUB_ZONE_ID=$EVENTHUB_ZONE_ID copied from VCAP environmental variables!" "$logDir"
+    export EVENTHUB_ZONE_ID="${EVENTHUB_ZONE_ID}"
+	else
+		__error_exit "There was an error getting EVENTHUB_ZONE_ID..." "$logDir"
+	fi
+}
 function getAssetUri() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getAssetUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
   if ASSET_URI=$(px env $1 | grep -m 100 uri | grep asset | awk -F"\"" '{print $4}'); then

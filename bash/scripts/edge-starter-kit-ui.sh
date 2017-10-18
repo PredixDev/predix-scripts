@@ -130,7 +130,7 @@ function edge-starter-kit-ui-main() {
          start "" $apphost
          ;;
     esac
-fi
+  fi
 
 
   if __echo_run px start $FRONT_END_KIT_APP_NAME; then
@@ -139,6 +139,8 @@ fi
     __error_exit "Couldn't start $FRONT_END_KIT_APP_NAME" "$logDir"
   fi
 
+  #return to predix-scripts dir
+  cd ..
 
   CLOUD_ENDPOINT=$(echo $ENDPOINT | cut -d '.' -f3-6 )
 
