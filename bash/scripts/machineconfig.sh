@@ -21,11 +21,29 @@ mv com.ge.dspmicro.predixcloud.identity.config.tmp com.ge.dspmicro.predixcloud.i
 sed "s#com.ge.dspmicro.predixcloud.identity.uaa.clientsecret=.*#com.ge.dspmicro.predixcloud.identity.uaa.clientsecret=\"$UAA_CLIENTID_GENERIC_SECRET\"#" com.ge.dspmicro.predixcloud.identity.config > com.ge.dspmicro.predixcloud.identity.config.tmp
 mv com.ge.dspmicro.predixcloud.identity.config.tmp com.ge.dspmicro.predixcloud.identity.config
 
-sed "s#com.ge.dspmicro.websocketriver.send.destination.url=.*#com.ge.dspmicro.websocketriver.send.destination.url=\"$2\"#" com.ge.dspmicro.websocketriver.send-0.config > com.ge.dspmicro.websocketriver.send-0.config.tmp
-mv com.ge.dspmicro.websocketriver.send-0.config.tmp com.ge.dspmicro.websocketriver.send-0.config
+if [[ $RUN_CREATE_TIMESERIES == 1 ]]; then
+	sed "s#com.ge.dspmicro.websocketriver.send.destination.url=.*#com.ge.dspmicro.websocketriver.send.destination.url=\"$TIMESERIES_INGEST_URI\"#" com.ge.dspmicro.websocketriver.send-0.config > com.ge.dspmicro.websocketriver.send-0.config.tmp
+	mv com.ge.dspmicro.websocketriver.send-0.config.tmp com.ge.dspmicro.websocketriver.send-0.config
 
-sed "s#com.ge.dspmicro.websocketriver.send.header.zone.value=.*#com.ge.dspmicro.websocketriver.send.header.zone.value=\"$3\"#" com.ge.dspmicro.websocketriver.send-0.config > com.ge.dspmicro.websocketriver.send-0.config.tmp
-mv com.ge.dspmicro.websocketriver.send-0.config.tmp com.ge.dspmicro.websocketriver.send-0.config
+	sed "s#com.ge.dspmicro.websocketriver.send.header.zone.value=.*#com.ge.dspmicro.websocketriver.send.header.zone.value=\"$TIMESERIES_ZONE_ID\"#" com.ge.dspmicro.websocketriver.send-0.config > com.ge.dspmicro.websocketriver.send-0.config.tmp
+	mv com.ge.dspmicro.websocketriver.send-0.config.tmp com.ge.dspmicro.websocketriver.send-0.config
+
+	WEBSOCKET_RIVER_NAME=$(grep "com.ge.dspmicro.websocketriver.send.river.name" com.ge.dspmicro.websocketriver.send-0.config | awk -F"=" '{print $2}' | tr -d '"')
+	sed "s#com.ge.dspmicro.hoover.spillway.destination=.*#com.ge.dspmicro.hoover.spillway.destination=\"$WEBSOCKET_RIVER_NAME\"#" $rootDir/../config/com.ge.dspmicro.hoover.spillway-0.config > $rootDir/../config/com.ge.dspmicro.hoover.spillway-0.config.tmp
+	mv $rootDir/../config/com.ge.dspmicro.hoover.spillway-0.config.tmp $rootDir/../config/com.ge.dspmicro.hoover.spillway-0.config
+fi
+
+if [[ $RUN_CREATE_EVENT_HUB == 1 ]]; then
+	sed "s#com.ge.dspmicro.eventhubriver.send.publish.url=.*#com.ge.dspmicro.eventhubriver.send.destination.url=\"$EVENTHUB_INGEST_URI\"#" com.ge.dspmicro.eventhubriver.send-0.config > com.ge.dspmicro.eventhubriver.send-0.config.tmp
+	mv com.ge.dspmicro.eventhubriver.send-0.config.tmp com.ge.dspmicro.eventhubriver.send-0.config
+
+	sed "s#com.ge.dspmicro.eventhubriver.send.header.zone.value=.*#com.ge.dspmicro.eventhubriver.send.header.zone.value=\"$EVENTHUB_ZONE_ID\"#" com.ge.dspmicro.eventhubriver.send-0.config > com.ge.dspmicro.eventhubriver.send-0.config.tmp
+	mv com.ge.dspmicro.eventhubriver.send-0.config.tmp com.ge.dspmicro.eventhubriver.send-0.config
+
+	EVENTHUB_RIVER_NAME=$(grep "com.ge.dspmicro.eventhubriver.send.river.name" com.ge.dspmicro.eventhubriver.send-0.config | awk -F"=" '{print $2}' | tr -d '"')
+	sed "s#com.ge.dspmicro.hoover.spillway.destination=.*#com.ge.dspmicro.hoover.spillway.destination=\"$EVENTHUB_RIVER_NAME\"#" $rootDir/../config/com.ge.dspmicro.hoover.spillway-0.config > $rootDir/../config/com.ge.dspmicro.hoover.spillway-0.config.tmp
+	mv $rootDir/../config/com.ge.dspmicro.hoover.spillway-0.config.tmp $rootDir/../config/com.ge.dspmicro.hoover.spillway-0.config
+fi
 
 if [[ ! -z $ALL_PROXY ]]
 then

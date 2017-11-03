@@ -154,7 +154,7 @@ EVENTHUB_SERVICE_NAME="predix-event-hub"
 ASSET_SERVICE_PLAN="Free"
 
 #Name of the EventHub plan (eg: Free) - default already set
-EVENTHUB_SERVICE_PLAN="Free"
+EVENTHUB_SERVICE_PLAN="Tiered"
 
 #Name of your Asset instance - default already set
 if [[ -n "$CUSTOM_ASSET_INSTANCE" ]]; then
@@ -195,6 +195,12 @@ REDIS_INSTANCE_NAME="$INSTANCE_PREPENDER-redis"
 REDIS_SERVICE_NAME_REG="^redis"
 REDIS_SERVICE_NAME=""
 REDIS_SERVICE_PLAN="shared-vm"
+
+PREDIX_CACHE_INSTANCE_NAME="$INSTANCE_PREPENDER-cache"
+# In case of multiple instances of redis
+# carrot top ^ is regex to serach for instance of redix that starts with redis
+PREDIX_CACHE_SERVICE_NAME="predix-cache"
+PREDIX_CACHE_SERVICE_PLAN="Shared-R30"
 
 #Predix Enable modbus configuration using Modbus simulator
 ENABLE_MODBUS_SIMULATOR="true"

@@ -49,10 +49,17 @@ if [ "$2" == "1" ]; then
 		getTimeseriesIngestUri $1
 	fi
 
-	if [[ "$TRUSTED_ZONE_ID" == "" ]]; then
+	if [[ "$TIMESERIES_ZONE_ID" == "" ]]; then
 		getTimeseriesZoneId $1
 	fi
-
+	if [[ "$RUN_CREATE_EVENT_HUB" == "1" ]]; then
+		if [[ "$EVENTHUB_INGEST_URI" == "" ]]; then
+			getEventHubIngestUri $1
+		fi
+		if [[ "$EVENTHUB_ZONE_ID" == "" ]]; then
+			getEventHubZoneId $1
+		fi
+	fi
 	#download the predix machine container
 	if [[ ! -d "$PREDIX_MACHINE_HOME" ]]; then
 		__echo_run  mvn org.apache.maven.plugins:maven-dependency-plugin:2.6:copy -Dartifact=predix-machine-containers:PredixMachine$MACHINE_CONTAINER_TYPE:$MACHINE_VERSION:zip  -s $MAVEN_SETTINGS_FILE -DoutputDirectory=.
@@ -71,6 +78,9 @@ if [ "$2" == "1" ]; then
 	fi
 
 	#update the property files
+	echo "TIMESERIES_INGEST_URI : $TIMESERIES_INGEST_URI"
+	echo "TIMESERIES_ZONE_ID : $TIMESERIES_ZONE_ID"
+
 	$rootDir/bash/scripts/machineconfig.sh "$TRUSTED_ISSUER_ID" "$TIMESERIES_INGEST_URI" "$TIMESERIES_ZONE_ID" "$PREDIX_MACHINE_HOME"
 	__append_new_head_log "Updated Predix Machine configuration!" "-" "$logDir"
 

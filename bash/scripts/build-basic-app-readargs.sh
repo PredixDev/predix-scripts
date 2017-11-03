@@ -8,14 +8,14 @@ USE_TRAINING_UAA=0
 CUSTOM_UAA_INSTANCE=""
 CUSTOM_ASSET_INSTANCE=""
 CUSTOM_TIMESERIES_INSTANCE=""
-CUSTOM_ASSET_INSTANCE=""
-CUSTOM_TIMESERIES_INSTANCE=""
+CUSTOM_EVENTHUB_INSTANCE=""
 RUN_DELETE_SERVICES=0
 RUN_CREATE_SERVICES=0
 RUN_CREATE_ACS=0
 RUN_CREATE_ANALYTIC_FRAMEWORK=0
 RUN_CREATE_ASSET=0
 RUN_CREATE_EVENT_HUB=0
+RUN_CREATE_PREDIX_CACHE=0
 RUN_CREATE_MOBILE=0
 RUN_CREATE_TIMESERIES=0
 RUN_CREATE_UAA=0
@@ -112,7 +112,7 @@ function processReadargs() {
 	fi
 
 	if [[ "$MACHINE_VERSION" == "" ]]; then
-		MACHINE_VERSION="17.1.2"
+		MACHINE_VERSION="17.2.0"
 	fi
 	if [[ "$MACHINE_CONTAINER_TYPE" == "Custom" ]]; then
 		PREDIX_MACHINE_HOME="$rootDir/$MACHINE_CUSTOM_IMAGE_NAME"
@@ -155,6 +155,18 @@ function processBuildBasicAppReadargsSwitch() {
 	              shift
 	          else
 	              printf 'ERROR: "-custom-asset" requires a non-empty option argument.\n' >&2
+	              exit 1
+	          fi
+	          ;;
+					-ccache|--custom-cache)
+	          if [ -n "$2" ]; then
+	              CUSTOM_PREDIXCACHE_INSTANCE=$2
+	              SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-custom-cache"
+	              PRINT_USAGE=0
+								doShift=1
+	              shift
+	          else
+	              printf 'ERROR: "--custom-cache" requires a non-empty option argument.\n' >&2
 	              exit 1
 	          fi
 	          ;;
@@ -232,6 +244,13 @@ function processBuildBasicAppReadargsSwitch() {
           RUN_CREATE_EVENT_HUB=1
           SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-eh | --create-event-hub"
 					SWITCH_ARRAY[SWITCH_INDEX++]="-eh"
+          PRINT_USAGE=0
+          LOGIN=1
+	        ;;
+				-cache|--create-predix-cache)
+          RUN_CREATE_PREDIX_CACHE=1
+          SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-cache| --create-predix-cache"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-cache"
           PRINT_USAGE=0
           LOGIN=1
           ;;
@@ -494,10 +513,13 @@ function printBBAVariables() {
 		echo "    CUSTOM_UAA_INSTANCE                      : $CUSTOM_UAA_INSTANCE"
 		echo "    CUSTOM_ASSET_INSTANCE                    : $CUSTOM_ASSET_INSTANCE"
 		echo "    CUSTOM_TIMESERIES_INSTANCE               : $CUSTOM_TIMESERIES_INSTANCE"
+		echo "		CUSTOM_EVENTHUB_INSTANCE								 : $CUSTOM_EVENTHUB_INSTANCE"
+		echo "		CUSTOM_PREDIXCACHE_INSTANCE							 : $CUSTOM_PREDIXCACHE_INSTANCE"
 	  echo "    RUN_CREATE_SERVICES                      : $RUN_CREATE_SERVICES"
 	  echo "    RUN_CREATE_ACS                           : $RUN_CREATE_ACS"
 		echo "    RUN_CREATE_ASSET                         : $RUN_CREATE_ASSET"
 		echo "    RUN_CREATE_EVENT_HUB                     : $RUN_CREATE_EVENT_HUB"
+		echo "		RUN_CREATE_PREDIX_CACHE									 : $RUN_CREATE_PREDIX_CACHE"
 		echo "    RUN_CREATE_MOBILE                        : $RUN_CREATE_MOBILE"
 	  echo "    RUN_CREATE_TIMESERIES                    : $RUN_CREATE_TIMESERIES"
 	  echo "    RUN_CREATE_UAA                           : $RUN_CREATE_UAA"
@@ -546,6 +568,7 @@ function printBBAVariables() {
 	export CUSTOM_UAA_INSTANCE
 	export CUSTOM_ASSET_INSTANCE
 	export CUSTOM_TIMESERIES_INSTANCE
+	export CUSTOM_PREDIXCACHE_INSTANCE
 	export USE_TRAINING_UAA
 	export RUN_DELETE_SERVICES
 	export RUN_CREATE_SERVICES
@@ -553,6 +576,7 @@ function printBBAVariables() {
 	export RUN_CREATE_ANALYTIC_FRAMEWORK
 	export RUN_CREATE_ASSET
 	export RUN_CREATE_EVENT_HUB
+	export RUN_CREATE_PREDIX_CACHE
 	export RUN_CREATE_MOBILE
 	export RUN_CREATE_ASSET_MODEL_DEVICE1
 	export RUN_CREATE_ASSET_MODEL_RMD

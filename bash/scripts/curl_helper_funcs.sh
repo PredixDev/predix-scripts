@@ -600,8 +600,9 @@ function getUaaUrl() {
 }
 
 function getTimeseriesIngestUri() {
-  __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesQueryUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
-  if TIMESERIES_INGEST_URI=$(px env $1 | grep -m 100 uri | grep wss: | awk -F"\"" '{print $4}'); then
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesIngestUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
+  VCAP_JSON=$(getVCAPJSON $1)
+  if TIMESERIES_INGEST_URI=$(echo $VCAP_JSON | jq -r '.["VCAP_SERVICES"]["predix-timeseries"][].credentials.ingest.uri' | tr -d '"'| head -1); then
   	if [[ "$TIMESERIES_INGEST_URI" == "" ]] ; then
   		__error_exit "The TIMESERIES_INGEST_URI was not found for \"$1\"..." "$logDir"
   	fi
@@ -614,29 +615,18 @@ function getTimeseriesIngestUri() {
 
 function getTimeseriesQueryUri() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesQueryUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
-  if TIMESERIES_QUERY_URI=$(px env $1 | grep -m 100 uri | grep time-series-store | awk -F"\"" '{print $4}'); then
+  VCAP_JSON=$(getVCAPJSON $1)
+  if TIMESERIES_QUERY_URI=$(echo $VCAP_JSON | jq -r '.["VCAP_SERVICES"]["predix-timeseries"][].credentials.query.uri' | tr -d '"'| head -1); then
     __append_new_line_log "Timeseries Query URI copied from environment variables! $TIMESERIES_QUERY_URI" "$logDir"
   else
     __error_exit "There was an error getting Timeseries Query URI..." "$logDir"
   fi
 }
 
-function getTimeseriesIngestUri() {
-  __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesQueryUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
-  if TIMESERIES_INGEST_URI=$(px env $TEMP_APP | grep -m 100 uri | grep wss: | awk -F"\"" '{print $4}'); then
-  	if [[ "$TIMESERIES_INGEST_URI" == "" ]] ; then
-  		__error_exit "The TIMESERIES_INGEST_URI was not found for \"$TEMP_APP\"..." "$logDir"
-  	fi
-    __append_new_line_log " TIMESERIES_INGEST_URI=$TIMESERIES_INGEST_URI copied from VCAP environmental variables!" "$logDir"
-    export TIMESERIES_INGEST_URI="${TIMESERIES_INGEST_URI}"
-  else
-  	__error_exit "There was an error getting TIMESERIES_INGEST_URI..." "$logDir"
-  fi
-}
 function getTimeseriesZoneId() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesZoneId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
   VCAP_JSON=$(getVCAPJSON $1)
-  if TIMESERIES_ZONE_ID=$( echo $VCAP_JSON | jq -r '.["VCAP_SERVICES"]["predix-timeseries"][].credentials.query["zone-http-header-value"]'); then
+  if TIMESERIES_ZONE_ID=$(echo $VCAP_JSON | jq -r '.["VCAP_SERVICES"]["predix-timeseries"][].credentials.query["zone-http-header-value"]' | tr -d '"'| head -1); then
     if [[ "$TIMESERIES_ZONE_ID" == "" ]] ; then
       __error_exit "The TIMESERIES_ZONE_ID was not found for \"$1\"..." "$logDir"
     fi
@@ -646,10 +636,23 @@ function getTimeseriesZoneId() {
 		__error_exit "There was an error getting TIMESERIES_ZONE_ID..." "$logDir"
 	fi
 }
+function getEventHubIngestUri() {
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getEventHubIngestUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
+  VCAP_JSON=$(getVCAPJSON $1)
+  if EVENTHUB_INGEST_URI=$(echo $VCAP_JSON | jq -r '.["VCAP_SERVICES"]["predix-event-hub"][].credentials.ingest.uri' | tr -d '"'| head -1); then
+    if [[ "$EVENTHUB_INGEST_URI" == "" ]] ; then
+      __error_exit "The EVENTHUB_INGEST_URI was not found for \"$1\"..." "$logDir"
+    fi
+    __append_new_line_log "EVENTHUB_INGEST_URI=$EVENTHUB_INGEST_URI copied from VCAP environmental variables!" "$logDir"
+    export EVENTHUB_INGEST_URI="${EVENTHUB_INGEST_URI}"
+	else
+		__error_exit "There was an error getting EVENTHUB_ZONE_ID..." "$logDir"
+	fi
+}
 function getEventHubZoneId() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getEventHubZoneId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
   VCAP_JSON=$(getVCAPJSON $1)
-  if EVENTHUB_ZONE_ID=$( echo $VCAP_JSON | jq -r '.["VCAP_SERVICES"]["predix-event-hub"][].credentials.query["zone-http-header-value"]'); then
+  if EVENTHUB_ZONE_ID=$(echo $VCAP_JSON | jq -r '.["VCAP_SERVICES"]["predix-event-hub"][].credentials.query["zone-http-header-value"]'); then
     if [[ "$EVENTHUB_ZONE_ID" == "" ]] ; then
       __error_exit "The EVENTHUB_ZONE_ID was not found for \"$1\"..." "$logDir"
     fi

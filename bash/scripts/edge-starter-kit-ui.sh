@@ -31,10 +31,6 @@ function edge-starter-kit-ui-main() {
 
   __append_new_head_log "Build & Deploy Predix Kit Cloud App which is based on Polymer Web App Starter Front-End Microservice" "-" "$logDir"
 
-  # Create Redis service.  TODO: Consider moving this to a separate script, with a switch??
-  getRedisServiceName REDIS_SERVICE_NAME
-  createRedisInstance $REDIS_SERVICE_NAME
-
   # Get the environment variables (VCAPS)
   if [[ "$ASSET_URI" == "" ]]; then
     getAssetUri $1
@@ -66,7 +62,9 @@ function edge-starter-kit-ui-main() {
   __find_and_append_new_line "services:" " - $UAA_INSTANCE_NAME" "manifest.yml" "$logDir"
   __find_and_append_new_line "services:" " - $TIMESERIES_INSTANCE_NAME" "manifest.yml" "$logDir"
   __find_and_append_new_line "services:" " - $ASSET_INSTANCE_NAME" "manifest.yml" "$logDir"
-  __find_and_append_new_line "services:" " - $REDIS_INSTANCE_NAME" "manifest.yml" "$logDir"
+  if [[ $RUN_CREATE_CACHE -eq 1 ]]; then
+    __find_and_append_new_line "services:" " - $PREDIX_CACHE_INSTANCE_NAME" "manifest.yml" "$logDir"
+  fi
   #    Set the clientid and base64ClientCredentials
   #__find_and_replace "\#clientId: .*" "clientId: $UAA_CLIENTID_GENERIC" "manifest.yml" "$logDir"
   __find_and_replace "base64ClientCredential: .*" "base64ClientCredential: $MYGENERICS_SECRET" "manifest.yml" "$logDir"

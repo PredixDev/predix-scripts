@@ -165,10 +165,12 @@ function createEventHubService() {
 
 	if [[ $USE_TRAINING_UAA == 1 ]]; then
 		configParameters="{\"trustedIssuerIds\":[\"$TRUSTED_ISSUER_ID\"]}"
-		__try_create_service_using_cfcli $ASSET_SERVICE_NAME $ASSET_SERVICE_PLAN $ASSET_INSTANCE_NAME $configParameters "Predix Asset Service"
+		__try_create_service_using_cfcli $EVENTHUB_SERVICE_NAME $EVENTHUB_SERVICE_PLAN $EVENTHUB_INSTANCE_NAME $configParameters "Predix EventHub Service"
 	else
 		# Create instance of Predix Asset Service
-		__try_create_predix_service $EVENTHUB_SERVICE_NAME $EVENTHUB_SERVICE_PLAN $EVENTHUB_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET "Predix Event Hub"
+		#__try_create_service_using_cfcli $EVENTHUB_SERVICE_NAME $EVENTHUB_SERVICE_PLAN $EVENTHUB_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET "Predix Event Hub"
+		configParameters="{\"trustedIssuerIds\":[\"$TRUSTED_ISSUER_ID\"]}"
+		__try_create_service_using_cfcli $EVENTHUB_SERVICE_NAME $EVENTHUB_SERVICE_PLAN $EVENTHUB_INSTANCE_NAME $configParameters "Predix EventHub Service"
 	fi
 
 	# Bind Temp App to Asset Instance
@@ -251,6 +253,18 @@ function createRedisInstance() {
 	__try_create_service_using_cfcli $1 $REDIS_SERVICE_PLAN $REDIS_INSTANCE_NAME "{}" "Redis Service"
 }
 
+# one arg: service name
+function createPredixCacheInstance() {
+    __append_new_head_log "Create Predix Cache Service Instance" "-" "$logDir"
+
+	if [[ $RUN_DELETE_SERVICES -eq 1 ]]; then
+	   __try_delete_service $PREDIX_CACHE_INSTANCE_NAME
+	fi
+
+	# Create instance of RabbitMQ Service
+	__try_create_service_using_cfcli $PREDIX_CACHE_SERVICE_NAME $PREDIX_CACHE_SERVICE_PLAN $PREDIX_CACHE_INSTANCE_NAME "{}" "Predix Cache Service"
+}
+
 #main sript starts here
 function __setupServices() {
 	__validate_num_arguments 1 $# "\"predix-services-setup.sh\" expected in order: Name of Predix Application used to get VCAP configurations" "$logDir"
@@ -308,6 +322,10 @@ function __setupServices() {
 	if [[ ( $RUN_CREATE_SERVICES == 1 || $RUN_CREATE_ANALYTIC_FRAMEWORK == 1 ) ]]; then
 		createAnalyticFrameworkServiceInstance $1
 		__addAnalyticFrameworkAuthorities $UAA_CLIENTID_GENERIC
+	fi
+
+	if [[ ( $RUN_CREATE_SERVICES == 1 || $RUN_CREATE_PREDIX_CACHE == 1 ) ]]; then
+		createPredixCacheInstance $1
 	fi
 
 	#get some variables for printing purposes below
