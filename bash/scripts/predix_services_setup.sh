@@ -168,9 +168,15 @@ function createEventHubService() {
 		__try_create_service_using_cfcli $EVENTHUB_SERVICE_NAME $EVENTHUB_SERVICE_PLAN $EVENTHUB_INSTANCE_NAME $configParameters "Predix EventHub Service"
 	else
 		# Create instance of Predix Asset Service
-		#__try_create_service_using_cfcli $EVENTHUB_SERVICE_NAME $EVENTHUB_SERVICE_PLAN $EVENTHUB_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET "Predix Event Hub"
-		configParameters="{\"trustedIssuerIds\":[\"$TRUSTED_ISSUER_ID\"]}"
-		__try_create_service_using_cfcli $EVENTHUB_SERVICE_NAME $EVENTHUB_SERVICE_PLAN $EVENTHUB_INSTANCE_NAME $configParameters "Predix EventHub Service"
+		#__try_create_predix_service $EVENTHUB_SERVICE_NAME $EVENTHUB_SERVICE_PLAN $EVENTHUB_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET "$UAA_CLIENTID_GENERIC" $UAA_CLIENTID_GENERIC_SECRET "Event Hub Service"
+		px uaa login $UAA_INSTANCE_NAME admin --secret $UAA_ADMIN_SECRET
+		if __service_exists $EVENTHUB_INSTANCE_NAME ; then
+	    echo "Service $EVENTHUB_INSTANCE_NAME already exists" # Do nothing
+	  else
+			px cs $EVENTHUB_SERVICE_NAME $EVENTHUB_SERVICE_PLAN $EVENTHUB_INSTANCE_NAME $UAA_INSTANCE_NAME --admin-secret $UAA_ADMIN_SECRET --publish-client-id "$UAA_CLIENTID_GENERIC" --publish-client-secret "$UAA_CLIENTID_GENERIC_SECRET" --subscribe-client-id "$UAA_CLIENTID_GENERIC" --subscribe-client-secret "$UAA_CLIENTID_GENERIC_SECRET"
+		fi
+		#configParameters="{\"trustedIssuerIds\":[\"$TRUSTED_ISSUER_ID\"]}"
+		#__try_create_service_using_cfcli $EVENTHUB_SERVICE_NAME $EVENTHUB_SERVICE_PLAN $EVENTHUB_INSTANCE_NAME $configParameters "Predix EventHub Service"
 	fi
 
 	# Bind Temp App to Asset Instance
@@ -329,16 +335,17 @@ function __setupServices() {
 	fi
 
 	#get some variables for printing purposes below
-	if [[ "$TIMESERIES_INGEST_URI" == "" ]]; then
-		getTimeseriesIngestUri $1
+	if [[ "$RUN_CREATE_TIMESERIES" == "1" ]]; then
+		if [[ "$TIMESERIES_INGEST_URI" == "" ]]; then
+			getTimeseriesIngestUri $1
+		fi
+		if [[ "$TIMESERIES_QUERY_URI" == "" ]]; then
+			getTimeseriesQueryUri $1
+		fi
+		if [[ "$TIMESERIES_ZONE_ID" == "" ]]; then
+			getTimeseriesZoneId $1
+		fi
 	fi
-	if [[ "$TIMESERIES_QUERY_URI" == "" ]]; then
-		getTimeseriesQueryUri $1
-	fi
-	if [[ "$TIMESERIES_ZONE_ID" == "" ]]; then
-		getTimeseriesZoneId $1
-	fi
-
 	cd "$rootDir"
 
 	__append_new_line_log "Predix Services Configurations found in file: \"$SUMMARY_TEXTFILE\"" "$logDir"

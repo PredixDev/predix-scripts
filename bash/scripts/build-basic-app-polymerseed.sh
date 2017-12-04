@@ -113,7 +113,7 @@ fi
   echo "Setup localconfig.json which is used when developing locally on your laptop" >> $SUMMARY_TEXTFILE
   echo "" >> $SUMMARY_TEXTFILE
   echo "Front-end App URL: https://$FRONT_END_POLYMER_SEED_APP_NAME.run.$CLOUD_ENDPONT" >> $SUMMARY_TEXTFILE
-  echo "Front-end App Login: app_user_1/app_user_1" >> $SUMMARY_TEXTFILE
+  echo "Front-end App Login: app_user_1/App_User_111" >> $SUMMARY_TEXTFILE
   echo "" >> $SUMMARY_TEXTFILE
   echo -e "You can execute 'px env "$FRONT_END_POLYMER_SEED_APP_NAME"' to view info about your front-end app" >> $SUMMARY_TEXTFILE
   echo -e "In your web browser, navigate to your front-end application endpoint" >> $SUMMARY_TEXTFILE

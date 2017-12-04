@@ -155,6 +155,19 @@ if [[ ! -d $PREDIX_MACHINE_HOME ]]; then
   echo "$PREDIX_MACHINE_HOME does not exist. Please make sure Predix Machine is installed on the device and try again."
   exit 1
 fi
+if [[ "$HTTPS_PROXY" != "" ]]; then
+	PROXY_HOST=$(echo $HTTPS_PROXY | awk -F"//" '{print $2}' | awk -F":" '{print $1}')
+	PROXY_PORT=$(echo $HTTPS_PROXY | awk -F"//" '{print $2}' | awk -F":" '{print $2}')
+elif [[ "$HTTP_PROXY" != "" ]]; then
+	PROXY_HOST=$(echo $HTTP_PROXY | awk -F"//" '{print $2}' | awk -F":" '{print $1}')
+	PROXY_PORT=$(echo $HTTP_PROXY | awk -F"//" '{print $2}' | awk -F":" '{print $2}')
+elif [[ "$https_proxy" != "" ]]; then
+	PROXY_HOST=$(echo $https_proxy | awk -F"//" '{print $2}' | awk -F":" '{print $1}')
+	PROXY_PORT=$(echo $https_proxy | awk -F"//" '{print $2}' | awk -F":" '{print $2}')
+elif [[ "$http_proxy" != "" ]]; then
+	PROXY_HOST=$(echo $http_proxy | awk -F"//" '{print $2}' | awk -F":" '{print $1}')
+	PROXY_PORT=$(echo $http_proxy | awk -F"//" '{print $2}' | awk -F":" '{print $2}')
+fi
 cd "$PREDIX_MACHINE_HOME/configuration/machine/"
 if [[ "$GET_MACHINE_CONFIG" == "1" ]]; then
 	TIMESERIES_INGEST_URI=$(grep "com.ge.dspmicro.websocketriver.send.destination.url" com.ge.dspmicro.websocketriver.send-0.config | awk -F"=" '{print $2}' | tr -d '"')
@@ -254,6 +267,6 @@ else
 
 	sed "s#com.ge.dspmicro.storeforward.encryptionPassword.encrypted=.*#com.ge.dspmicro.storeforward.encryptionPassword.encrypted=\"\"#" com.ge.dspmicro.storeforward-taskstatus.config > com.ge.dspmicro.storeforward-taskstatus.config.tmp
 	mv com.ge.dspmicro.storeforward-taskstatus.config.tmp com.ge.dspmicro.storeforward-taskstatus.config
-		
+
 	echo "Predix Machine configuration updated successfully"
 fi

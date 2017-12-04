@@ -159,7 +159,7 @@ fi
   echo "Installed a simple front-end named $FRONT_END_NODEJS_STARTER_APP_NAME and updated the property files and manifest.yml with UAA, Time Series and Asset info" >> $SUMMARY_TEXTFILE
   echo "" >> $SUMMARY_TEXTFILE
   echo "Front-end App URL: https://$FRONT_END_NODEJS_STARTER_APP_NAME.run.aws-usw02-pr.ice.predix.io" >> $SUMMARY_TEXTFILE
-  echo "Front-end App Login: app_user_1/app_user_1" >> $SUMMARY_TEXTFILE
+  echo "Front-end App Login: app_user_1/App_User_111" >> $SUMMARY_TEXTFILE
   echo "" >> $SUMMARY_TEXTFILE
   echo -e "You can execute 'px env "$FRONT_END_NODEJS_STARTER_APP_NAME"' to view info about your front-end app, UAA, Asset, and Time Series" >> $SUMMARY_TEXTFILE
   echo -e "In your web browser, navigate to your front-end application endpoint" >> $SUMMARY_TEXTFILE

@@ -264,7 +264,7 @@ function __addEventHubAuthorities {
   ## check if the client exists
   __checkUaaClient $UAA_URL $1 getResponseStatus
   if [[ $getResponseStatus -eq 200 ]]; then
-      _arrayScope=("eventhub.zones.$EVENTHUB_ZONE_ID.query" "eventhub.zones.$EVENTHUB_ZONE_ID.ingest" "eventhub.zones.$EVENTHUB_ZONE_ID.user")
+      _arrayScope=("eventhub.zones.$EVENTHUB_ZONE_ID.publish" "eventhub.zones.$EVENTHUB_ZONE_ID.subscribe" "eventhub.zones.$EVENTHUB_ZONE_ID.user")
       __updateUaaClient "$uaaURL" "$1" _arrayScope[@] _arrayScope[@]
   fi
 }
@@ -639,6 +639,7 @@ function getTimeseriesZoneId() {
 function getEventHubIngestUri() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getEventHubIngestUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
   VCAP_JSON=$(getVCAPJSON $1)
+  echo "$VCAP_JSON"
   if EVENTHUB_INGEST_URI=$(echo $VCAP_JSON | jq -r '.["VCAP_SERVICES"]["predix-event-hub"][].credentials.ingest.uri' | tr -d '"'| head -1); then
     if [[ "$EVENTHUB_INGEST_URI" == "" ]] ; then
       __error_exit "The EVENTHUB_INGEST_URI was not found for \"$1\"..." "$logDir"

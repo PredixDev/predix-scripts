@@ -41,7 +41,7 @@ __try_create_service_using_cfcli() {
   echo "__try_create_service_using_cfcli $1 $2 $3 $4 $5"
 
   if __service_exists $3 ; then
-    echo -n "Service $3 already exists" # Do nothing
+    echo "Service $3 already exists" # Do nothing
   else
     echo -e "\n$ cf create-service $1 $2 $3 -c '$4'\n"
     if cf cs $1 $2 $3 -c $4; then

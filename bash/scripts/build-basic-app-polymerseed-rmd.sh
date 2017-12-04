@@ -65,8 +65,8 @@ function build-basic-app-polymerseed-rmd-main() {
   __find_and_append_new_line "services:" "- $UAA_INSTANCE_NAME" "manifest.yml" "$logDir"
   __find_and_append_new_line "services:" "- $TIMESERIES_INSTANCE_NAME" "manifest.yml" "$logDir"
   __find_and_append_new_line "services:" "- $ASSET_INSTANCE_NAME" "manifest.yml" "$logDir"
-  if [[ $RUN_CREATE_CACHE -eq 1 ]]; then
-    __find_and_append_new_line "services:" " - $PREDIX_CACHE_INSTANCE_NAME" "manifest.yml" "$logDir"
+  if [[ $RUN_CREATE_PREDIX_CACHE -eq 1 ]]; then
+    __find_and_append_new_line "services:" "- $PREDIX_CACHE_INSTANCE_NAME" "manifest.yml" "$logDir"
   fi
   #    Set the clientid and base64ClientCredentials
   __find_and_replace "\#clientId: .*" "clientId: $UAA_CLIENTID_GENERIC" "manifest.yml" "$logDir"
@@ -177,7 +177,7 @@ fi
   echo "Setup localconfig.json which is used when developing locally on your laptop" >> $SUMMARY_TEXTFILE
   echo "" >> $SUMMARY_TEXTFILE
   echo "Front-end App URL: https://$FRONT_END_POLYMER_SEED_APP_NAME.run.$CLOUD_ENDPONT" >> $SUMMARY_TEXTFILE
-  echo "Front-end App Login: app_user_1/app_user_1" >> $SUMMARY_TEXTFILE
+  echo "Front-end App Login: app_user_1/App_User_111" >> $SUMMARY_TEXTFILE
   echo "" >> $SUMMARY_TEXTFILE
   echo -e "You can execute 'px env "$FRONT_END_POLYMER_SEED_APP_NAME"' to view info about your front-end app, UAA, Asset, and Time Series" >> $SUMMARY_TEXTFILE
   echo -e "In your web browser, navigate to your front-end application endpoint" >> $SUMMARY_TEXTFILE

@@ -62,7 +62,7 @@ function build-basic-app-dataexchange-ui-main() {
 
   getUrlForAppName $DATAEXCHANGE_APP_NAME DATAEXCHANGE_URL "https"
 
-  __find_and_replace "\#dataExServiceUrl: .*" "dataExServiceUrl: https://$DATAEXCHANGE_URL" "manifest.yml" "$logDir"
+  __find_and_replace "\#dataExServiceUrl: .*" "dataExServiceUrl: $DATAEXCHANGE_URL" "manifest.yml" "$logDir"
 
   cat manifest.yml
 
@@ -72,7 +72,7 @@ function build-basic-app-dataexchange-ui-main() {
   __find_and_replace ".*base64ClientCredential\":.*" "    \"base64ClientCredential\": \"$MYLOGINGENRICS_SECRET\"," "server/localConfig.json" "$logDir"
   __find_and_replace ".*serviceClientId\":.*" "    \"serviceClientId\": \"$UAA_CLIENTID_GENERIC\"," "server/localConfig.json" "$logDir"
   __find_and_replace ".*serviceBase64ClientCredential\":.*" "    \"serviceBase64ClientCredential\": \"$MYGENERICS_SECRET\"," "server/localConfig.json" "$logDir"
-  __find_and_replace ".*dataExServiceUrl\": .*" "    \"dataExServiceUrl\": \"https://$DATAEXCHANGE_URL\"" "server/localConfig.json" "$logDir"
+  __find_and_replace ".*dataExServiceUrl\": .*" "    \"dataExServiceUrl\": \"$DATAEXCHANGE_URL\"" "server/localConfig.json" "$logDir"
 
 
   cat server/localConfig.json
@@ -142,7 +142,7 @@ fi
   echo "Setup localconfig.json which is used when developing locally on your laptop" >> $SUMMARY_TEXTFILE
   echo "" >> $SUMMARY_TEXTFILE
   echo "Front-end App URL: https://$FRONT_END_DATAEXCHANGE_UI_APP_NAME.run.$CLOUD_ENDPONT" >> $SUMMARY_TEXTFILE
-  echo "Front-end App Login: app_user_1/app_user_1" >> $SUMMARY_TEXTFILE
+  echo "Front-end App Login: app_user_1/App_User_111" >> $SUMMARY_TEXTFILE
   echo "" >> $SUMMARY_TEXTFILE
   echo -e "You can execute 'px env "$FRONT_END_DATAEXCHANGE_UI_APP_NAME"' to view info about your front-end app" >> $SUMMARY_TEXTFILE
   echo -e "In your web browser, navigate to your front-end application endpoint" >> $SUMMARY_TEXTFILE
