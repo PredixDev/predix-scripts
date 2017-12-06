@@ -69,15 +69,47 @@ else
   echo "unable to call SCRIPT_READARGS as nothing is defined"
 fi
 
+vercomp () {
+  # can't do simple string or numeric comparison for semver string, so we need this function.
+  # accepts two semver strings.  i.e. 0.6.3, 1.3.49, etc
+  # returns 0 if $1 >= $2, or exits with error.  
+  # https://stackoverflow.com/questions/4023830/how-to-compare-two-strings-in-dot-separated-version-format-in-bash
+    if [[ $1 == $2 ]]
+    then
+        return 0
+    fi
+    local IFS=.
+    local i ver1=($1) ver2=($2)
+    # fill empty fields in ver1 with zeros
+    for ((i=${#ver1[@]}; i<${#ver2[@]}; i++))
+    do
+        ver1[i]=0
+    done
+    for ((i=0; i<${#ver1[@]}; i++))
+    do
+        if [[ -z ${ver2[i]} ]]
+        then
+            # fill empty fields in ver2 with zeros
+            ver2[i]=0
+        fi
+        if ((10#${ver1[i]} > 10#${ver2[i]}))
+        then
+            return 0
+        fi
+        if ((10#${ver1[i]} < 10#${ver2[i]}))
+        then
+            __error_exit "Minimum version of Predix CLI=$PREDIX_CLI_MIN_VALUE is required. Current version is $predixcliversion" "$quickstartLogDir"
+        fi
+    done
+    return 0
+}
+
 if [[ $PREDIX_CLI_MIN == 1 ]]; then
   predixcliversion=`predix --version | cut -d' ' -f3 | cut -d'-' -f3`
   echo "-->> Predix CLI Version : $predixcliversion"
   pxcliversion=`px --version | cut -d' ' -f3 | cut -d'-' -f3`
   echo "-->> PX CLI Link Version : $pxcliversion"
-  min=$(echo $predixcliversion $PREDIX_CLI_MIN_VALUE | awk '{if ($1 < $2) print $1; else print $2}')
-  if [[ $min == $predixcliversion && $predixcliversion != $PREDIX_CLI_MIN_VALUE ]]; then
-    __error_exit "Minimum version of Predix CLI=$PREDIX_CLI_MIN_VALUE is required. Current version is $predixcliversion" "$quickstartLogDir"
-  fi
+  vercomp $predixcliversion $PREDIX_CLI_MIN_VALUE
 fi
 
 if [[ ( $LOGIN == 1 ) ]]; then
