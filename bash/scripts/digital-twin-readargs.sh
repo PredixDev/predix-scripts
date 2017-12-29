@@ -11,6 +11,7 @@ RUN_CREATE_ANALYTIC_FRAMEWORK=0
 RUN_CREATE_RABBITMQ=0
 USE_RMD_ANALYTICS=0
 USE_RMD_ORCHESTRATION=0
+BIND_RABBITMQ_DATAEXCHANGE=0
 
 function processReadargs() {
 	#process all the switches as normal - not all switches are functions, so we take a pass through and set some variables
@@ -45,6 +46,13 @@ function processDigitalTwinReadargsSwitch() {
         RUN_CREATE_RABBITMQ=1
         SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-rmq | --create-rabbitmq"
 				SWITCH_ARRAY[SWITCH_INDEX++]="-rmq"
+        PRINT_USAGE=0
+        LOGIN=1
+        ;;
+      -bindrmq|--bind-rabbitmq)
+        BIND_RABBITMQ_DATAEXCHANGE=1
+        SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-bindrmq | --bind-rabbitmq"
+				SWITCH_ARRAY[SWITCH_INDEX++]="-bindrmq"
         PRINT_USAGE=0
         LOGIN=1
         ;;
@@ -110,6 +118,7 @@ function __print_out_usage
   echo -e "Digital Twin options are as below"
   echo "services:"
 	echo "[-rmq|      --create-rabbitmq]              => Create the rabbit mq service instance"
+	echo "[-bindrmq|   --bind-rabbitmq]              => Bind rabbit mq with data exchange"
 	echo "[-af|      --create-analytic-framework]     => Create the analytic framework service instance"
   echo "back-end:"
 	echo "[-armd|    --rmd-analytics]                 => Use rmd-analytics as backend"
@@ -136,6 +145,15 @@ function runFunctionsForDigitalTwin() {
 						;;
 					-rmq|--create-rabbitmq)
             createRabbitMQInstance $1
+            break
+            ;;
+					-bindrmq|--bind-rabbitmq)
+            bindRabbitMQInstance $DATAEXCHANGE_APP_NAME
+	    setEnv $DATAEXCHANGE_APP_NAME $SPRING_PROFILES_ACTIVE $SPRING_PROFILES_ACTIVE_VALUE
+	    restageApp $DATAEXCHANGE_APP_NAME
+	    getUrlForAppName $DATAEXCHANGE_APP_NAME APP_URL "https"
+	    setEnv $FRONT_END_POLYMER_SEED_APP_NAME "dataExchangeURL" $APP_URL
+	    restageApp $FRONT_END_POLYMER_SEED_APP_NAME
             break
             ;;
 					-af|--create-analytic-framework)

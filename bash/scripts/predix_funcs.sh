@@ -25,6 +25,22 @@ __try_bind() {
   fi
 }
 
+__try_restage() {
+  if px cf restage $1; then
+      __append_new_line_log "\"$1\" Restage successful" "$logDir"
+  else
+      __append_new_line_log "\"$1\" Restage failed" "$logDir"
+  fi
+}
+
+__try_setenv() {
+  if px cf set-env $1 $2 $3; then
+      __append_new_line_log "\"$1\" set-env successful" "$logDir"
+  else
+      __append_new_line_log "\"$1\" set-env failed" "$logDir"
+  fi
+}
+
 #	----------------------------------------------------------------
 #	Function for creating a predix service using the cf cli
 #		Accepts 6 arguments:
@@ -59,7 +75,7 @@ __try_create_service_using_cfcli() {
 
 __try_create_uaa() {
   if __service_exists $3 ; then
-    echo -n "Service $3 already exists" # Do nothing
+    echo "Service $3 already exists" # Do nothing
   else
     echo -e "\n$ px create-service $1 $2 $3 --admin-secret $4\n"
     if px cs $1 $2 $3 --admin-secret $4; then
@@ -92,7 +108,7 @@ __try_create_uaa() {
 __try_create_predix_service() {
   __validate_num_arguments 8 $# "\"predix_funcs:__try_create_predix_service\" expected in order: service name, pricing plan, instance name, uaa name, admin secret, clientid, client secret, service name for log" "$logDir"
   echo "__try_create_predix_service $1 $2 $3 $4 $5 $6 $7"
-  px uaa login $4 admin --secret $5
+  #px uaa login $4 admin --secret $5
   if __service_exists $3 ; then
     echo -n "Service $3 already exists" # Do nothing
   else
@@ -134,6 +150,24 @@ __try_create_predix_service() {
     	   fi
       fi
     fi
+  fi
+}
+
+__try_create_af_service() {
+  px uaa login $4 admin --secret $7
+  if __service_exists $3 ; then
+    echo -n "Service $3 already exists" # Do nothing
+  else
+        __analytic_framework_ui_user_delete ${12}
+
+      	#echo -e "\n$here px create-service $1 $2 $3 $4 $5 $6 --admin-secret $7 --runtime-client-id $8 --runtime-client-secret $9 --ui-client-id ${10} --ui-client-secret ${11} --ui-user ${12} --ui-user-password ${13} --ui-user-email ${14} --ui-domain-prefix ${15}\n"
+      	echo -e "\n$here px create-service $1 --admin-secret $7 --runtime-client-id $8 --runtime-client-secret $9 --ui-client-id ${10} --ui-client-secret ${11} --ui-user ${12} --ui-user-password ${13} --ui-user-email ${14} --ui-domain-prefix ${15} $2 $3 $4 $5 $6\n"
+      	#if px cs $1 $2 $3 $4 --runtime-client-id $6 --runtime-client-secret $7 --ui-client-id "iaf" --ui-client-secret "secret" --ui-domain-prefix "iaf"; then
+      	if px create-service $1 --admin-secret $7 --runtime-client-id $8 --runtime-client-secret $9 --ui-client-id ${10} --ui-client-secret ${11} --ui-user ${12} --ui-user-password ${13} --ui-user-email ${14} --ui-domain-prefix ${15} $2 $3 $4 $5 $6; then
+    	   __append_new_line_log "$3 service instance successfully created!" "$logDir"
+      	else
+    	   __error_exit "Couldn't create $3 service instance..." "$logDir"
+      	fi
   fi
 }
 
@@ -211,6 +245,17 @@ __app_exists() {
 __service_exists() {
 	px s | grep $1 > /dev/null 2>&1
 	return $?
+}
+
+__analytic_framework_ui_user_exists() {
+	px uaa users | grep $1 > /dev/null 2>&1
+	return $?
+}
+
+__analytic_framework_ui_user_delete() {
+	if __analytic_framework_ui_user_exists $1; then
+		px uaa user delete $1 > /dev/null 2>&1
+	fi
 }
 
 __is_bound() {

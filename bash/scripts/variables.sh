@@ -32,6 +32,8 @@ FRONT_END_DATAEXCHANGE_UI_APP_NAME="$INSTANCE_PREPENDER-data-exchange-ui"
 FRONT_END_KIT_APP_NAME="$INSTANCE_PREPENDER-kit-app"
 # Name for your Mobile Application
 MOBILE_STARTER_APP_NAME="$INSTANCE_PREPENDER-predix-mobile-starter"
+SPRING_PROFILES_ACTIVE="SPRING_PROFILES_ACTIVE"
+SPRING_PROFILES_ACTIVE_VALUE="cloud,asset,timeseries,websocket,dxwebsocket,rabbitmq"
 
 ############### UAA Configurations ###############
 
@@ -72,6 +74,12 @@ UAA_CLIENTID_DEVICE="device_client_id"
 if [[ $UAA_CLIENTID_DEVICE_SECRET == "" ]]; then
 	UAA_CLIENTID_DEVICE_SECRET="secret"
 fi
+
+############# Predix ANALYTIC FRAMEWORK SERVICE'S Analytic User Interface(UI)'s login credential Configurations#############
+
+ANALYTIC_UI_USER_NAME="app_user_1"
+ANALYTIC_UI_PASSWORD="App_User_111"
+ANALYTIC_UI_USER_EMAIL="app_user_1@ge.com"
 
 ############# Predix Asset Configurations #############
 

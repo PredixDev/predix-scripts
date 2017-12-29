@@ -38,6 +38,12 @@ function edge-starter-kit-service-main() {
     getGitRepo "kit-service"
     cd kit-service
 
+    cd config
+    #Setting test user on application.properties file
+    __find_and_replace "kit.test.webapp.user=*" "kit.test.webapp.user=$UAA_USER_NAME" "application.properties" "$logDir"
+    __find_and_replace "kit.test.webapp.user.password=*" "kit.test.webapp.user.password=$UAA_USER_PASSWORD" "application.properties" "$logDir"
+    cd ..
+
     # Edit the manifest.yml files
 
     #    a) Modify the name of the applications

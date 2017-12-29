@@ -77,7 +77,7 @@ function build-basic-app-dataexchange-main() {
     # check if the web socket server is deployed, if not dont set that profile
     if [[ "$USE_DATA_SIMULATOR" == "1" ]]; then
       echo "calling replace DX_SPRING_PROFILE"
-      DX_SPRING_PROFILE="cloud,timeseries,asset,websocket"
+      DX_SPRING_PROFILE="cloud,timeseries,asset,websocket,dxwebsocket"
       __find_and_replace "SPRING_PROFILES_ACTIVE : .*" "SPRING_PROFILES_ACTIVE: $DX_SPRING_PROFILE" "manifest.yml" "$logDir"
     fi
     cat manifest.yml

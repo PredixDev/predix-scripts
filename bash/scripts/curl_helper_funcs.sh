@@ -640,7 +640,7 @@ function getEventHubIngestUri() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getEventHubIngestUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
   VCAP_JSON=$(getVCAPJSON $1)
   echo "$VCAP_JSON"
-  if EVENTHUB_INGEST_URI=$(echo $VCAP_JSON | jq -r '.["VCAP_SERVICES"]["predix-event-hub"][].credentials.ingest.uri' | tr -d '"'| head -1); then
+  if EVENTHUB_INGEST_URI=$(echo $VCAP_JSON | jq -r '.["VCAP_SERVICES"]["predix-event-hub"][].credentials.publish.protocol_details[0].uri' | tr -d '"'| head -1); then
     if [[ "$EVENTHUB_INGEST_URI" == "" ]] ; then
       __error_exit "The EVENTHUB_INGEST_URI was not found for \"$1\"..." "$logDir"
     fi
@@ -653,7 +653,7 @@ function getEventHubIngestUri() {
 function getEventHubZoneId() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getEventHubZoneId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
   VCAP_JSON=$(getVCAPJSON $1)
-  if EVENTHUB_ZONE_ID=$(echo $VCAP_JSON | jq -r '.["VCAP_SERVICES"]["predix-event-hub"][].credentials.query["zone-http-header-value"]'); then
+  if EVENTHUB_ZONE_ID=$(echo $VCAP_JSON | jq -r '.["VCAP_SERVICES"]["predix-event-hub"][].credentials.publish["zone-http-header-value"]'); then
     if [[ "$EVENTHUB_ZONE_ID" == "" ]] ; then
       __error_exit "The EVENTHUB_ZONE_ID was not found for \"$1\"..." "$logDir"
     fi

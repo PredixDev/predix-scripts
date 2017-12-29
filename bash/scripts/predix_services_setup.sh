@@ -169,7 +169,7 @@ function createEventHubService() {
 	else
 		# Create instance of Predix Asset Service
 		#__try_create_predix_service $EVENTHUB_SERVICE_NAME $EVENTHUB_SERVICE_PLAN $EVENTHUB_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET "$UAA_CLIENTID_GENERIC" $UAA_CLIENTID_GENERIC_SECRET "Event Hub Service"
-		px uaa login $UAA_INSTANCE_NAME admin --secret $UAA_ADMIN_SECRET
+		#px uaa login $UAA_INSTANCE_NAME admin --secret $UAA_ADMIN_SECRET
 		if __service_exists $EVENTHUB_INSTANCE_NAME ; then
 	    echo "Service $EVENTHUB_INSTANCE_NAME already exists" # Do nothing
 	  else
@@ -181,6 +181,9 @@ function createEventHubService() {
 
 	# Bind Temp App to Asset Instance
 	__try_bind $1 $EVENTHUB_INSTANCE_NAME
+
+	getEventHubIngestUri $1
+	getEventHubZoneId $1
 }
 
 function createMobileService() {
@@ -215,7 +218,7 @@ function createAnalyticFrameworkServiceInstance() {
 	else
 		configParameters="{\"trustedIssuerIds\":[\"$TRUSTED_ISSUER_ID\"]}"
 		# Create instance of Predix Analytic Framework Service
-		__try_create_predix_service $ANALYTIC_FRAMEWORK_SERVICE_NAME $ANALYTIC_FRAMEWORK_SERVICE_PLAN $ANALYTIC_FRAMEWORK_SERVICE_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET "Predix AF Service"
+		__try_create_af_service $ANALYTIC_FRAMEWORK_SERVICE_NAME $ANALYTIC_FRAMEWORK_SERVICE_PLAN $ANALYTIC_FRAMEWORK_SERVICE_INSTANCE_NAME $UAA_INSTANCE_NAME $ASSET_INSTANCE_NAME $TIMESERIES_INSTANCE_NAME $UAA_ADMIN_SECRET $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET $UAA_CLIENTID_LOGIN $UAA_CLIENTID_LOGIN_SECRET $ANALYTIC_UI_USER_NAME $ANALYTIC_UI_PASSWORD $ANALYTIC_UI_USER_EMAIL $INSTANCE_PREPENDER "Predix AF Service"
 		#__try_create_service_using_cfcli $ANALYTIC_FRAMEWORK_SERVICE_NAME $ANALYTIC_FRAMEWORK_SERVICE_PLAN $ANALYTIC_FRAMEWORK_SERVICE_INSTANCE_NAME $configParameters "Analytic Framework Service"
 	fi
 
@@ -236,6 +239,25 @@ function createRabbitMQInstance() {
 
 	# Bind Temp App to RabbitMQ Service Instance
 	__try_bind $1 $RABBITMQ_SERVICE_INSTANCE_NAME
+}
+
+function bindRabbitMQInstance() {
+	__append_new_head_log "Bind RabbitMQ Service Instance" "-" "$logDir"
+
+	# Bind Given App to RabbitMQ Service Instance
+	__try_bind $1 $RABBITMQ_SERVICE_INSTANCE_NAME
+}
+
+function setEnv() {
+	__append_new_head_log "Setting Env vars" "-" "$logDir"
+
+	__try_setenv $1 $2 $3
+}
+
+function restageApp() {
+	__append_new_head_log "Restage" "-" "$logDir"
+
+	__try_restage $1
 }
 
 function createDeviceService() {

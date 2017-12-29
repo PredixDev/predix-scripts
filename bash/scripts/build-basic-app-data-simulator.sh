@@ -60,8 +60,7 @@ function build-basic-app-data-simulator-main() {
     __find_and_replace "{assetService}" "$ASSET_INSTANCE_NAME" "manifest.yml" "$logDir"
     __find_and_replace "predix_oauth_clientId : .*" "predix_oauth_clientId: $UAA_CLIENTID_GENERIC:$UAA_CLIENTID_GENERIC_SECRET" "manifest.yml" "$logDir"
     CLOUD_ENDPONT=$(echo $ENDPOINT | cut -d '.' -f3-6 )
-    __find_and_replace "predix_fdh_restHost : .*" "predix_fdh_restHost: $DATAEXCHANGE_APP_NAME"".run.$CLOUD_ENDPONT" "manifest.yml" "$logDir"
-
+    __find_and_replace "predix_dataexchange_url : .*" "predix_dataexchange_url: https://$DATAEXCHANGE_APP_NAME"".run.$CLOUD_ENDPONT/services/fdhrouter/fielddatahandler/putfielddata" "manifest.yml" "$logDir"
     cat manifest.yml
 
     # Push the application
