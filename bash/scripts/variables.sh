@@ -158,11 +158,17 @@ ASSET_SERVICE_NAME="predix-asset"
 #The name of the Eventhub service you are binding to - default already set
 EVENTHUB_SERVICE_NAME="predix-event-hub"
 
+#The name of the blobstore service you are binding to - default already set
+BLOBSTORE_SERVICE_NAME="predix-blobstore"
+
 #Name of the Asset plan (eg: Free) - default already set
 ASSET_SERVICE_PLAN="Free"
 
 #Name of the EventHub plan (eg: Free) - default already set
 EVENTHUB_SERVICE_PLAN="Tiered"
+
+#Name of the Blobstore plan (eg: Free) - default already set
+BLOBSTORE_SERVICE_PLAN="Tiered"
 
 #Name of your Asset instance - default already set
 if [[ -n "$CUSTOM_ASSET_INSTANCE" ]]; then
@@ -177,7 +183,12 @@ if [[ -n "$CUSTOM_EVENTHUB_INSTANCE" ]]; then
 else
 	EVENTHUB_INSTANCE_NAME="$INSTANCE_PREPENDER-eventhub"
 fi
-
+#Name of your eventhub instance - default already set
+if [[ -n "$CUSTOM_BLOBSTORE_INSTANCE" ]]; then
+	BLOBSTORE_INSTANCE_NAME="$CUSTOM_BLOBSTORE_INSTANCE"
+else
+	BLOBSTORE_INSTANCE_NAME="$INSTANCE_PREPENDER-blobstore"
+fi
 ############# Predix Mobile Configurations ##############
 
 #The name of the Mobile service you are binding to - default already set

@@ -9,6 +9,7 @@ CUSTOM_UAA_INSTANCE=""
 CUSTOM_ASSET_INSTANCE=""
 CUSTOM_TIMESERIES_INSTANCE=""
 CUSTOM_EVENTHUB_INSTANCE=""
+CUSTOM_BLOBSTORE_INSTANCE=""
 RUN_DELETE_SERVICES=0
 RUN_CREATE_SERVICES=0
 RUN_CREATE_ACS=0
@@ -17,7 +18,9 @@ RUN_CREATE_ASSET=0
 RUN_CREATE_EVENT_HUB=0
 RUN_CREATE_PREDIX_CACHE=0
 RUN_CREATE_MOBILE=0
+RUN_CREATE_MOBILE_REF_APP=0
 RUN_CREATE_TIMESERIES=0
+RUN_CREATE_BLOBSTORE=0
 RUN_CREATE_UAA=0
 RUN_CREATE_ASSET_MODEL_DEVICE1=0
 RUN_CREATE_ASSET_MODEL_RMD=0
@@ -54,38 +57,39 @@ function __print_out_usage
   echo "[-acs|     --create-acs]                    => Create the access control service instance"
   echo "[-af|      --create-analytic-framework]     => Create the analytic framework service instance"
   echo "[-asset|   --create-asset]                  => Create the asset service instance"
-	echo "[-eh|   --create-event-hub]                  => Create the asset service instance"
+	echo "[-bs|      --create-blobstore]              => Create the Blobstore service instance"
+  echo "[-eh|      --create-event-hub]              => Create the Event Hub service instance"
   echo "[-ts|      --create-timeseries]             => Create the time series service instance"
   echo "[-tu|      --training-uaa]                  => Use a Training UAA Instance. Default does not use the Training UAA instance"
   echo "[-uaa|     --create-uaa]                    => Create the uaa service instance"
   echo "asset-model:"
-  echo "[-amd1|     --create-asset-model-device1]   => Create the access model for device1"
-  echo "[-amrmd|    --create-asset-model-rmd]       => Create the access model for remote monitoring and diagnostics"
+  echo "[-amd1|    --create-asset-model-device1]   => Create the access model for device1"
+  echo "[-amrmd|   --create-asset-model-rmd]       => Create the access model for remote monitoring and diagnostics"
   echo "back-end:"
-  echo "[-dx|      --data-exchange]                  => Use data-exchange as backend"
+  echo "[-dx|      --data-exchange]                 => Use data-exchange as backend"
   echo "[-rmd|     --rmd-datasource]                => Use rmd-datasource as backend"
   echo "[-sim|     --data-simulator]                => Use data-exchange-simulator as backend"
   echo "[-wd|      --wind-data]                     => Use winddata-timeseries-service as backend"
   echo "[-wss|     --websocket-server]              => Use websocket-server as backend"
   echo "front-end:"
-	echo "[-ns| 		 --nodejs-starter]            	  => Install the build-a-basic nodejs express front-end web app to visualize the data"
-	echo "[-nsts| 	 --nodejs-starter-w-timeseries]   => Install the build-a-basic nodejs express front-end web app to visualize the data, plus UAA, Asset, Time Series"
-  echo "[-ps|       --polymer-seed]                 => Install the build-a-basic polymer-seed front-end web app driven by json files to visualize the data"
-  echo "[-psuaa|    --polymer-seed-uaa]             => Install the build-a-basic polymer-seed front-end web app with UAA to visualize the data"
-  echo "[-psasset|  --polymer-seed-asset]           => Install the build-a-basic polymer-seed front-end web app with Asset and UAA to visualize the data"
-  echo "[-psts|     --polymer-seed-timeseries]      => Install the build-a-basic polymer-seed front-end web app with Time Series and UAA to visualize the data"
-  echo "[-psrmd|    --polymer-seed-rmd-refapp]      => Install the build-a-basic polymer-seed front-end web app with UAA, Asset, Timeseries, Websocket Server, Data Exchange, Data Simulator, and RMD Datasource to visualize the data"
-  echo "[-dxui|     --data-exchange-ui]             => Install the rmd-ref-app data-exchange-ui front-end web app to visualize the saved data sets"
+  echo "[-ns| 	   --nodejs-starter]               => Install the build-a-basic nodejs express front-end web app to visualize the data"
+  echo "[-nsts|    --nodejs-starter-w-timeseries]  => Install the build-a-basic nodejs express front-end web app to visualize the data, plus UAA, Asset, Time Series"
+  echo "[-ps|      --polymer-seed]                 => Install the build-a-basic polymer-seed front-end web app driven by json files to visualize the data"
+  echo "[-psuaa|   --polymer-seed-uaa]             => Install the build-a-basic polymer-seed front-end web app with UAA to visualize the data"
+  echo "[-psasset| --polymer-seed-asset]           => Install the build-a-basic polymer-seed front-end web app with Asset and UAA to visualize the data"
+  echo "[-psts|    --polymer-seed-timeseries]      => Install the build-a-basic polymer-seed front-end web app with Time Series and UAA to visualize the data"
+  echo "[-psrmd|   --polymer-seed-rmd-refapp]      => Install the build-a-basic polymer-seed front-end web app with UAA, Asset, Timeseries, Websocket Server, Data Exchange, Data Simulator, and RMD Datasource to visualize the data"
+  echo "[-dxui|    --data-exchange-ui]             => Install the rmd-ref-app data-exchange-ui front-end web app to visualize the saved data sets"
   echo "machine:"
   echo "[-mc|      --machine-config]                => Configure machine container with valid endpoints to UAA and Time Series"
   echo "[-mt|      --machine-transfer]              => Transfer the configured Machine container to desired device"
 
 
-	echo -e "*** examples\n"
-	echo -e "./$SCRIPT_NAME -uaa -asset -ts -eh             => install services"
-	echo -e "./$SCRIPT_NAME -uaa -asset -ts -eh -nodestarter => only services and front-end app deployed"
-	echo -e "./$SCRIPT_NAME -uaa -asset -ts -mc -eh         => only services deployed and predix machine configured"
-	echo -e "./$SCRIPT_NAME -uaa -asset -ts -mc -cc -eh -mt  => create services, machine config, compile repos and transfer machine container"
+  echo -e "*** examples\n"
+  echo -e "./$SCRIPT_NAME -uaa -asset -ts -eh              => install services"
+  echo -e "./$SCRIPT_NAME -uaa -asset -ts -eh -nodestarter => only services and front-end app deployed"
+  echo -e "./$SCRIPT_NAME -uaa -asset -ts -mc -eh          => only services deployed and predix machine configured"
+  echo -e "./$SCRIPT_NAME -uaa -asset -ts -mc -cc -eh -mt  => create services, machine config, compile repos and transfer machine container"
 }
 
 function processReadargs() {
@@ -134,60 +138,72 @@ function processBuildBasicAppReadargsSwitch() {
           SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-tu | --training-uaa"
           PRINT_USAGE=0
           ;;
-				-cuaa|--custom-uaa)
+	-cuaa|--custom-uaa)
           if [ -n "$2" ]; then
               CUSTOM_UAA_INSTANCE=$2
               SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-custom-uaa"
               PRINT_USAGE=0
-							doShift=1
+	      doShift=1
               shift
           else
               printf 'ERROR: "-custom-uaa" requires a non-empty option argument.\n' >&2
               exit 1
           fi
           ;;
-					-casset|--custom-asset)
+	-casset|--custom-asset)
 	          if [ -n "$2" ]; then
 	              CUSTOM_ASSET_INSTANCE=$2
 	              SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-custom-asset"
 	              PRINT_USAGE=0
-								doShift=1
+		      doShift=1
 	              shift
 	          else
 	              printf 'ERROR: "-custom-asset" requires a non-empty option argument.\n' >&2
 	              exit 1
 	          fi
 	          ;;
-					-ccache|--custom-cache)
+	-ccache|--custom-cache)
 	          if [ -n "$2" ]; then
 	              CUSTOM_PREDIXCACHE_INSTANCE=$2
 	              SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-custom-cache"
 	              PRINT_USAGE=0
-								doShift=1
+		      doShift=1
 	              shift
 	          else
 	              printf 'ERROR: "--custom-cache" requires a non-empty option argument.\n' >&2
 	              exit 1
 	          fi
 	          ;;
-					-caeventhub|--custom-event-hub)
+	-ceventhub|--custom-event-hub)
 	          if [ -n "$2" ]; then
 	              CUSTOM_EVENTHUB_INSTANCE=$2
 	              SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-custom-event-hub"
 	              PRINT_USAGE=0
-								doShift=1
+		      doShift=1
 	              shift
 	          else
 	              printf 'ERROR: "-custom-event-hub" requires a non-empty option argument.\n' >&2
 	              exit 1
 	          fi
 	          ;;
-					-cts|--custom-timeseries)
+	-cblobstore|--custom-blobstore)
+	          if [ -n "$2" ]; then
+	              CUSTOM_BLOBSTORE_INSTANCE=$2
+	              SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-custom-blobstore"
+	              PRINT_USAGE=0
+		      doShift=1
+	              shift
+	          else
+	              printf 'ERROR: "-custom-blobstore" requires a non-empty option argument.\n' >&2
+	              exit 1
+	          fi
+	          ;;
+	-cts|--custom-timeseries)
 	          if [ -n "$2" ]; then
 	              CUSTOM_TIMESERIES_INSTANCE=$2
 	              SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-custom-timeseries"
 	              PRINT_USAGE=0
-								doShift=1
+		      doShift=1
 	              shift
 	          else
 	              printf 'ERROR: "-custom-timeseries" requires a non-empty option argument.\n' >&2
@@ -247,6 +263,14 @@ function processBuildBasicAppReadargsSwitch() {
           PRINT_USAGE=0
           LOGIN=1
 	        ;;
+				-bs|--create-blobstore)
+					RUN_CREATE_SERVICES=1
+          RUN_CREATE_BLOBSTORE=1
+          SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-bs | --create-blobstore"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-bs"
+          PRINT_USAGE=0
+          LOGIN=1
+	        ;;
 				-cache|--create-predix-cache)
           RUN_CREATE_PREDIX_CACHE=1
           SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-cache| --create-predix-cache"
@@ -258,6 +282,13 @@ function processBuildBasicAppReadargsSwitch() {
           RUN_CREATE_MOBILE=1
           SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-mobile | --create-mobile"
 					SWITCH_ARRAY[SWITCH_INDEX++]="-mobile"
+          PRINT_USAGE=0
+          LOGIN=1
+          ;;
+				-mobile-ref-app|--create-mobile-ref-app)
+          RUN_CREATE_MOBILE_REF_APP=1
+          SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-mobile-ref-app | --create-mobile-ref-app"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-mobile-ref-app"
           PRINT_USAGE=0
           LOGIN=1
           ;;
@@ -508,19 +539,21 @@ function printBBAVariables() {
 	if [[ "$RUN_PRINT_VARIABLES" == "0" ]]; then
 		printCommonVariables
 	  echo ""
-		echo "BUILD-BASIC-APP:"
-		echo "  SERVICES:"
-		echo "    CUSTOM_UAA_INSTANCE                      : $CUSTOM_UAA_INSTANCE"
-		echo "    CUSTOM_ASSET_INSTANCE                    : $CUSTOM_ASSET_INSTANCE"
-		echo "    CUSTOM_TIMESERIES_INSTANCE               : $CUSTOM_TIMESERIES_INSTANCE"
-		echo "		CUSTOM_EVENTHUB_INSTANCE								 : $CUSTOM_EVENTHUB_INSTANCE"
-		echo "		CUSTOM_PREDIXCACHE_INSTANCE							 : $CUSTOM_PREDIXCACHE_INSTANCE"
+	  echo "BUILD-BASIC-APP:"
+	  echo "  SERVICES:"
+	  echo "    CUSTOM_UAA_INSTANCE                      : $CUSTOM_UAA_INSTANCE"
+	  echo "    CUSTOM_ASSET_INSTANCE                    : $CUSTOM_ASSET_INSTANCE"
+	  echo "    CUSTOM_TIMESERIES_INSTANCE               : $CUSTOM_TIMESERIES_INSTANCE"
+	  echo "    CUSTOM_EVENTHUB_INSTANCE                 : $CUSTOM_EVENTHUB_INSTANCE"
+	  echo "    CUSTOM_PREDIXCACHE_INSTANCE              : $CUSTOM_PREDIXCACHE_INSTANCE"
 	  echo "    RUN_CREATE_SERVICES                      : $RUN_CREATE_SERVICES"
 	  echo "    RUN_CREATE_ACS                           : $RUN_CREATE_ACS"
-		echo "    RUN_CREATE_ASSET                         : $RUN_CREATE_ASSET"
-		echo "    RUN_CREATE_EVENT_HUB                     : $RUN_CREATE_EVENT_HUB"
-		echo "		RUN_CREATE_PREDIX_CACHE									 : $RUN_CREATE_PREDIX_CACHE"
-		echo "    RUN_CREATE_MOBILE                        : $RUN_CREATE_MOBILE"
+	  echo "    RUN_CREATE_ASSET                         : $RUN_CREATE_ASSET"
+	  echo "    RUN_CREATE_EVENT_HUB                     : $RUN_CREATE_EVENT_HUB"
+		echo "    RUN_CREATE_BLOBSTORE                     : $RUN_CREATE_BLOBSTORE"
+	  echo "    RUN_CREATE_PREDIX_CACHE                  : $RUN_CREATE_PREDIX_CACHE"
+	  echo "    RUN_CREATE_MOBILE                        : $RUN_CREATE_MOBILE"
+		echo "    RUN_CREATE_MOBILE_REF_APP                : $RUN_CREATE_MOBILE_REF_APP"
 	  echo "    RUN_CREATE_TIMESERIES                    : $RUN_CREATE_TIMESERIES"
 	  echo "    RUN_CREATE_UAA                           : $RUN_CREATE_UAA"
 	  echo "    USE_TRAINING_UAA                         : $USE_TRAINING_UAA"
@@ -539,19 +572,19 @@ function printBBAVariables() {
 	  echo "    USE_WINDDATA_SERVICE                     : $USE_WINDDATA_SERVICE"
 	  echo ""
 	  echo "  FRONT-END:"
-		echo "    USE_DATAEXCHANGE_UI                      : $USE_DATAEXCHANGE_UI"
-		echo "    USE_NODEJS_STARTER                       : $USE_NODEJS_STARTER"
-		echo "    USE_NODEJS_STARTER_W_TIMESERIES          : $USE_NODEJS_STARTER_W_TIMESERIES"
-		echo "    USE_MOBILE_STARTER                       : $USE_MOBILE_STARTER"
-		echo "    USE_POLYMER_SEED                         : $USE_POLYMER_SEED"
+	  echo "    USE_DATAEXCHANGE_UI                      : $USE_DATAEXCHANGE_UI"
+	  echo "    USE_NODEJS_STARTER                       : $USE_NODEJS_STARTER"
+	  echo "    USE_NODEJS_STARTER_W_TIMESERIES          : $USE_NODEJS_STARTER_W_TIMESERIES"
+	  echo "    USE_MOBILE_STARTER                       : $USE_MOBILE_STARTER"
+	  echo "    USE_POLYMER_SEED                         : $USE_POLYMER_SEED"
 	  echo "    USE_POLYMER_SEED_UAA                     : $USE_POLYMER_SEED_UAA"
 	  echo "    USE_POLYMER_SEED_ASSET                   : $USE_POLYMER_SEED_ASSET"
 	  echo "    USE_POLYMER_SEED_TIMESERIES              : $USE_POLYMER_SEED_TIMESERIES"
 	  echo "    USE_POLYMER_SEED_RMD                     : $USE_POLYMER_SEED_RMD"
 	  echo ""
-		echo "  MOBILE:"
-		echo "    USE_MOBILE_STARTER                       : $USE_MOBILE_STARTER"
-		echo ""
+	  echo "  MOBILE:"
+	  echo "    USE_MOBILE_STARTER                       : $USE_MOBILE_STARTER"
+	  echo ""
 	  echo "  MACHINE:"
 	  echo "    PREDIX_MACHINE_HOME			     : $PREDIX_MACHINE_HOME"
 	  echo "    RUN_MACHINE_CONFIG                       : $RUN_MACHINE_CONFIG"
@@ -560,7 +593,7 @@ function printBBAVariables() {
 	  echo "    MACHINE_VERSION                          : $MACHINE_VERSION"
 	  echo "    MACHINE_CONTAINER_TYPE                   : $MACHINE_CONTAINER_TYPE"
 	  echo "    RUN_MACHINE_TRANSFER                     : $RUN_MACHINE_TRANSFER"
-		echo "    MACHINE_CUSTOM_IMAGE_NAME                : $MACHINE_CUSTOM_IMAGE_NAME"
+	  echo "    MACHINE_CUSTOM_IMAGE_NAME                : $MACHINE_CUSTOM_IMAGE_NAME"
 	  echo ""
 	fi
 
@@ -647,6 +680,9 @@ function runFunctionsForBasicApp() {
 						;;
 	        -ts|--create-timeseries)
 						break
+						;;
+					-bs|--create-blobstore)
+	          break
 						;;
 	        -amd1|--create-asset-model-device1)
 						source "$rootDir/bash/scripts/build-basic-app-asset-model.sh"

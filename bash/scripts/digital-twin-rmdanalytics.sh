@@ -55,7 +55,7 @@ function digital-twin-rmdanalytics-main() {
 
     getUrlForAppName $DATAEXCHANGE_APP_NAME DATAEXCHANGE_URL ""
 
-    __find_and_replace "predix_fdh_restHost: .*" "predix_fdh_restHost: $DATAEXCHANGE_URL" "manifest.yml" "$logDir"
+    __find_and_replace "predix_dataexchange_restHost: .*" "predix_dataexchange_restHost: $DATAEXCHANGE_URL" "manifest.yml" "$logDir"
 
     cat manifest.yml
 

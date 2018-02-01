@@ -64,7 +64,9 @@ function createUaa()
 	fi
 
 	# Bind Temp App to UAA instance
-	__try_bind $1 $UAA_INSTANCE_NAME
+	if [[ $BINDING_APP == 1 ]]; then
+		__try_bind $1 $UAA_INSTANCE_NAME
+	fi
 
 	# if uaaURL=$(px env $1 | grep predix-uaa* | grep uri*| awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}' ); then
 	#   if [[ "$uaaURL" == "" ]] ; then
@@ -151,7 +153,17 @@ function createAssetService() {
     getAssetZoneId $1
   fi
 }
-
+function createBlobstoreService() {
+	__append_new_head_log "Create Blobstore Service Instance" "-" "$logDir"
+	if [[ $RUN_DELETE_SERVICES -eq 1 ]]; then
+	   __try_delete_service $BLOBSTORE_INSTANCE_NAME
+	fi
+	if __service_exists $BLOBSTORE_INSTANCE_NAME ; then
+		echo "Service $BLOBSTORE_INSTANCE_NAME already exists" # Do nothing
+	else
+		px cs $BLOBSTORE_SERVICE_NAME $BLOBSTORE_SERVICE_PLAN $BLOBSTORE_INSTANCE_NAME
+	fi
+}
 function createEventHubService() {
 	__append_new_head_log "Create Event Hub Service Instance" "-" "$logDir"
 
@@ -194,8 +206,100 @@ function createMobileService() {
 	fi
 
 	# Create instance of Predix Mobile Service
-	__try_create_predix_service $MOBILE_SERVICE_NAME $MOBILE_SERVICE_PLAN $MOBILE_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET \"\" \"\" "Predix Mobile"
+	#__try_create_predix_service $MOBILE_SERVICE_NAME $MOBILE_SERVICE_PLAN $MOBILE_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET \"\" \"\" "Predix Mobile"
+    # px create-service predix-mobile Free igor.gurovich-mobile3 igor.gurovich-uaa --pm-api-gateway-oauth-secret secret   -d app_user_1 -e app_user_1@ge.com -p App_User_111
+	# MOBILE_SERVICE_NAME = predix-mobile
+	# MOBILE_SERVICE_PLAN = Free
+	# MOBILE_INSTANCE_NAME = igor.gurovich-mobile3
+	# UAA_INSTANCE_NAME  = igor.gurovich-uaa
+	# UAA_ADMIN_SECRET = secret
+	####
+	# UAA_USER_NAME
+	# UAA_USER_EMAIL
+	# UAA_USER_PASSWORD
+	# __try_create_predix_mobile_service $MOBILE_SERVICE_NAME $MOBILE_SERVICE_PLAN $MOBILE_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET \"\" \"\" "Predix Mobile"
 
+	__try_create_predix_mobile_service $MOBILE_SERVICE_NAME $MOBILE_SERVICE_PLAN $MOBILE_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET  $UAA_USER_NAME $UAA_USER_EMAIL $UAA_USER_PASSWORD "Predix Mobile"
+	# Bind Temp App to Asset Instance
+	#__try_bind $1 $MOBILE_INSTANCE_NAME
+
+}
+
+function createMobileReferenceApp() {
+	__append_new_head_log "Create Mobile Reference App Instance" "-" "$logDir"
+
+    echo "*********************  inside  createMobileReferenceApp *********************** "
+	echo $MOBILE_INSTANCE_NAME
+	API_GATEWAY_SHORT_ROUTE=`px si $MOBILE_INSTANCE_NAME | grep api_gateway_short_route | sed 's/.*\(https.*\)",/\1/'`
+    echo $API_GATEWAY_SHORT_ROUTE
+	__append_new_head_log "API_GATEWAY_SHORT_ROUTE: $API_GATEWAY_SHORT_ROUTE" "-" "$logDir"
+
+
+	echo pm api $API_GATEWAY_SHORT_ROUTE
+	__append_new_head_log "Running pm api $API_GATEWAY_SHORT_ROUTE" "-" "$logDir"
+	pm api $API_GATEWAY_SHORT_ROUTE
+
+	echo pm auth $UAA_USER_NAME $UAA_USER_PASSWORD
+	__append_new_head_log "Running pm auth $UAA_USER_NAME $UAA_USER_PASSWORD" "-" "$logDir"
+	pm auth $UAA_USER_NAME $UAA_USER_PASSWORD
+
+	cd ..
+	__append_new_head_log "Creating mobile workspace" "-" "$logDir"
+	mkdir -p mobile_workspace
+	cd mobile_workspace
+	MOBILE_WORKSPACE="$( pwd )"
+	pm workspace --create
+
+	__append_new_head_log "Building and publishing webapp" "-" "$logDir"
+	cd webapps
+	rm -rf MobileExample-WebApp-Sample
+	git clone https://github.com/PredixDev/MobileExample-WebApp-Sample.git
+	cd MobileExample-WebApp-Sample
+	npm install
+	npm run build
+	pm publish
+
+
+	__append_new_head_log "Creating Mobile Sample App Config" "-" "$logDir"
+	cd ${MOBILE_WORKSPACE}/pm-apps/Sample1
+
+	cat <<EOF > app.json
+{
+    "name": "Sample1",
+    "version": "1.0",
+    "starter": "sample-webapp",
+    "dependencies": {
+        "sample-webapp": "0.0.1"
+    }
+}
+
+EOF
+
+	__append_new_head_log "Defining mobile Sample App" "-" "$logDir"
+	pm define
+
+	__append_new_head_log "Loading Mobile Sample App Data" "-" "$logDir"
+	cd ${MOBILE_WORKSPACE}/webapps/MobileExample-WebApp-Sample
+	pm import --data ./test/data/data.json --app ../../pm-apps/Sample1/app.json
+
+	pwd
+    echo "*********************  done  createMobileReferenceApp *********************** "
+
+	# Create instance of Predix Mobile Service
+	#__try_create_predix_service $MOBILE_SERVICE_NAME $MOBILE_SERVICE_PLAN $MOBILE_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET \"\" \"\" "Predix Mobile"
+    # px create-service predix-mobile Free igor.gurovich-mobile3 igor.gurovich-uaa --pm-api-gateway-oauth-secret secret   -d app_user_1 -e app_user_1@ge.com -p App_User_111
+	# MOBILE_SERVICE_NAME = predix-mobile
+	# MOBILE_SERVICE_PLAN = Free
+	# MOBILE_INSTANCE_NAME = igor.gurovich-mobile3
+	# UAA_INSTANCE_NAME  = igor.gurovich-uaa
+	# UAA_ADMIN_SECRET = secret
+	####
+	# UAA_USER_NAME
+	# UAA_USER_EMAIL
+	# UAA_USER_PASSWORD
+	# __try_create_predix_mobile_service $MOBILE_SERVICE_NAME $MOBILE_SERVICE_PLAN $MOBILE_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET \"\" \"\" "Predix Mobile"
+
+	#__try_create_predix_mobile_service $MOBILE_SERVICE_NAME $MOBILE_SERVICE_PLAN $MOBILE_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET  $UAA_USER_NAME $UAA_USER_EMAIL $UAA_USER_PASSWORD "Predix Mobile"
 	# Bind Temp App to Asset Instance
 	#__try_bind $1 $MOBILE_INSTANCE_NAME
 
@@ -314,7 +418,11 @@ function __setupServices() {
 			__createUaaAppClient "$UAA_URL" "$UAA_CLIENTID_GENERIC" "$UAA_CLIENTID_GENERIC_SECRET"
 		fi
 		# Create a new user account
-		__addUaaUser "$UAA_URL"
+		if [[ $RUN_CREATE_MOBILE != 1 ]]; then
+			# moble service creates user itself
+			__addUaaUser "$UAA_URL"
+		fi
+
 	fi
 
 	if [[ ( $RUN_CREATE_SERVICES == 1 || $RUN_CREATE_ASSET == 1 ) ]]; then
@@ -328,6 +436,10 @@ function __setupServices() {
 		createMobileService $1
 	fi
 
+	if [[ ( $RUN_CREATE_MOBILE_REF_APP == 1 ) ]]; then
+		createMobileReferenceApp
+	fi
+
 	if [[ ( $RUN_CREATE_SERVICES == 1 || $RUN_CREATE_TIMESERIES == 1 ) ]]; then
 		createTimeseries $1
 		if [[ $USE_TRAINING_UAA == 1 ]]; then
@@ -339,6 +451,9 @@ function __setupServices() {
 		if [[ $USE_TRAINING_UAA == 1 ]]; then
 			__addEventHubAuthorities $UAA_CLIENTID_GENERIC
 		fi
+	fi
+	if [[ ( $RUN_CREATE_SERVICES == 1 || $$RUN_CREATE_BLOBSTORE == 1 ) ]]; then
+		createBlobstoreService $1
 	fi
 	if [[ ( $RUN_CREATE_SERVICES == 1 || $RUN_CREATE_ACS == 1 ) ]]; then
 		createACSService $1
@@ -387,6 +502,7 @@ function __setupServices() {
 	echo "UAA Generic Client Secret: $UAA_CLIENTID_GENERIC_SECRET" >> $SUMMARY_TEXTFILE
 	echo "UAA User ID: $UAA_USER_NAME" >> $SUMMARY_TEXTFILE
 	echo "UAA User PASSWORD: $UAA_USER_PASSWORD" >> $SUMMARY_TEXTFILE
+	echo "Mobile Api Gateway Short Route Url: $API_GATEWAY_SHORT_ROUTE" >> $SUMMARY_TEXTFILE
 	echo "TimeSeries Ingest URL:  $TIMESERIES_INGEST_URI" >> $SUMMARY_TEXTFILE
 	echo "TimeSeries Query URL:  $TIMESERIES_QUERY_URI" >> $SUMMARY_TEXTFILE
 	echo "TimeSeries ZoneID: $TIMESERIES_ZONE_ID" >> $SUMMARY_TEXTFILE

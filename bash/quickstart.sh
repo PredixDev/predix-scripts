@@ -121,16 +121,16 @@ if [[ ( $LOGIN == 1 ) ]]; then
     echo ""
 
     if [[ "$space" == "" ]] ; then
-      read -p "Enter the px API Endpoint (default : https://api.system.aws-usw02-pr.ice.predix.io)> " CF_HOST
+      read -p "Enter the Predix API Endpoint (default : https://api.system.aws-usw02-pr.ice.predix.io)> " CF_HOST
       CF_HOST=${CF_HOST:-https://api.system.aws-usw02-pr.ice.predix.io}
-      read -p "Enter your px username> " CF_USERNAME
-      read -p "Enter your px password> " -s CF_PASSWORD
+      read -p "Enter your Predix username> " CF_USERNAME
+      read -p "Enter your Predix password> " -s CF_PASSWORD
 
       __append_new_line_log "Attempting to login user \"$CF_USERNAME\" to Cloud Foundry" "$quickstartLogDir"
       if cf login -a $CF_HOST -u $CF_USERNAME -p $CF_PASSWORD --skip-ssl-validation; then
         __append_new_line_log "Successfully logged into CloudFoundry" "$quickstartLogDir"
       else
-        __error_exit "There was an error logging into CloudFoundry. Is the password correct?" "$quickstartLogDir"
+        __error_exit "There was an error logging into CloudFoundry. Is the password correct?  Try logging in manually then rerun script.  For some users your email is tied to SSO login, try cf login -a <api-endpoint> --sso" "$quickstartLogDir"
       fi
     fi
     ENDPOINT="`px target | grep endpoint | awk '{print $3}'`"
@@ -179,7 +179,7 @@ if [[ "$RUN_PRINT_VCAPS" == "1" ]]; then
   echo "Printed the info from VCAPS : "  >> $SUMMARY_TEXTFILE
 fi
 # Instantiate, configure, and push the following Predix services: Timeseries, Asset, and UAA.
-if [[ ( $RUN_CREATE_SERVICES == 1 || $RUN_CREATE_UAA == 1 || $RUN_CREATE_ASSET == 1 || $RUN_CREATE_MOBILE == 1 ||$RUN_CREATE_TIMESERIES == 1 || $RUN_CREATE_ACS == 1 || $RUN_CREATE_ANALYTIC_FRAMEWORK == 1) ]]; then
+if [[ ( $RUN_CREATE_SERVICES == 1 || $RUN_CREATE_UAA == 1 || $RUN_CREATE_ASSET == 1 || $RUN_CREATE_MOBILE == 1 || $RUN_CREATE_MOBILE_REF_APP == 1 ||$RUN_CREATE_TIMESERIES == 1 || $RUN_CREATE_ACS == 1 || $RUN_CREATE_ANALYTIC_FRAMEWORK == 1) ]]; then
   source "$quickstartRootDir/bash/scripts/predix_services_setup.sh"
   __setupServices "$TEMP_APP"
 fi

@@ -76,6 +76,7 @@ __try_create_service_using_cfcli() {
 __try_create_uaa() {
   if __service_exists $3 ; then
     echo "Service $3 already exists" # Do nothing
+    px uaa login $UAA_INSTANCE_NAME admin --secret $UAA_ADMIN_SECRET
   else
     echo -e "\n$ px create-service $1 $2 $3 --admin-secret $4\n"
     if px cs $1 $2 $3 --admin-secret $4; then
@@ -108,7 +109,8 @@ __try_create_uaa() {
 __try_create_predix_service() {
   __validate_num_arguments 8 $# "\"predix_funcs:__try_create_predix_service\" expected in order: service name, pricing plan, instance name, uaa name, admin secret, clientid, client secret, service name for log" "$logDir"
   echo "__try_create_predix_service $1 $2 $3 $4 $5 $6 $7"
-  #px uaa login $4 admin --secret $5
+  #
+  px uaa login $4 admin --secret $5
   if __service_exists $3 ; then
     echo -n "Service $3 already exists" # Do nothing
   else
@@ -149,6 +151,42 @@ __try_create_predix_service() {
     		     __error_exit "Couldn't create $8 service instance..." "$logDir"
     	   fi
       fi
+    fi
+  fi
+}
+
+#	----------------------------------------------------------------
+#	Function for creating a predix mobile service using the predix cli
+#		Accepts 8 arguments:
+#			1:string of service-name from predix marketplace
+#			2:string of pricing plan from predix marketplace
+#			3:string of the name you want to give the service instance
+#			4:string of the uaa instance name as it appears in the org/space
+#			5:string of the UAA admin account secret
+#     6:string of the UAA user name (mobile deveoper)
+#     7:string of the UAA user email
+#     8:string of the UAA user password
+#		  9:string of the name of the service to print for the log
+#  Returns:
+#     nothing
+#	----------------------------------------------------------------
+__try_create_predix_mobile_service() {
+  __validate_num_arguments 9 $# "\"predix_funcs:__try_create_predix_mobile_service\" expected in order: service name, pricing plan, instance name, uaa name, admin secret, username, email, user password, service name for log" "$logDir"
+  echo "__try_create_predix_service $1 $2 $3 $4 $5 $6 $7 $8 $9"
+  px uaa login $4 admin --secret $5
+  if __service_exists $3 ; then
+    echo -n "Service $3 already exists" # Do nothing
+  else
+    echo -e "\n$ px create-service $1 $2 $3 $4 -d $6 -e $7 -p $8 \n"
+    if px create-service $1 $2 $3 $4 -d $6 -e $7 -p $8 ; then
+        __append_new_line_log "$9 service instance successfully created!" "$logDir"
+    else
+        __append_new_line_log "Couldn't create $9 service. Retrying..." "$logDir"
+        if px create-service $1 $2 $3 $4 -d $6 -e $7 -p $8 ; then
+            __append_new_line_log "$9 service instance successfully created!" "$logDir"
+        else
+            __error_exit "Couldn't create $9 service instance..." "$logDir"
+        fi
     fi
   fi
 }
