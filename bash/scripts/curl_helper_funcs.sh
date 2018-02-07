@@ -602,6 +602,7 @@ function getUaaUrl() {
 function getTimeseriesIngestUri() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesIngestUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
   VCAP_JSON=$(getVCAPJSON $1)
+  echo $VCAP_JSON
   if TIMESERIES_INGEST_URI=$(echo $VCAP_JSON | jq -r '.["VCAP_SERVICES"]["predix-timeseries"][].credentials.ingest.uri' | tr -d '"'| head -1); then
   	if [[ "$TIMESERIES_INGEST_URI" == "" ]] ; then
   		__error_exit "The TIMESERIES_INGEST_URI was not found for \"$1\"..." "$logDir"

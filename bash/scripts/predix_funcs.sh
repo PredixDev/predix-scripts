@@ -177,12 +177,12 @@ __try_create_predix_mobile_service() {
   if __service_exists $3 ; then
     echo -n "Service $3 already exists" # Do nothing
   else
-    echo -e "\n$ px create-service $1 $2 $3 $4 -d $6 -e $7 -p $8 \n"
-    if px create-service $1 $2 $3 $4 -d $6 -e $7 -p $8 ; then
+    echo -e "\n$ px create-service $1 $2 $3 $4 -d $6 -e $7 -p $8 --pm-api-gateway-oauth-secret secret \n"
+    if px create-service $1 $2 $3 $4 -d $6 -e $7 -p $8 --pm-api-gateway-oauth-secret secret ; then
         __append_new_line_log "$9 service instance successfully created!" "$logDir"
     else
         __append_new_line_log "Couldn't create $9 service. Retrying..." "$logDir"
-        if px create-service $1 $2 $3 $4 -d $6 -e $7 -p $8 ; then
+        if px create-service $1 $2 $3 $4 -d $6 -e $7 -p $8 --pm-api-gateway-oauth-secret secret ; then
             __append_new_line_log "$9 service instance successfully created!" "$logDir"
         else
             __error_exit "Couldn't create $9 service instance..." "$logDir"
@@ -324,3 +324,63 @@ function __verifyPxLogin() {
     predix login
   fi
 }
+
+function __predix_kit_admin_user_exists() {
+	px uaa users | grep $1 > /dev/null 2>&1
+	return $?
+}
+function __predix_kit_admin_group_exists() {
+	px uaa groups | grep $1 > /dev/null 2>&1
+	return $?
+}
+
+function __predix_kit_admin_group_membeship_exists() {
+	px uaa members $1 | grep $2 > /dev/null 2>&1
+	return $?
+}
+
+# Predix Kit create a admin user
+function __predix_kit_admin_user_create() {
+  echo ""
+  echo "Checking on Kit Admin User "
+	if __predix_kit_admin_user_exists $1; then
+		px uaa user delete $1 > /dev/null 2>&1
+ 	fi
+  echo "Creating on Kit Admin User $KIT_ADMIN_USER_NAME $KIT_ADMIN_USER_EMAIL $KIT_ADMIN_PASSWORD" 
+  px uaa user create $1  --emails $2 --password $3
+}
+
+# Predix Kit add admin user to the uaa group - membership managment  $KIT_ADMIN_GROUP $KIT_ADMIN_USER_NAME
+function __predix_kit_admin_group_membership_setup() {
+  if __predix_kit_admin_group_exists $1; then
+   echo ""
+   echo "Looks like predix kit admin group exists."
+  else 
+    echo ""
+    echo "Creating predix kit admin group"
+    px uaa group create $1
+ 	fi
+  if __predix_kit_admin_group_membeship_exists $1 $2; then
+      echo ""
+      echo "Looks like you are member of the predix kit admin Group."
+  else 
+      px uaa member add $1 $2
+	fi
+}
+function __predix_kit_admim_client_exits() {
+	px uaa client get $1 | grep $2 > /dev/null 2>&1
+	return $?
+}
+
+# Predix Kit client managment 
+function __predix_kit_admin_client_setup() {
+	if __predix_kit_admin_user_exists $1 $2; then
+	echo ""
+  echo "Looks like $1 client is setup as predix kit admin Group."
+  else 
+    px uaa client update $1 --authorities $2  --scope $2
+    echo ""
+    echo "$1 UAA client is setup as predix kit admin Group for $2."
+	fi
+}
+	

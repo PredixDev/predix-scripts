@@ -264,7 +264,7 @@ function processBuildBasicAppReadargsSwitch() {
           LOGIN=1
 	        ;;
 				-bs|--create-blobstore)
-					RUN_CREATE_SERVICES=1
+					#RUN_CREATE_SERVICES=1
           RUN_CREATE_BLOBSTORE=1
           SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-bs | --create-blobstore"
 					SWITCH_ARRAY[SWITCH_INDEX++]="-bs"

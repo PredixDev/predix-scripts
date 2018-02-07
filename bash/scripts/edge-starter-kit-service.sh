@@ -13,6 +13,7 @@ source "$rootDir/bash/scripts/variables.sh"
 source "$rootDir/bash/scripts/error_handling_funcs.sh"
 source "$rootDir/bash/scripts/files_helper_funcs.sh"
 source "$rootDir/bash/scripts/curl_helper_funcs.sh"
+source "$rootDir/bash/scripts/predix_kit_admin_setup.sh"
 
 trap "trap_ctrlc" 2
 

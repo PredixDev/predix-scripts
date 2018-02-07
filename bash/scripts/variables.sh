@@ -81,6 +81,16 @@ ANALYTIC_UI_USER_NAME="app_user_1"
 ANALYTIC_UI_PASSWORD="App_User_111"
 ANALYTIC_UI_USER_EMAIL="app_user_1@ge.com"
 
+
+############# Predix Kits Admin User#############
+
+KIT_ADMIN_USER_NAME="kit_admin_1"
+KIT_ADMIN_PASSWORD="Kit_Admin_111"
+KIT_ADMIN_USER_EMAIL="kit_admin_1@ge.com"
+
+# Group for Predix Admin
+KIT_ADMIN_GROUP="predixkit.admin"
+
 ############# Predix Asset Configurations #############
 
 # Name of the "Asset" that is recorded to Predix Asset

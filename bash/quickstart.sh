@@ -179,7 +179,7 @@ if [[ "$RUN_PRINT_VCAPS" == "1" ]]; then
   echo "Printed the info from VCAPS : "  >> $SUMMARY_TEXTFILE
 fi
 # Instantiate, configure, and push the following Predix services: Timeseries, Asset, and UAA.
-if [[ ( $RUN_CREATE_SERVICES == 1 || $RUN_CREATE_UAA == 1 || $RUN_CREATE_ASSET == 1 || $RUN_CREATE_MOBILE == 1 || $RUN_CREATE_MOBILE_REF_APP == 1 ||$RUN_CREATE_TIMESERIES == 1 || $RUN_CREATE_ACS == 1 || $RUN_CREATE_ANALYTIC_FRAMEWORK == 1) ]]; then
+if [[ ( $RUN_CREATE_UAA == 1 || $RUN_CREATE_ASSET == 1 || $RUN_CREATE_MOBILE == 1 || $RUN_CREATE_MOBILE_REF_APP == 1 ||$RUN_CREATE_TIMESERIES == 1 || $RUN_CREATE_ACS == 1 || $RUN_CREATE_ANALYTIC_FRAMEWORK == 1) ]]; then
   source "$quickstartRootDir/bash/scripts/predix_services_setup.sh"
   __setupServices "$TEMP_APP"
 fi

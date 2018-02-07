@@ -163,6 +163,37 @@ function createBlobstoreService() {
 	else
 		px cs $BLOBSTORE_SERVICE_NAME $BLOBSTORE_SERVICE_PLAN $BLOBSTORE_INSTANCE_NAME
 	fi
+	## Deploy the Blobstore sdk
+	cd $rootDir
+	getRepoURL "predix-blobstore-sdk" blobstore_git_url version.json
+
+	getRepoVersion "predix-blobstore-sdk" blobstore_version version.json
+	echo "git repo version : $blobstore_version"
+	rm -rf blobstore-samples
+	__echo_run git clone $blobstore_git_url -b $blobstore_version
+
+	cd blobstore-samples/blobstore-aws-sample
+	mvn clean install -s $MAVEN_SETTINGS_FILE
+	cp manifest.yml manifest_temp.yml
+	__find_and_replace_string "<my-blobstore-instance>" "$BLOBSTORE_INSTANCE_NAME" "manifest_temp.yml" "$logDir" "manifest_temp.yml"
+
+	px push $INSTANCE_PREPENDER-blobstore-sdk-app -f manifest_temp.yml
+	cd $rootDir
+	# Automagically open the application in browser, based on OS
+  if [[ $SKIP_BROWSER == 0 ]]; then
+    getUrlForAppName $INSTANCE_PREPENDER-blobstore-sdk-app apphost "https"
+    case "$(uname -s)" in
+       Darwin)
+         # OSX
+         open $apphost
+         ;;
+
+       CYGWIN*|MINGW32*|MINGW64*|MSYS*)
+         # Windows
+         start "" $apphost
+         ;;
+    esac
+	fi
 }
 function createEventHubService() {
 	__append_new_head_log "Create Event Hub Service Instance" "-" "$logDir"
@@ -425,14 +456,14 @@ function __setupServices() {
 
 	fi
 
-	if [[ ( $RUN_CREATE_SERVICES == 1 || $RUN_CREATE_ASSET == 1 ) ]]; then
+	if [[ ( $RUN_CREATE_ASSET == 1 ) ]]; then
 		createAssetService $1
 		if [[ $USE_TRAINING_UAA == 1 ]]; then
 			__addAssetAuthorities $UAA_CLIENTID_GENERIC
 		fi
 	fi
 
-	if [[ ( $RUN_CREATE_SERVICES == 1 || $RUN_CREATE_MOBILE == 1 ) ]]; then
+	if [[ ( $RUN_CREATE_MOBILE == 1 ) ]]; then
 		createMobileService $1
 	fi
 
@@ -440,34 +471,34 @@ function __setupServices() {
 		createMobileReferenceApp
 	fi
 
-	if [[ ( $RUN_CREATE_SERVICES == 1 || $RUN_CREATE_TIMESERIES == 1 ) ]]; then
+	if [[ ( $RUN_CREATE_TIMESERIES == 1 ) ]]; then
 		createTimeseries $1
 		if [[ $USE_TRAINING_UAA == 1 ]]; then
 			__addTimeseriesAuthorities $UAA_CLIENTID_GENERIC
 		fi
 	fi
-	if [[ ( $RUN_CREATE_SERVICES == 1 || $RUN_CREATE_EVENT_HUB == 1 ) ]]; then
+	if [[ ( $RUN_CREATE_EVENT_HUB == 1 ) ]]; then
 		createEventHubService $1
 		if [[ $USE_TRAINING_UAA == 1 ]]; then
 			__addEventHubAuthorities $UAA_CLIENTID_GENERIC
 		fi
 	fi
-	if [[ ( $RUN_CREATE_SERVICES == 1 || $$RUN_CREATE_BLOBSTORE == 1 ) ]]; then
+	if [[ ( $RUN_CREATE_BLOBSTORE == 1 ) ]]; then
 		createBlobstoreService $1
 	fi
-	if [[ ( $RUN_CREATE_SERVICES == 1 || $RUN_CREATE_ACS == 1 ) ]]; then
+	if [[ ( $RUN_CREATE_ACS == 1 ) ]]; then
 		createACSService $1
 		if [[ $USE_TRAINING_UAA == 1 ]]; then
 			__addAcsAuthorities $UAA_CLIENTID_GENERIC
 		fi
 	fi
 
-	if [[ ( $RUN_CREATE_SERVICES == 1 || $RUN_CREATE_ANALYTIC_FRAMEWORK == 1 ) ]]; then
+	if [[ ( $RUN_CREATE_ANALYTIC_FRAMEWORK == 1 ) ]]; then
 		createAnalyticFrameworkServiceInstance $1
 		__addAnalyticFrameworkAuthorities $UAA_CLIENTID_GENERIC
 	fi
 
-	if [[ ( $RUN_CREATE_SERVICES == 1 || $RUN_CREATE_PREDIX_CACHE == 1 ) ]]; then
+	if [[ ( $RUN_CREATE_PREDIX_CACHE == 1 ) ]]; then
 		createPredixCacheInstance $1
 	fi
 
