@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 quickstartRootDir="$( pwd )"
+UPGRAGE_MACHINE_VERSION="17.1.3"
+PREDIX_MACHINE_URL="https://raw.githubusercontent.com/PredixDev/predix-machine-templates/master/PredixMachine17.1.3.tar"
+PREDIXMACHINE_TAR_FILENAME="$(echo $PREDIX_MACHINE_URL |awk -F"/" '{print $NF}')"
 export quickstartRootDir
 
 #	----------------------------------------------------------------
@@ -36,19 +39,23 @@ function local_read_args() {
         echo -e "**************** Usage ***************************"
         echo -e "     ./$0 [ options ]\n"
         echo -e "     options are as below"
-	echo "        [-get-machine-config]           => Get Machine Configuration"
+	      echo "        [-get-machine-config]           => Get Machine Configuration"
+				echo "        [-upgrade-machine]              => Upgrade Machine to $UPGRAGE_MACHINE_VERSION"
         echo "        [-predix-machine-home]          => Predix Machine Installation directory"
         echo "        [-timeseries-ingest-url]        => Timeseries Websocket Endpoint URL for Data Ingestion"
         echo "        [-timeseries-zone-id]           => Time Series Zone Id"
-	echo "        [-kitservice-url]		      => Predix Kit Service URL"
+				echo "        [-kitservice-url]               => Predix Kit Service URL"
         echo "        [-uaa-url]                      => UAA Url"
         echo "        [-uaa-clientid-secret]          => base64 encoded client_id:secret"
-	echo "        [-databus-topics]               => Topics for Databus Adapter. Comma separated list if using more than one topic"
+				echo "        [-databus-topics]               => Topics for Databus Adapter. Comma separated list if using more than one topic"
         echo "        [-proxy-host]                   => Proxy hostname if applicable"
         echo "        [-proxy-port]                   => Proxy port if applicable"
         echo "        [-h|-?|--?|   --help]           => Print usage"
         exit
         ;;
+			-upgrade-machine)
+				UPGRAGE_MACHINE=1
+				;;
       -predix-machine-home)
         PREDIX_MACHINE_HOME="$2"
         if [ "$PREDIX_MACHINE_HOME" == "" ]; then
@@ -154,6 +161,15 @@ fi
 if [[ ! -d $PREDIX_MACHINE_HOME ]]; then
   echo "$PREDIX_MACHINE_HOME does not exist. Please make sure Predix Machine is installed on the device and try again."
   exit 1
+fi
+if [[ "$UPGRAGE_MACHINE" == "1" ]]; then
+	curl -O $PREDIX_MACHINE_URL
+	mv $PREDIX_MACHINE_HOME "$PREDIX_MACHINE_HOME-17.1.2"
+	mkdir -p $PREDIX_MACHINE_HOME
+	tar xvf $PREDIXMACHINE_TAR_FILENAME -C $PREDIX_MACHINE_HOME
+	cp $PREDIX_MACHINE_HOME-17.1.2/machine/bin/setvars.sh $PREDIX_MACHINE_HOME/machine/bin/setvars.sh
+	chmod -R 777 $PREDIX_MACHINE_HOME
+	chown -R gwuser $PREDIX_MACHINE_HOME
 fi
 if [[ "$HTTPS_PROXY" != "" ]]; then
 	PROXY_HOST=$(echo $HTTPS_PROXY | awk -F"//" '{print $2}' | awk -F":" '{print $1}')
