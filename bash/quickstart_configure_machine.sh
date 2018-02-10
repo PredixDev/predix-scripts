@@ -167,7 +167,7 @@ if [[ "$UPGRAGE_MACHINE" == "1" ]]; then
 	mv $PREDIX_MACHINE_HOME "$PREDIX_MACHINE_HOME-17.1.2"
 	mkdir -p $PREDIX_MACHINE_HOME
 	tar xvf $PREDIXMACHINE_TAR_FILENAME -C $PREDIX_MACHINE_HOME
-	cp $PREDIX_MACHINE_HOME-17.1.2/machine/bin/setvars.sh $PREDIX_MACHINE_HOME/machine/bin/setvars.sh
+	cp $PREDIX_MACHINE_HOME-17.1.2/machine/bin/predix/setvars.sh $PREDIX_MACHINE_HOME/machine/bin/predix/setvars.sh
 	chmod -R 777 $PREDIX_MACHINE_HOME
 	chown -R gwuser $PREDIX_MACHINE_HOME
 fi
