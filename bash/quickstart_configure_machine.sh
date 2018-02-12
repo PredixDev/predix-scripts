@@ -26,6 +26,10 @@ function __find_and_replace_string
 	fi
 }
 
+function version
+{
+	echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }';
+}
 # Predix Dev Bootstrap Script
 # Authors: GE SDLP 2015
 #
@@ -161,6 +165,11 @@ fi
 if [[ ! -d $PREDIX_MACHINE_HOME ]]; then
   echo "$PREDIX_MACHINE_HOME does not exist. Please make sure Predix Machine is installed on the device and try again."
   exit 1
+fi
+#Check if the current version is < $UPGRAGE_MACHINE_VERSION
+CURRENT_MACHINE_VERSION=$(grep "predix.version" $PREDIX_MACHINE_HOME/machine/bin/predix/predix.home.prs| awk -F"=" '{print $2}' | tr -d '"')
+if [ $(version "$CURRENT_MACHINE_VERSION") -ge $(version "$UPGRAGE_MACHINE_VERSION") ]; then
+    UPGRAGE_MACHINE="1"
 fi
 if [[ "$UPGRAGE_MACHINE" == "1" ]]; then
 	curl -O $PREDIX_MACHINE_URL
