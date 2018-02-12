@@ -172,6 +172,7 @@ if [ $(version "$CURRENT_MACHINE_VERSION") -ge $(version "$UPGRAGE_MACHINE_VERSI
     UPGRAGE_MACHINE="1"
 fi
 if [[ "$UPGRAGE_MACHINE" == "1" ]]; then
+	systemctl stop predixmachine
 	curl -O $PREDIX_MACHINE_URL
 	mv $PREDIX_MACHINE_HOME "$PREDIX_MACHINE_HOME-17.1.2"
 	mkdir -p $PREDIX_MACHINE_HOME
