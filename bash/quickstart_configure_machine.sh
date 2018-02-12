@@ -173,6 +173,7 @@ if [ $(version "$CURRENT_MACHINE_VERSION") -ge $(version "$UPGRAGE_MACHINE_VERSI
 fi
 if [[ "$UPGRAGE_MACHINE" == "1" ]]; then
 	systemctl stop predixmachine
+	$PREDIX_MACHINE_HOME/yeti/watchdog/stop_watchdog.sh 
 	curl -O $PREDIX_MACHINE_URL
 	mv $PREDIX_MACHINE_HOME "$PREDIX_MACHINE_HOME-17.1.2"
 	mkdir -p $PREDIX_MACHINE_HOME
