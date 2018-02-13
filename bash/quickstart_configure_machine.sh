@@ -183,7 +183,7 @@ if [[ "$UPGRAGE_MACHINE" == "1" ]]; then
 	#mkdir -p $PREDIX_MACHINE_HOME
 	tar xvf $PREDIXMACHINE_TAR_FILENAME -C $PREDIX_MACHINE_HOME
 	cp $PREDIX_MACHINE_HOME-$CURRENT_MACHINE_VERSION/machine/bin/predix/setvars.sh $PREDIX_MACHINE_HOME/machine/bin/predix/setvars.sh
-	find $PREDIX_MACHINE_HOME -name "._*.config" -exec rm {} \;
+	find $PREDIX_MACHINE_HOME -name "._*" -exec rm {} \;
 	chmod -R 777 $PREDIX_MACHINE_HOME
 	chown -R gwuser $PREDIX_MACHINE_HOME
 fi
