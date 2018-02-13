@@ -175,8 +175,9 @@ if [[ "$UPGRAGE_MACHINE" == "1" ]]; then
 	systemctl stop predixmachine
 	curl -O $PREDIX_MACHINE_URL
 	mkdir -p "$PREDIX_MACHINE_HOME-$CURRENT_MACHINE_VERSION"
-	cp -rf  $PREDIX_MACHINE_HOME "$PREDIX_MACHINE_HOME-$CURRENT_MACHINE_VERSION"
-	find . ! -name '$0' -type f -exec rm -f {} +
+	cp -rf $PREDIX_MACHINE_HOME "$PREDIX_MACHINE_HOME-$CURRENT_MACHINE_VERSION"
+	rm -rf $PREDIX_MACHINE_HOME/*
+	#find . ! -name '$0' -type f -exec rm -f {} +
 	#mkdir -p $PREDIX_MACHINE_HOME
 	tar xvf $PREDIXMACHINE_TAR_FILENAME -C $PREDIX_MACHINE_HOME
 	cp $PREDIX_MACHINE_HOME-17.1.2/machine/bin/predix/setvars.sh $PREDIX_MACHINE_HOME/machine/bin/predix/setvars.sh
