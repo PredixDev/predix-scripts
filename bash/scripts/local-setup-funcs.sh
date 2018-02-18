@@ -149,6 +149,7 @@ function append_new_line_log
 {
 	validate_num_arguments 2 $# "\"append_new_line_log()\" expected in order: String of the new line being appended, path of where to generate log" "$localSetupLogDir"
 	echo "-->> $1"
+	#echo "-->> $2"
 	echo $(timestamp): " --- " "$1"  >> "$2/localsetup.log"
 }
 
