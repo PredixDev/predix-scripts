@@ -165,9 +165,9 @@ function createBlobstoreService() {
 	fi
 	## Deploy the Blobstore sdk
 	cd $rootDir
-	getRepoURL "predix-blobstore-sdk" blobstore_git_url version.json
+	getRepoURL "predix-blobstore-sdk" blobstore_git_url ../version.json
 
-	getRepoVersion "predix-blobstore-sdk" blobstore_version version.json
+	getRepoVersion "predix-blobstore-sdk" blobstore_version ../version.json
 	echo "git repo version : $blobstore_version"
 	rm -rf blobstore-samples
 	__echo_run git clone $blobstore_git_url -b $blobstore_version
@@ -540,4 +540,11 @@ function __setupServices() {
 	echo "Asset URL:  $assetURI" >> $SUMMARY_TEXTFILE
 	echo "Asset Zone ID: $ASSET_ZONE_ID" >> $SUMMARY_TEXTFILE
 	echo "Mobile Zone ID: $MOBILE_ZONE_ID" >> $SUMMARY_TEXTFILE
+
+	if [[ ( $RUN_CREATE_BLOBSTORE == 1 ) ]]; then
+		echo "" >> $SUMMARY_TEXTFILE
+		echo "Blobstore SDK Application has been installed. You can submit and query blobstore using the SDK urls below"
+		echo " to Post a file : curl -i -X POST -H \"Content-Type: multipart/form-data\" -F \"file=@<File name with absolute path>\" $apphost/v1/blob"
+		echo " to Retrieve the files curl -i -X GET $apphost/v1/blob"
+	fi
 }

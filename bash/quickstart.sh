@@ -72,7 +72,7 @@ fi
 vercomp () {
   # can't do simple string or numeric comparison for semver string, so we need this function.
   # accepts two semver strings.  i.e. 0.6.3, 1.3.49, etc
-  # returns 0 if $1 >= $2, or exits with error.  
+  # returns 0 if $1 >= $2, or exits with error.
   # https://stackoverflow.com/questions/4023830/how-to-compare-two-strings-in-dot-separated-version-format-in-bash
     if [[ $1 == $2 ]]
     then
@@ -179,12 +179,13 @@ if [[ "$RUN_PRINT_VCAPS" == "1" ]]; then
   echo "Printed the info from VCAPS : "  >> $SUMMARY_TEXTFILE
 fi
 # Instantiate, configure, and push the following Predix services: Timeseries, Asset, and UAA.
-if [[ ( $RUN_CREATE_UAA == 1 || $RUN_CREATE_ASSET == 1 || $RUN_CREATE_MOBILE == 1 || $RUN_CREATE_MOBILE_REF_APP == 1 ||$RUN_CREATE_TIMESERIES == 1 || $RUN_CREATE_ACS == 1 || $RUN_CREATE_ANALYTIC_FRAMEWORK == 1) ]]; then
+if [[ ( $RUN_CREATE_UAA == 1 || $RUN_CREATE_ASSET == 1 || $RUN_CREATE_MOBILE == 1 || $RUN_CREATE_MOBILE_REF_APP == 1 ||$RUN_CREATE_TIMESERIES == 1 || $RUN_CREATE_ACS == 1 || $RUN_CREATE_ANALYTIC_FRAMEWORK == 1 || $RUN_CREATE_BLOBSTORE == 1) ]]; then
   source "$quickstartRootDir/bash/scripts/predix_services_setup.sh"
   __setupServices "$TEMP_APP"
 fi
 
 # Build our application
+echo "$APP_SCRIPT"
 if [[ "$APP_SCRIPT" != "" ]]; then
   source "$quickstartRootDir/bash/scripts/$APP_SCRIPT" "$TEMP_APP"
   main "$TEMP_APP"
