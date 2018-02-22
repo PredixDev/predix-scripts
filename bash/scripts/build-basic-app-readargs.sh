@@ -116,7 +116,7 @@ function processReadargs() {
 	fi
 
 	if [[ "$MACHINE_VERSION" == "" ]]; then
-		MACHINE_VERSION="17.1.2"
+		MACHINE_VERSION="17.1.3"
 	fi
 	if [[ "$MACHINE_CONTAINER_TYPE" == "Custom" ]]; then
 		PREDIX_MACHINE_HOME="$rootDir/$MACHINE_CUSTOM_IMAGE_NAME"
