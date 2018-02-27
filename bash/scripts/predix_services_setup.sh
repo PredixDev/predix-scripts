@@ -173,7 +173,7 @@ function createBlobstoreService() {
 	__echo_run git clone $blobstore_git_url -b $blobstore_version
 
 	cd blobstore-samples/blobstore-aws-sample
-	mvn clean install -s $MAVEN_SETTINGS_FILE
+	mvn clean install -B -s $MAVEN_SETTINGS_FILE
 	cp manifest.yml manifest_temp.yml
 	__find_and_replace_string "<my-blobstore-instance>" "$BLOBSTORE_INSTANCE_NAME" "manifest_temp.yml" "$logDir" "manifest_temp.yml"
 

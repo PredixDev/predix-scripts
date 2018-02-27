@@ -60,7 +60,7 @@ function __standard_mac_initialization() {
   echo "QUICKSTART_ARGS       : $QUICKSTART_ARGS"
   run_mac_setup
   echo ""
-  echo "The required tools have been installed or you have chosen to not install them. Proceeding with the setting up services and application."
+  echo "The required tools have been installed or you have chosen to not install them. Proceeding with the setting up of services and application."
   echo ""
   echo ""
 }
