@@ -57,19 +57,19 @@ fi
 #Download the Predix Machine SDK
 PREDIX_MACHINE_SDK="predixmachinesdk-$MACHINE_VERSION"
 rm -rf $PREDIX_MACHINE_SDK
-mvn org.apache.maven.plugins:maven-dependency-plugin:2.6:copy -Dartifact=predix-machine-package:predixmachinesdk:$MACHINE_VERSION:zip -DoutputDirectory=. -s ~/.m2/settings_external.xml
+mvn org.apache.maven.plugins:maven-dependency-plugin:2.6:copy -Dartifact=predix-machine-package:predixmachinesdk:$MACHINE_VERSION:zip -DoutputDirectory=. -B -s ~/.m2/settings_external.xml
 
 #Download the pre-built machine container
 PREDIX_MACHINE_CONTAINER="PredixMachineEdgeStarter-$MACHINE_VERSION"
 rm -rf $PREDIX_MACHINE_CONTAINER
-mvn org.apache.maven.plugins:maven-dependency-plugin:2.6:copy -Dartifact=predix-machine-containers:PredixMachineEdgeStarter:$MACHINE_VERSION:zip -DoutputDirectory=. -s ~/.m2/settings_external.xml
+mvn org.apache.maven.plugins:maven-dependency-plugin:2.6:copy -Dartifact=predix-machine-containers:PredixMachineEdgeStarter:$MACHINE_VERSION:zip -DoutputDirectory=. -B -s ~/.m2/settings_external.xml
 
 unzip $PREDIX_MACHINE_SDK.zip
 
 unzip $PREDIX_MACHINE_CONTAINER.zip -d $PREDIX_MACHINE_CONTAINER
 
 unzip $PREDIX_MACHINE_SDK/samples/sample-apps.zip -d $PREDIX_MACHINE_SDK/samples
-mvn clean install -f $PREDIX_MACHINE_SDK/samples/sample/pom.xml -DoutputDirectory=.
+mvn clean install -B -f $PREDIX_MACHINE_SDK/samples/sample/pom.xml -DoutputDirectory=.
 
 cp -rf $PREDIX_MACHINE_SDK/samples/sample/configuration/machine/* $PREDIX_MACHINE_CONTAINER/configuration/machine
 

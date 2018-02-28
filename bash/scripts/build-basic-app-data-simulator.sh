@@ -69,9 +69,9 @@ function build-basic-app-data-simulator-main() {
     fi
     __append_new_head_log "Retrieving the application $DATA_SIMULATOR_APP_NAME" "-" "$logDir"
     if [[ $RUN_COMPILE_REPO -eq 1 ]]; then
-      mvn clean package -U -s $MAVEN_SETTINGS_FILE
+      mvn clean package -U -B -s $MAVEN_SETTINGS_FILE
     else
-      mvn clean dependency:copy -s $MAVEN_SETTINGS_FILE
+      mvn clean dependency:copy -B -s $MAVEN_SETTINGS_FILE
     fi
     __append_new_head_log "Deploying the application $DATA_SIMULATOR_APP_NAME" "-" "$logDir"
     if px push; then
