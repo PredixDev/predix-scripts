@@ -23,7 +23,7 @@ function run_mac_setup() {
 			LOCAL_SETUP_URL="${LOCAL_SETUP_URL/github.com/raw.githubusercontent.com}"
 		else
 			if [[ $LOCAL_SETUP_URL == *"github.build"* ]]; then
-				LOCAL_SETUP_URL="${LOCAL_SETUP_URL/github.build.ge.com/github.build.ge.com/raw}"
+				LOCAL_SETUP_URL="${LOCAL_SETUP_URL/github.com/PredixDev/raw}"
 			fi
 		fi
 		SETUP_MAC="$LOCAL_SETUP_URL/$LOCAL_SETUP_BRANCH/setup-mac.sh"

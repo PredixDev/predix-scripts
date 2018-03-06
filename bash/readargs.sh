@@ -197,6 +197,11 @@ function processSwitchCommon() {
   				printf 'verify-artifactory not set using default' >&2
   			fi
   			;;
+	--skip-va)
+        # if --skip-va is present then user does not want to verify artifactory. So DO NOT add the -va flag too along with it.
+          VERIFY_ARTIFACTORY=0
+          ;;
+			
 		*)               # Default case: If no more options then break out of the loop.
       UNKNOWN_SWITCH=1;
 			#break
