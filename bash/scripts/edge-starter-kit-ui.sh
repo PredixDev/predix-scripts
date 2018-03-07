@@ -102,6 +102,13 @@ function edge-starter-kit-ui-main() {
   mv package1.json package.json
 
   __append_new_head_log "Deploying the application \"$FRONT_END_KIT_APP_NAME\"" "-" "$logDir"
+  #check for -da flag to delete this application in cloud
+  if [[ $RUN_DELETE_APPS -eq 1 ]]; then
+    #########Sushma added this############################
+    __try_delete_app $FRONT_END_KIT_APP_NAME
+    ######################################################
+  fi
+
   if px push; then
     __append_new_line_log "Successfully deployed!" "$logDir"
   else

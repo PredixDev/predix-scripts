@@ -11,6 +11,7 @@ BINDING_APP=0
 CONTINUE_FROM=0
 CONTINUE_FROM_SWITCH=""
 RUN_DELETE_SERVICES=0
+RUN_DELETE_APPS=0
 SWITCH_DESC_INDEX=0
 SWITCH_INDEX=0
 BRANCH="master"
@@ -156,6 +157,11 @@ function processSwitchCommon() {
 			SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-ds | --delete-services"
 			PRINT_USAGE=0
 			;;
+    -da|--delete-apps)
+  			RUN_DELETE_APPS=1
+  			SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-da | --delete-apps"
+  			PRINT_USAGE=0
+  			;;
 		-q|--quiet-mode)
 			QUIET_MODE=1
 			;;
@@ -201,7 +207,7 @@ function processSwitchCommon() {
         # if --skip-va is present then user does not want to verify artifactory. So DO NOT add the -va flag too along with it.
           VERIFY_ARTIFACTORY=0
           ;;
-			
+
 		*)               # Default case: If no more options then break out of the loop.
       UNKNOWN_SWITCH=1;
 			#break
@@ -229,6 +235,7 @@ function printCommonVariables() {
 	  echo "    QUIET_MODE                               : $QUIET_MODE"
 	  echo "    RUN_COMPILE_REPO                         : $RUN_COMPILE_REPO"
 	  echo "    RUN_DELETE_SERVICES                      : $RUN_DELETE_SERVICES"
+    echo "    RUN_DELETE_APPS                          : $RUN_DELETE_APPS"
     echo "    SKIP_ALL_DONE                            : $SKIP_ALL_DONE"
     echo "    SKIP_BROWSER                             : $SKIP_BROWSER"
     echo "    SKIP_INTERACTIVE                         : $SKIP_INTERACTIVE"
@@ -253,6 +260,7 @@ function exportCommonVariables() {
   export PREDIX_CLI_MIN
   export QUIET_MODE
 	export RUN_DELETE_SERVICES
+  export RUN_DELETE_APPS
   export SKIP_BROWSER
   export SKIP_INTERACTIVE
   export SKIP_SERVICES
@@ -273,6 +281,7 @@ function __print_out_common_usage
   echo "[-cc|      --clean-compile]                 => Force clean and compile for java repos"
   echo "[-cf|      --continue-from]                 => Continue quickstart from the switch provided.  e.g. -cf --nodejs-starter"
   echo "[-ds|      --delete-services]               => Delete the service instances previously created"
+  echo "[-da|      --delete-apps]                   => Delete the application previously created"
   echo "[-h|       --help]                          => Print usage"
   echo "[-i|       --instance-prepender]            => Instance appender to identify your service and application instances"
   echo "[-s|       --maven-settings]                => location of mvn settings.xml file, default is ~/.m2/settings.xml"
