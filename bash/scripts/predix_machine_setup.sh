@@ -62,7 +62,7 @@ if [ "$2" == "1" ]; then
 	fi
 	#download the predix machine container
 	if [[ ! -d "$PREDIX_MACHINE_HOME" ]]; then
-		__echo_run  mvn -U org.apache.maven.plugins:maven-dependency-plugin:2.6:copy -Dartifact=predix-machine-containers:PredixMachine$MACHINE_CONTAINER_TYPE:$MACHINE_VERSION:zip  -s $MAVEN_SETTINGS_FILE -DoutputDirectory=.
+		__echo_run  mvn -U -B org.apache.maven.plugins:maven-dependency-plugin:2.6:copy -Dartifact=predix-machine-containers:PredixMachine$MACHINE_CONTAINER_TYPE:$MACHINE_VERSION:zip  -s $MAVEN_SETTINGS_FILE -DoutputDirectory=.
 
 		#getRepoURL "predix-machine-container-url" MACHINE_CONTAINER_URL ../version.json
 		#echo "MACHINE_CONTAINER_URL : $MACHINE_CONTAINER_URL"
