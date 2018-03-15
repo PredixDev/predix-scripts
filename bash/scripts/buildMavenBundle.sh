@@ -17,11 +17,11 @@ echo "MAVEN_SETTINGS_FILE : $MAVEN_SETTINGS_FILE"
 if [[ $RUN_COMPILE_REPO -eq 1 ]]; then
   __echo_run mvn -q clean install -U -Dmaven.compiler.source=1.8 -Dmaven.compiler.target=1.8 -f pom.xml -s $MAVEN_SETTINGS_FILE
 else
-  __echo_run mvn clean dependency:copy -Dmdep.useBaseVersion=true -s $MAVEN_SETTINGS_FILE
+  __echo_run mvn clean dependency:copy -B -Dmdep.useBaseVersion=true -s $MAVEN_SETTINGS_FILE
 fi
 
-echo "running mvn help:active-profiles -s $MAVEN_SETTINGS_FILE"
-mvn help:active-profiles -s $MAVEN_SETTINGS_FILE
+echo "running mvn help:active-profiles -B -s $MAVEN_SETTINGS_FILE"
+mvn help:active-profiles -B -s $MAVEN_SETTINGS_FILE
 
 PROJECT_ARTIFACT_ID=$(mvn org.apache.maven.plugins:maven-help-plugin:2.2:evaluate -Dexpression=project.artifactId | tail | grep -e '^[^\[]')
 PROJECT_VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:2.2:evaluate -Dexpression=project.version | tail | grep -e '^[^\[]')
@@ -44,7 +44,7 @@ echo "CURRENT_DIR $(pwd)"
 if [[ $RUN_COMPILE_REPO -eq 1 ]]; then
   __echo_run mvn -q clean install -U -Dmaven.compiler.source=1.8 -Dmaven.compiler.target=1.8 -f pom.xml -s $MAVEN_SETTINGS_FILE
 else
-  __echo_run mvn clean dependency:copy -Dmdep.useBaseVersion=true -s $MAVEN_SETTINGS_FILE
+  __echo_run mvn clean dependency:copy -B -Dmdep.useBaseVersion=true -s $MAVEN_SETTINGS_FILE
 fi
 
 PROJECT_ARTIFACT_ID=$(mvn org.apache.maven.plugins:maven-help-plugin:2.2:evaluate -Dexpression=project.artifactId | tail | grep -e '^[^\[]')

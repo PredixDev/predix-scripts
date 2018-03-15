@@ -276,12 +276,17 @@ __try_delete_service() {
 }
 
 __app_exists() {
-	px a | grep $1 > /dev/null 2>&1
+	px app $1 > /dev/null 2>&1
 	return $?
 }
 
 __service_exists() {
-	px s | grep $1 > /dev/null 2>&1
+	px service $1 > /dev/null 2>&1
+	if [ $? -eq 1 ]; then
+	  echo "px service $1 failed to find service"
+	  px service $1
+	  return 1
+	fi
 	return $?
 }
 
