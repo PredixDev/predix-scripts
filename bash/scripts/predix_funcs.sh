@@ -112,7 +112,7 @@ __try_create_predix_service() {
   #
   px uaa login $4 admin --secret $5
   if __service_exists $3 ; then
-    echo -n "Service $3 already exists" # Do nothing
+    echo "Service $3 already exists" # Do nothing
   else
     if [[ $6 == \"\" ]]; then
       echo -e "\n$ px create-service $1 $2 $3 $4 --client-secret $7\n"
