@@ -20,11 +20,9 @@ else
   __echo_run mvn clean dependency:copy -B -Dmdep.useBaseVersion=true -s $MAVEN_SETTINGS_FILE
 fi
 
-echo "running mvn help:active-profiles -B -s $MAVEN_SETTINGS_FILE"
-mvn help:active-profiles -B -s $MAVEN_SETTINGS_FILE
+PROJECT_ARTIFACT_ID=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.name}' --non-recursive org.codehaus.mojo:exec-maven-plugin:1.3.1:exec)
+PROJECT_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive org.codehaus.mojo:exec-maven-plugin:1.3.1:exec)
 
-PROJECT_ARTIFACT_ID=$(mvn org.apache.maven.plugins:maven-help-plugin:2.2:evaluate -Dexpression=project.artifactId | tail | grep -e '^[^\[]')
-PROJECT_VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:2.2:evaluate -Dexpression=project.version | tail | grep -e '^[^\[]')
 MACHINE_BUNDLE="$PROJECT_ARTIFACT_ID-$PROJECT_VERSION.jar"
 echo "MACHINE_BUNDLE_JAR : $MACHINE_BUNDLE"
 __find_and_replace_string "{MACHINE_BUNDLE_VERSION}" "$PROJECT_VERSION" "config/solution.ini" "$buildBasicAppLogDir" "$MACHINE_HOME/machine/bin/vms/solution.ini"
@@ -47,8 +45,8 @@ else
   __echo_run mvn clean dependency:copy -B -Dmdep.useBaseVersion=true -s $MAVEN_SETTINGS_FILE
 fi
 
-PROJECT_ARTIFACT_ID=$(mvn org.apache.maven.plugins:maven-help-plugin:2.2:evaluate -Dexpression=project.artifactId | tail | grep -e '^[^\[]')
-PROJECT_VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:2.2:evaluate -Dexpression=project.version | tail | grep -e '^[^\[]')
+PROJECT_ARTIFACT_ID=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.name}' --non-recursive org.codehaus.mojo:exec-maven-plugin:1.3.1:exec)
+PROJECT_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive org.codehaus.mojo:exec-maven-plugin:1.3.1:exec)
 MACHINE_BUNDLE="$PROJECT_ARTIFACT_ID-$PROJECT_VERSION.jar"
 echo "MACHINE_BUNDLE_JAR : $MACHINE_BUNDLE"
 
