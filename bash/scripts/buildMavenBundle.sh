@@ -21,7 +21,7 @@ else
 fi
 
 echo "Fetching project name"
-PROJECT_ARTIFACT_ID="predix-machine-template-adapter-simulator"
+PROJECT_ARTIFACT_ID=$(printf 'VER\t${project.artifactId}' | mvn help:evaluate | grep '^VER' | cut -f2)
 echo "PROJECT_ARTIFACT_ID : $PROJECT_ARTIFACT_ID"
 echo "Fetching project version"
 PROJECT_VERSION=$(printf 'VER\t${project.version}' | mvn help:evaluate | grep '^VER' | cut -f2)
@@ -50,7 +50,7 @@ else
 fi
 
 echo "Fetching project name"
-PROJECT_ARTIFACT_ID="predix-machine-template-processor"
+PROJECT_ARTIFACT_ID=$(printf 'VER\t${project.artifactId}' | mvn help:evaluate | grep '^VER' | cut -f2)
 echo "PROJECT_ARTIFACT_ID : $PROJECT_ARTIFACT_ID"
 echo "Fetching project version"
 PROJECT_VERSION=$(printf 'VER\t${project.version}' | mvn help:evaluate | grep '^VER' | cut -f2)
