@@ -114,6 +114,10 @@ fi
 
 if [[ ( $LOGIN == 1 ) ]]; then
     #Check px login and target Space
+    if [[ $(px target | grep FAILED | wc -l) -eq "1" ]]; then
+      echo "Please login to cloud using 'px login' or 'cf login'.  GE emails will use 'px login --sso' or 'cf login --sso' "
+      exit 1
+    fi
     org="`px target | grep -i Org | awk '{print $2}'`"
     __append_new_line_log "Org : $org" "$quickstartLogDir"
     space="`px target | grep -i Space | awk '{print $2}'`"
