@@ -599,6 +599,20 @@ function getUaaUrl() {
   fi
 }
 
+function getUaaUrlFromInstance() {
+   __validate_num_arguments 1 $# "\"curl_helper_funcs:getUaaUrl\" expected in order: Name of Predix Service Instance Name used to get VCAP configurations  " "$logDir"
+
+  if uaaURL=$(px si $1 | grep uri*| awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}' ); then
+    if [[ "$uaaURL" == "" ]] ; then
+      __error_exit "The UAA URL was not found for \"$1\"..." "$logDir"
+    fi
+    __append_new_line_log "UAA URL=$uaaURL copied from VCAP environmental variables!" "$logDir"
+    export UAA_URL="${uaaURL}"
+  else
+    __error_exit "There was an error getting the UAA URL..." "$logDir"
+  fi
+}
+
 function getTimeseriesIngestUri() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesIngestUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
   VCAP_JSON=$(getVCAPJSON $1)

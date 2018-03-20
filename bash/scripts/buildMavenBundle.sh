@@ -20,8 +20,12 @@ else
   __echo_run mvn clean dependency:copy -B -Dmdep.useBaseVersion=true -s $MAVEN_SETTINGS_FILE
 fi
 
-PROJECT_ARTIFACT_ID=$(mvn -s $MAVEN_SETTINGS_FILE -Dexec.executable="echo" -Dexec.args='${project.name}' --non-recursive org.codehaus.mojo:exec-maven-plugin:1.3.1:exec)
-PROJECT_VERSION=$(mvn -s $MAVEN_SETTINGS_FILE -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive org.codehaus.mojo:exec-maven-plugin:1.3.1:exec)
+echo "Fetching project name"
+PROJECT_ARTIFACT_ID="predix-machine-template-adapter-simulator"
+echo "PROJECT_ARTIFACT_ID : $PROJECT_ARTIFACT_ID"
+echo "Fetching project version"
+PROJECT_VERSION=$(printf 'VER\t${project.version}' | mvn help:evaluate | grep '^VER' | cut -f2)
+echo "PROJECT_VERSION : $PROJECT_VERSION"
 
 MACHINE_BUNDLE="$PROJECT_ARTIFACT_ID-$PROJECT_VERSION.jar"
 echo "MACHINE_BUNDLE_JAR : $MACHINE_BUNDLE"
@@ -45,8 +49,13 @@ else
   __echo_run mvn clean dependency:copy -B -Dmdep.useBaseVersion=true -s $MAVEN_SETTINGS_FILE
 fi
 
-PROJECT_ARTIFACT_ID=$(mvn -s $MAVEN_SETTINGS_FILE -Dexec.executable="echo" -Dexec.args='${project.name}' --non-recursive org.codehaus.mojo:exec-maven-plugin:1.3.1:exec)
-PROJECT_VERSION=$(mvn -s $MAVEN_SETTINGS_FILE -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive org.codehaus.mojo:exec-maven-plugin:1.3.1:exec)
+echo "Fetching project name"
+PROJECT_ARTIFACT_ID="predix-machine-template-processor"
+echo "PROJECT_ARTIFACT_ID : $PROJECT_ARTIFACT_ID"
+echo "Fetching project version"
+PROJECT_VERSION=$(printf 'VER\t${project.version}' | mvn help:evaluate | grep '^VER' | cut -f2)
+echo "PROJECT_VERSION : $PROJECT_VERSION"
+
 MACHINE_BUNDLE="$PROJECT_ARTIFACT_ID-$PROJECT_VERSION.jar"
 echo "MACHINE_BUNDLE_JAR : $MACHINE_BUNDLE"
 

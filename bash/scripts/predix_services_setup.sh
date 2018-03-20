@@ -441,7 +441,12 @@ function __setupServices() {
 		# Create client ID for generic use by applications - including timeseries and asset scope
 		__append_new_head_log "Registering Client on UAA to access the Predix Services" "-" "$logDir"
 		if [[ "$UAA_URL" == "" ]]; then
-			getUaaUrl $1
+			if [[ ( $BINDING_APP == 0 ) ]]; then
+				getUaaUrlFromInstance $UAA_INSTANCE_NAME
+			else 
+				getUaaUrl $1
+			fi
+			
 		fi
 
 		__createUaaLoginClient "$UAA_URL" "$UAA_CLIENTID_LOGIN" "$UAA_CLIENTID_LOGIN_SECRET"
