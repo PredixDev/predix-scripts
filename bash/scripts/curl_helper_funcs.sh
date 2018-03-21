@@ -627,11 +627,33 @@ function getTimeseriesIngestUri() {
   	__error_exit "There was an error getting TIMESERIES_INGEST_URI..." "$logDir"
   fi
 }
+function getTimeseriesIngestUriFromInstance() {
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesIngestUriIstance\" expected in order: Name of Predix Service Instance used to get VCAP configurations  " "$logDir"
+    VCAP_JSON=$(getServiceInfoJSON $1)
+  if TIMESERIES_INGEST_URI=$(echo $VCAP_JSON |jq -r '.ingest.uri' | tr -d '"'| head -1); then
+  	if [[ "$TIMESERIES_INGEST_URI" == "" ]] ; then
+  		__error_exit "The TIMESERIES_INGEST_URI was not found for \"$1\"..." "$logDir"
+  	fi
+    __append_new_line_log " TIMESERIES_INGEST_URI=$TIMESERIES_INGEST_URI copied from VCAP environmental variables!" "$logDir"
+    export TIMESERIES_INGEST_URI="${TIMESERIES_INGEST_URI}"
+  else
+  	__error_exit "There was an error getting TIMESERIES_INGEST_URI..." "$logDir"
+  fi
+}
 
 function getTimeseriesQueryUri() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesQueryUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
   VCAP_JSON=$(getVCAPJSON $1)
   if TIMESERIES_QUERY_URI=$(echo $VCAP_JSON | jq -r '.["VCAP_SERVICES"]["predix-timeseries"][].credentials.query.uri' | tr -d '"'| head -1); then
+    __append_new_line_log "Timeseries Query URI copied from environment variables! $TIMESERIES_QUERY_URI" "$logDir"
+  else
+    __error_exit "There was an error getting Timeseries Query URI..." "$logDir"
+  fi
+}
+function getTimeseriesQueryUriFromInstance() {
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesQueryUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
+  VCAP_JSON=$(getServiceInfoJSON $1)
+  if TIMESERIES_QUERY_URI=$(echo $VCAP_JSON | jq -r '.query.uri' | tr -d '"'| head -1); then
     __append_new_line_log "Timeseries Query URI copied from environment variables! $TIMESERIES_QUERY_URI" "$logDir"
   else
     __error_exit "There was an error getting Timeseries Query URI..." "$logDir"
@@ -651,6 +673,21 @@ function getTimeseriesZoneId() {
 		__error_exit "There was an error getting TIMESERIES_ZONE_ID..." "$logDir"
 	fi
 }
+function getTimeseriesZoneIdFromInstance() {
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesZoneId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
+   VCAP_JSON=$(getServiceInfoJSON $1)
+   echo "Swapna here $VCAP_JSON"
+  if TIMESERIES_ZONE_ID=$(echo $VCAP_JSON | jq -r '.query["zone-http-header-value"]' | tr -d '"'| head -1); then
+    if [[ "$TIMESERIES_ZONE_ID" == "" ]] ; then
+      __error_exit "The TIMESERIES_ZONE_ID was not found for \"$1\"..." "$logDir"
+    fi
+    __append_new_line_log "TIMESERIES_ZONE_ID=$TIMESERIES_ZONE_ID copied from VCAP environmental variables!" "$logDir"
+    export TIMESERIES_ZONE_ID="${TIMESERIES_ZONE_ID}"
+	else
+		__error_exit "There was an error getting TIMESERIES_ZONE_ID..." "$logDir"
+	fi
+}
+
 function getEventHubIngestUri() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getEventHubIngestUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
   VCAP_JSON=$(getVCAPJSON $1)
@@ -729,6 +766,15 @@ function getVCAPJSON() {
 	fi
 }
 
+function getServiceInfoJSON() {
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getServiceInfoJSON\" expected in order: Name of Predix Service Instance  " "$logDir"
+  instanceName=$1
+  serviceInfo=$(px si $1)
+  serviceInfo=${serviceInfo%Note*}
+  serviceInfo=${serviceInfo##*$1}
+  echo $serviceInfo
+}
+
 function getAFZoneId() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getAFZoneId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
   VCAP_JSON=$(getVCAPJSON $1)
@@ -748,6 +794,21 @@ function getTrustedIssuerId()
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getTrustedIssuerId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
 
   if trustedIssuerID=$(px env $1 | grep predix-uaa* | grep issuerId*| awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}' ); then
+		if [[ "$trustedIssuerID" == "" ]] ; then
+			__error_exit "The UAA trustedIssuerID was not found for \"$1\"..." "$logDir"
+		fi
+		#__append_new_line_log "trustedIssuerID copied from environmental variables!" "$logDir"
+    export TRUSTED_ISSUER_ID="${trustedIssuerID}"
+	else
+		__error_exit "There was an error getting the UAA trustedIssuerID..." "$logDir"
+	fi
+}
+
+function getTrustedIssuerIdFromInstance()
+{
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getTrustedIssuerId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
+px si $1
+  if trustedIssuerID=$(px si $1 | grep issuerId*| awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}' ); then
 		if [[ "$trustedIssuerID" == "" ]] ; then
 			__error_exit "The UAA trustedIssuerID was not found for \"$1\"..." "$logDir"
 		fi

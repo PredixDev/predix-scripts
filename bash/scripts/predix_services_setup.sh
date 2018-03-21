@@ -87,8 +87,12 @@ function createTimeseries()
 	fi
 
 	if [[ "$TRUSTED_ISSUER_ID" == "" ]]; then
-    getTrustedIssuerId $1
-  fi
+	if [[ ( $BINDING_APP == 0 ) ]]; then
+	  getTrustedIssuerIdFromInstance $UAA_INSTANCE_NAME
+    else
+      getTrustedIssuerId $1
+	 fi 
+    fi
 
 	if [[ $USE_TRAINING_UAA == 1 ]]; then
 		configParameters="{\"trustedIssuerIds\":[\"$TRUSTED_ISSUER_ID\"]}"
@@ -98,8 +102,16 @@ function createTimeseries()
 		__try_create_predix_service $TIMESERIES_SERVICE_NAME $TIMESERIES_SERVICE_PLAN $TIMESERIES_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET "Predix TimeSeries"
 	fi
 
-	# Bind Temp App to TimeSeries Instance
-	__try_bind $1 $TIMESERIES_INSTANCE_NAME
+	if [[ ( $BINDING_APP == 1 ) ]]; then
+		# Bind Temp App to TimeSeries Instance
+		__try_bind $1 $TIMESERIES_INSTANCE_NAME
+	else 
+	  # set all the timeseries zone urls 	
+	  getTimeseriesZoneIdFromInstance $TIMESERIES_INSTANCE_NAME
+	  getTimeseriesIngestUriFromInstance $TIMESERIES_INSTANCE_NAME
+	  getTimeseriesQueryUriFromInstance $TIMESERIES_INSTANCE_NAME
+	 fi 
+	
 }
 
 function createACSService() {
@@ -258,6 +270,7 @@ function createMobileService() {
 
 function createMobileReferenceApp() {
 	__append_new_head_log "Create Mobile Reference App Instance" "-" "$logDir"
+  set -x
 
     echo "*********************  inside  createMobileReferenceApp *********************** "
 	echo $MOBILE_INSTANCE_NAME
@@ -509,15 +522,27 @@ function __setupServices() {
 
 	#get some variables for printing purposes below
 	if [[ "$RUN_CREATE_TIMESERIES" == "1" ]]; then
-		if [[ "$TIMESERIES_INGEST_URI" == "" ]]; then
-			getTimeseriesIngestUri $1
-		fi
-		if [[ "$TIMESERIES_QUERY_URI" == "" ]]; then
-			getTimeseriesQueryUri $1
-		fi
-		if [[ "$TIMESERIES_ZONE_ID" == "" ]]; then
-			getTimeseriesZoneId $1
-		fi
+		if [[ ( $BINDING_APP == 0 ) ]]; then
+			if [[ "$TIMESERIES_INGEST_URI" == "" ]]; then
+				getTimeseriesIngestUriFromInstance $TIMESERIES_INSTANCE_NAME
+			fi
+			if [[ "$TIMESERIES_QUERY_URI" == "" ]]; then
+				getTimeseriesQueryUriFromInstance $TIMESERIES_INSTANCE_NAME
+			fi
+			if [[ "$TIMESERIES_ZONE_ID" == "" ]]; then
+				getTimeseriesZoneIdFromInstance $TIMESERIES_INSTANCE_NAME
+			fi
+		else 
+			if [[ "$TIMESERIES_INGEST_URI" == "" ]]; then
+				getTimeseriesIngestUri $1
+			fi
+			if [[ "$TIMESERIES_QUERY_URI" == "" ]]; then
+				getTimeseriesQueryUri $1
+			fi
+			if [[ "$TIMESERIES_ZONE_ID" == "" ]]; then
+				getTimeseriesZoneId $1
+			fi
+		fi	
 	fi
 	cd "$rootDir"
 
@@ -528,8 +553,15 @@ function __setupServices() {
 	echo "--------------------------------------------------"  >> $SUMMARY_TEXTFILE
 	echo ""  >> $SUMMARY_TEXTFILE
 	echo "Installed UAA with a client_id/secret (for your app) and a user/password (for your users to log in to your app)" >> $SUMMARY_TEXTFILE
-	echo "Installed Time Series and added time series scopes as client_id authorities" >> $SUMMARY_TEXTFILE
-	echo "Installed Asset and added asset scopes as client_id authorities" >> $SUMMARY_TEXTFILE
+
+	if [[ ( $RUN_CREATE_TIMESERIES == 1 ) ]]; then
+	    echo "Installed Time Series and added time series scopes as client_id authorities" >> $SUMMARY_TEXTFILE
+	fi
+
+	if [[ ( $RUN_CREATE_ASSET == 1 ) ]]; then
+	    echo "Installed Asset and added asset scopes as client_id authorities" >> $SUMMARY_TEXTFILE
+	fi
+
 	echo "" >> $SUMMARY_TEXTFILE
 	echo "UAA URL: $UAA_URL" >> $SUMMARY_TEXTFILE
 	echo "UAA Admin Client ID: admin" >> $SUMMARY_TEXTFILE
@@ -538,13 +570,23 @@ function __setupServices() {
 	echo "UAA Generic Client Secret: $UAA_CLIENTID_GENERIC_SECRET" >> $SUMMARY_TEXTFILE
 	echo "UAA User ID: $UAA_USER_NAME" >> $SUMMARY_TEXTFILE
 	echo "UAA User PASSWORD: $UAA_USER_PASSWORD" >> $SUMMARY_TEXTFILE
-	echo "Mobile Api Gateway Short Route Url: $API_GATEWAY_SHORT_ROUTE" >> $SUMMARY_TEXTFILE
-	echo "TimeSeries Ingest URL:  $TIMESERIES_INGEST_URI" >> $SUMMARY_TEXTFILE
-	echo "TimeSeries Query URL:  $TIMESERIES_QUERY_URI" >> $SUMMARY_TEXTFILE
-	echo "TimeSeries ZoneID: $TIMESERIES_ZONE_ID" >> $SUMMARY_TEXTFILE
-	echo "Asset URL:  $assetURI" >> $SUMMARY_TEXTFILE
-	echo "Asset Zone ID: $ASSET_ZONE_ID" >> $SUMMARY_TEXTFILE
-	echo "Mobile Zone ID: $MOBILE_ZONE_ID" >> $SUMMARY_TEXTFILE
+
+	if [[ ( $RUN_CREATE_MOBILE == 1 ) ]]; then
+	    echo "Mobile Api Gateway Short Route Url: $API_GATEWAY_SHORT_ROUTE" >> $SUMMARY_TEXTFILE
+	    echo "Mobile Zone ID: $MOBILE_ZONE_ID" >> $SUMMARY_TEXTFILE
+    fi
+
+	if [[ ( $RUN_CREATE_TIMESERIES == 1 ) ]]; then
+        echo "TimeSeries Ingest URL:  $TIMESERIES_INGEST_URI" >> $SUMMARY_TEXTFILE
+        echo "TimeSeries Query URL:  $TIMESERIES_QUERY_URI" >> $SUMMARY_TEXTFILE
+        echo "TimeSeries ZoneID: $TIMESERIES_ZONE_ID" >> $SUMMARY_TEXTFILE
+	fi
+
+	if [[ ( $RUN_CREATE_ASSET == 1 ) ]]; then
+        echo "Asset URL:  $assetURI" >> $SUMMARY_TEXTFILE
+        echo "Asset Zone ID: $ASSET_ZONE_ID" >> $SUMMARY_TEXTFILE
+	fi
+
 
 	if [[ ( $RUN_CREATE_BLOBSTORE == 1 ) ]]; then
 		echo "" >> $SUMMARY_TEXTFILE
