@@ -15,16 +15,16 @@ logDir="$rootDir/log"
 function getPredixAssetInfo () {
 	__append_new_head_log "Creating Predix Asset Model" "-" "$logDir"
 	if [[ "$UAA_URL" == "" ]]; then
-		getUaaUrl $1
+		getUaaUrlFromInstance $UAA_INSTANCE_NAME
 	fi
 
 	if [[ "$ASSET_URI" == "" ]]; then
-		getAssetUri $1
+		getAssetUriFromInstance $ASSET_INSTANCE_NAME
 	fi
 
 	# Get the Zone ID from the environment variables (for use when querying Asset data)
 	if [[ "$ASSET_ZONE_ID" == "" ]]; then
-    getAssetZoneId $1
+    getAssetZoneIdFromInstance $ASSET_INSTANCE_NAME
   fi
 }
 

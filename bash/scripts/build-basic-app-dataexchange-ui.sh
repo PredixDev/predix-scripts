@@ -32,9 +32,6 @@ function build-basic-app-dataexchange-ui-main() {
 
   __append_new_head_log "Build & Deploy DataExchange UI, a DataSet Library, which is based on Predix Polymer Starter Front-End Microservice" "-" "$logDir"
 
-  # Get the UAA environment variables (VCAPS)
-  fetchVCAPSInfo $1
-
   MYGENERICS_SECRET=$(echo -ne $UAA_CLIENTID_GENERIC:$UAA_CLIENTID_GENERIC_SECRET | base64)
   MYLOGINGENRICS_SECRET=$(echo -ne $UAA_CLIENTID_LOGIN:$UAA_CLIENTID_LOGIN_SECRET | base64)
 

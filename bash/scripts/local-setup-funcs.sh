@@ -19,15 +19,18 @@ function run_mac_setup() {
       read answer
   fi
   if [[ ${answer:0:1} == "y" ]] || [[ ${answer:0:1} == "Y" ]]; then
-		if [[ $LOCAL_SETUP_URL == *"github.com"* ]]; then
-			LOCAL_SETUP_URL="${LOCAL_SETUP_URL/github.com/raw.githubusercontent.com}"
-		else
-			if [[ $LOCAL_SETUP_URL == *"github.build"* ]]; then
-				LOCAL_SETUP_URL="${LOCAL_SETUP_URL/github.com/PredixDev/raw}"
-			fi
-		fi
-		SETUP_MAC="$LOCAL_SETUP_URL/$LOCAL_SETUP_BRANCH/setup-mac.sh"
-		echo "SETUP_MAC=$SETUP_MAC"
+    if [[ $LOCAL_SETUP_URL == *"github.com"* ]]; then
+      LOCAL_SETUP_URL="${LOCAL_SETUP_URL/github.com/raw.githubusercontent.com}"
+      echo "LOCAL_SETUP_URL=$LOCAL_SETUP_URL"
+    else
+      if [[ $LOCAL_SETUP_URL == *"github.build"* ]]; then
+        raw="raw/adoption"
+        LOCAL_SETUP_URL="${LOCAL_SETUP_URL/adoption/$raw}"
+	echo "LOCAL_SETUP_URL=$LOCAL_SETUP_URL"
+      fi
+    fi
+    SETUP_MAC="$LOCAL_SETUP_URL/$LOCAL_SETUP_BRANCH/setup-mac.sh"
+    echo "SETUP_MAC=$SETUP_MAC"
     bash <(curl -s -L $SETUP_MAC) $TOOLS_SWITCHES
   fi
 }

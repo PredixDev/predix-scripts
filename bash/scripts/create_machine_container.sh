@@ -91,13 +91,6 @@ function create_machine_container-main() {
       PREDIX_MACHINE_ZIPNAME="PredixMachine$MACHINE_CONTAINER_TYPE-$MACHINE_VERSION.zip"
   	fi
 
-    #fetchVCAPSInfo
-    #echo "TRUSTED_ISSUER_ID     : $TRUSTED_ISSUER_ID"
-    #echo "UAA URL               : $UAA_URL"
-    #echo "TIMESERIES_INGEST_URI : $TIMESERIES_INGEST_URI"
-    #echo "TIMESERIES_ZONE_ID    : $TIMESERIES_ZONE_ID"
-    #echo "ASSET_URL             : $ASSET_URL"
-    #echo "ASSET_ZONE_ID         : $ASSET_ZONE_ID"
     #"$rootDir/machineconfig.sh" "$TRUSTED_ISSUER_ID" "$TIMESERIES_INGEST_URI" "$TIMESERIES_ZONE_ID" "$MACHINE_HOME"
     cd $MACHINE_HOME
     rm -rf ../../../../$PREDIX_MACHINE_ZIPNAME

@@ -185,7 +185,7 @@ function __createUaaClient
     __error_exit "Failed to get a token from \"$1\"" "$logDir"
   else
     if [[ "$UAA_URL" == "" ]]; then
-      getUaaUrl $TEMP_APP
+      getUaaUrlFromInstance $UAA_INSTANCE_NAME
     fi
 
     ## check if the client exists
@@ -232,10 +232,10 @@ function __addTimeseriesAuthorities {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:__addTimeseriesAuthorities\" expected in order: Client Id " "$logDir"
 
   if [[ "$UAA_URL" == "" ]]; then
-    getUaaUrl $TEMP_APP
+    getUaaUrlFromInstance $UAA_INSTANCE_NAME
   fi
   if [[ "$TIMESERIES_ZONE_ID" == "" ]]; then
-    getTimeseriesZoneId $TEMP_APP
+    getTimeseriesZoneIdFromInstance $TIMESERIES_INSTANCE_NAME
   fi
   __append_new_line_log "Add Timeseries Authorities: TimeseriesZoneId=$TIMESERIES_ZONE_ID" "$logDir"
   ## check if the client exists
@@ -255,7 +255,7 @@ function __addEventHubAuthorities {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:__addEventHubAuthorities\" expected in order: Client Id " "$logDir"
 
   if [[ "$UAA_URL" == "" ]]; then
-    getUaaUrl $TEMP_APP
+    getUaaUrlFromInstance $UAA_INSTANCE_NAME
   fi
   if [[ "$EVENTHUB_ZONE_ID" == "" ]]; then
     getEventHubZoneId $TEMP_APP
@@ -277,7 +277,7 @@ function __addAcsAuthorities {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:__addAcsAuthorities\" expected in order: Client Id " "$logDir"
 
   if [[ "$UAA_URL" == "" ]]; then
-    getUaaUrl $TEMP_APP
+    getUaaUrlFromInstance $UAA_INSTANCE_NAME
   fi
   if [[ "$ACS_ZONE_ID" == "" ]]; then
     getAcsZoneId $ACCESS_CONTROL_SERVICE_INSTANCE_NAME
@@ -301,10 +301,10 @@ function __addAssetAuthorities {
 
   __append_new_line_log "Add Asset Authorities: AssetServiceName=$ASSET_SERVICE_NAME, AssetZoneId=$ASSET_ZONE_ID" "$logDir"
   if [[ "$UAA_URL" == "" ]]; then
-    getUaaUrl $TEMP_APP
+    getUaaUrlFromInstance $UAA_INSTANCE_NAME
   fi
   if [[ "$ASSET_ZONE_ID" == "" ]]; then
-    getAssetZoneId $1
+    getAssetZoneIdFromInstance $ASSET_INSTANCE_NAME
   fi
 
   ## check if the client exists
@@ -323,7 +323,7 @@ function __addAssetAuthorities {
 function __addAnalyticFrameworkAuthorities {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:__addAnalyticFrameworkAuthorities\" expected in order: Client Id " "$logDir"
   if [[ "$UAA_URL" == "" ]]; then
-    getUaaUrl $TEMP_APP
+    getUaaUrlFromInstance $UAA_INSTANCE_NAME
   fi
   if [[ "$AF_ZONE_ID" == "" ]]; then
     getAFZoneId $TEMP_APP
@@ -536,73 +536,11 @@ function createAssetWithMetaData
   fi
 }
 
-function fetchVCAPSInfo
-{
-  __validate_num_arguments 1 $# "\"curl_helper_funcs:fetchVCAPSInfo\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
-
-  echo "WARNING: fetchVCAPSInfo function has been deprecated and no longer works.  Script should call a specific function in curl_helper_funcs.sh"
-  # Get the UAA enviorment variables (VCAPS)
-  # if [[ "$trustedIssuerID" == "" ]]; then
-  #   getTrustedIssuerId $1
-  # fi
-  #
-  # if [[ "$UAA_URL" == "" ]]; then
-  #   getUaaUrl $1
-  # fi
-  #
-	# if TIMESERIES_INGEST_URI=$(px env $TEMP_APP | grep -m 100 uri | grep wss: | awk -F"\"" '{print $4}'); then
-	# 	if [[ "$TIMESERIES_INGEST_URI" == "" ]] ; then
-	# 		__error_exit "The TIMESERIES_INGEST_URI was not found for \"$TEMP_APP\"..." "$logDir"
-	# 	fi
-  #   __append_new_line_log " TIMESERIES_INGEST_URI copied from VCAP environmental variables!" "$logDir"
-  #   export TIMESERIES_INGEST_URI="${TIMESERIES_INGEST_URI}"
-	# else
-	# 	__error_exit "There was an error getting TIMESERIES_INGEST_URI..." "$logDir"
-	# fi
-  #
-  # if TIMESERIES_QUERY_URI=$(px env $TEMP_APP | grep -m 100 uri | grep datapoints | awk -F"\"" '{print $4}'); then
-	# 	if [[ "$TIMESERIES_QUERY_URI" == "" ]] ; then
-	# 		__error_exit "The TIMESERIES_QUERY_URI was not found for \"$TEMP_APP\"..." "$logDir"
-	# 	fi
-  #   __append_new_line_log " TIMESERIES_QUERY_URI copied from VCAP environmental variables!" "$logDir"
-  #   export TIMESERIES_QUERY_URI="${TIMESERIES_QUERY_URI}"
-	# else
-	# 	__error_exit "There was an error getting TIMESERIES_QUERY_URI..." "$logDir"
-	# fi
-  #
-  #
-  # if assetURI=$(px env $TEMP_APP  | grep uri*| grep predix-asset* | awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}'); then
-	# 	if [[ "$assetURI" == "" ]] ; then
-	# 		__error_exit "The Asset URI was not found for \"$TEMP_APP\"..." "$logDir"
-	# 	fi
-	# 	__append_new_line_log "Asset Service URI : ${assetURI}" "$logDir"
-  #   export ASSET_URL="${assetURI}"
-  #   export ASSET_URI="${assetURI}"
-	# else
-	# 	__error_exit "There was an error getting assetURI..." "$logDir"
-	# fi
-  #
-
-}
-
-function getUaaUrl() {
-  __validate_num_arguments 1 $# "\"curl_helper_funcs:getUaaUrl\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
-
-  if uaaURL=$(px env $1 | grep predix-uaa* | grep uri*| awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}' ); then
-    if [[ "$uaaURL" == "" ]] ; then
-      __error_exit "The UAA URL was not found for \"$1\"..." "$logDir"
-    fi
-    __append_new_line_log "UAA URL=$uaaURL copied from VCAP environmental variables!" "$logDir"
-    export UAA_URL="${uaaURL}"
-  else
-    __error_exit "There was an error getting the UAA URL..." "$logDir"
-  fi
-}
-
 function getUaaUrlFromInstance() {
-   __validate_num_arguments 1 $# "\"curl_helper_funcs:getUaaUrl\" expected in order: Name of Predix Service Instance Name used to get VCAP configurations  " "$logDir"
-
-  if uaaURL=$(px si $1 | grep uri*| awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}' ); then
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getUaaUrlFromInstance\" expected in order: Name of Predix Service Instance Name used to get VCAP configurations  " "$logDir"
+  VCAP_JSON=$(getServiceInfoJSON $1)
+  if uaaURL=$(echo $VCAP_JSON | jq -r '.uri' ); then
+  #if uaaURL=$(px si $1 | grep "uri.:" | awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}' ); then
     if [[ "$uaaURL" == "" ]] ; then
       __error_exit "The UAA URL was not found for \"$1\"..." "$logDir"
     fi
@@ -613,20 +551,6 @@ function getUaaUrlFromInstance() {
   fi
 }
 
-function getTimeseriesIngestUri() {
-  __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesIngestUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
-  VCAP_JSON=$(getVCAPJSON $1)
-  echo $VCAP_JSON
-  if TIMESERIES_INGEST_URI=$(echo $VCAP_JSON | jq -r '.["VCAP_SERVICES"]["predix-timeseries"][].credentials.ingest.uri' | tr -d '"'| head -1); then
-  	if [[ "$TIMESERIES_INGEST_URI" == "" ]] ; then
-  		__error_exit "The TIMESERIES_INGEST_URI was not found for \"$1\"..." "$logDir"
-  	fi
-    __append_new_line_log " TIMESERIES_INGEST_URI=$TIMESERIES_INGEST_URI copied from VCAP environmental variables!" "$logDir"
-    export TIMESERIES_INGEST_URI="${TIMESERIES_INGEST_URI}"
-  else
-  	__error_exit "There was an error getting TIMESERIES_INGEST_URI..." "$logDir"
-  fi
-}
 function getTimeseriesIngestUriFromInstance() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesIngestUriIstance\" expected in order: Name of Predix Service Instance used to get VCAP configurations  " "$logDir"
     VCAP_JSON=$(getServiceInfoJSON $1)
@@ -641,15 +565,6 @@ function getTimeseriesIngestUriFromInstance() {
   fi
 }
 
-function getTimeseriesQueryUri() {
-  __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesQueryUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
-  VCAP_JSON=$(getVCAPJSON $1)
-  if TIMESERIES_QUERY_URI=$(echo $VCAP_JSON | jq -r '.["VCAP_SERVICES"]["predix-timeseries"][].credentials.query.uri' | tr -d '"'| head -1); then
-    __append_new_line_log "Timeseries Query URI copied from environment variables! $TIMESERIES_QUERY_URI" "$logDir"
-  else
-    __error_exit "There was an error getting Timeseries Query URI..." "$logDir"
-  fi
-}
 function getTimeseriesQueryUriFromInstance() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesQueryUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
   VCAP_JSON=$(getServiceInfoJSON $1)
@@ -660,11 +575,11 @@ function getTimeseriesQueryUriFromInstance() {
   fi
 }
 
-function getTimeseriesZoneId() {
+function getTimeseriesZoneIdFromInstance() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesZoneId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
-  VCAP_JSON=$(getVCAPJSON $1)
-  if TIMESERIES_ZONE_ID=$(echo $VCAP_JSON | jq -r '.["VCAP_SERVICES"]["predix-timeseries"][].credentials.query["zone-http-header-value"]' | tr -d '"'| head -1); then
-    if [[ "$TIMESERIES_ZONE_ID" == "" ]] ; then
+   VCAP_JSON=$(getServiceInfoJSON $1)
+  if TIMESERIES_ZONE_ID=$(echo $VCAP_JSON | jq -r '.query["zone-http-header-value"]' | tr -d '"'| head -1); then
+    if [[ "$TIMESERIES_ZONE_ID" == "null" ]] ; then
       __error_exit "The TIMESERIES_ZONE_ID was not found for \"$1\"..." "$logDir"
     fi
     __append_new_line_log "TIMESERIES_ZONE_ID=$TIMESERIES_ZONE_ID copied from VCAP environmental variables!" "$logDir"
@@ -673,18 +588,18 @@ function getTimeseriesZoneId() {
 		__error_exit "There was an error getting TIMESERIES_ZONE_ID..." "$logDir"
 	fi
 }
-function getTimeseriesZoneIdFromInstance() {
-  __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesZoneId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
-   VCAP_JSON=$(getServiceInfoJSON $1)
-   echo "Swapna here $VCAP_JSON"
-  if TIMESERIES_ZONE_ID=$(echo $VCAP_JSON | jq -r '.query["zone-http-header-value"]' | tr -d '"'| head -1); then
-    if [[ "$TIMESERIES_ZONE_ID" == "" ]] ; then
-      __error_exit "The TIMESERIES_ZONE_ID was not found for \"$1\"..." "$logDir"
+
+function getMobileZoneIdFromInstance() {
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getMobileZoneId\" expected in order: Name of MobileService Instance " "$logDir"
+  VCAP_JSON=$(getServiceInfoJSON $1)
+  if MOBILE_ZONE_ID=$(echo $VCAP_JSON | jq -r '.instance_id' ); then
+    if [[ "$MOBILE_ZONE_ID" == "null" ]] ; then
+      __error_exit "The MOBILE_ZONE_ID was not found for \"$1\"..." "$logDir"
     fi
-    __append_new_line_log "TIMESERIES_ZONE_ID=$TIMESERIES_ZONE_ID copied from VCAP environmental variables!" "$logDir"
-    export TIMESERIES_ZONE_ID="${TIMESERIES_ZONE_ID}"
+    __append_new_line_log "MOBILE_ZONE_ID=$MOBILE_ZONE_ID copied from VCAP environmental variables!" "$logDir"
+    export MOBILE_ZONE_ID="${MOBILE_ZONE_ID}"
 	else
-		__error_exit "There was an error getting TIMESERIES_ZONE_ID..." "$logDir"
+		__error_exit "There was an error getting MOBILE_ZONE_ID..." "$logDir"
 	fi
 }
 
@@ -715,21 +630,24 @@ function getEventHubZoneId() {
 		__error_exit "There was an error getting EVENTHUB_ZONE_ID..." "$logDir"
 	fi
 }
-function getAssetUri() {
-  __validate_num_arguments 1 $# "\"curl_helper_funcs:getAssetUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
-  if ASSET_URI=$(px env $1 | grep -m 100 uri | grep asset | awk -F"\"" '{print $4}'); then
+
+function getAssetUriFromInstance() {
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getAssetUriFromInstance\" expected in order: Name of Predix Service Instance used to get VCAP configurations  " "$logDir"
+  VCAP_JSON=$(getServiceInfoJSON $1)
+  if ASSET_URI=$(echo $VCAP_JSON | jq -r '.uri'); then
 		__append_new_line_log "Asset URI copied from environment variables! $ASSET_URI" "$logDir"
 	else
 		__error_exit "There was an error getting Asset URI..." "$logDir"
 	fi
 }
-function getAssetZoneId() {
+
+function getAssetZoneIdFromInstance() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getAssetZoneId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
-  VCAP_JSON=$(getVCAPJSON $1)
+  VCAP_JSON=$(getServiceInfoJSON $1)
   #note double quotes needed because of dash
   #note square brackets needed for jq 1.3 compatibility and jenkins still has that sometimes
-  if ASSET_ZONE_ID=$(echo $VCAP_JSON | jq -r '.["VCAP_SERVICES"]["predix-asset"][].credentials.zone["http-header-value"]'); then
-  	if [[ "$ASSET_ZONE_ID" == "" ]] ; then
+  if ASSET_ZONE_ID=$(echo $VCAP_JSON | jq -r '.zone["http-header-value"]'); then
+  	if [[ "$ASSET_ZONE_ID" == "null" ]] ; then
 	    __error_exit "The Asset Zone ID was not found for \"$1\"..." "$logDir"
     fi
     __append_new_line_log "ASSET_ZONE_ID=$ASSET_ZONE_ID copied from VCAP environment variables!" "$logDir"
@@ -789,25 +707,9 @@ function getAFZoneId() {
 	fi
 }
 
-function getTrustedIssuerId()
-{
-  __validate_num_arguments 1 $# "\"curl_helper_funcs:getTrustedIssuerId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
-
-  if trustedIssuerID=$(px env $1 | grep predix-uaa* | grep issuerId*| awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}' ); then
-		if [[ "$trustedIssuerID" == "" ]] ; then
-			__error_exit "The UAA trustedIssuerID was not found for \"$1\"..." "$logDir"
-		fi
-		#__append_new_line_log "trustedIssuerID copied from environmental variables!" "$logDir"
-    export TRUSTED_ISSUER_ID="${trustedIssuerID}"
-	else
-		__error_exit "There was an error getting the UAA trustedIssuerID..." "$logDir"
-	fi
-}
-
 function getTrustedIssuerIdFromInstance()
 {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getTrustedIssuerId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
-px si $1
   if trustedIssuerID=$(px si $1 | grep issuerId*| awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}' ); then
 		if [[ "$trustedIssuerID" == "" ]] ; then
 			__error_exit "The UAA trustedIssuerID was not found for \"$1\"..." "$logDir"

@@ -33,9 +33,6 @@ function build-basic-app-nodejs-main() {
 
   __append_new_head_log "Build & Deploy NodeJs Starter Front-End Microservice" "-" "$logDir"
 
-  # Get the environment variables (VCAPS)
-  fetchVCAPSInfo $1
-
   # Checkout the nodejs-starter
   if [ -d "$GIT_DIR" ]
   then

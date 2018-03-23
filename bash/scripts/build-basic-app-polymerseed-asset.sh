@@ -33,9 +33,6 @@ function build-basic-app-polymerseed-asset-main() {
 
   __append_new_head_log "Build & Deploy Predix UI Polymer Starter which is based on Node.js Starter Front-End Microservice" "-" "$logDir"
 
-  # Get the UAA environment variables (VCAPS)
-  fetchVCAPSInfo $1
-
   MYGENERICS_SECRET=$(echo -ne $UAA_CLIENTID_GENERIC:$UAA_CLIENTID_GENERIC_SECRET | base64)
 
   getGitRepo "predix-webapp-starter"

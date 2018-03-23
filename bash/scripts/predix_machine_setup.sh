@@ -42,15 +42,15 @@ if [ "$2" == "1" ]; then
 
 	# Get the UAA enviorment variables (VCAPS)
 	if [[ "$TRUSTED_ISSUER_ID" == "" ]]; then
-		getTrustedIssuerId $1
+		getTrustedIssuerIdFromInstance $UAA_INSTANCE_NAME
 	fi
 
 	if [[ "$TIMESERIES_INGEST_URI" == "" ]]; then
-		getTimeseriesIngestUri $1
+		getTimeseriesIngestUriFromInstance $TIMESERIES_INSTANCE_NAME
 	fi
 
 	if [[ "$TIMESERIES_ZONE_ID" == "" ]]; then
-		getTimeseriesZoneId $1
+		getTimeseriesZoneIdFromInstance $TIMESERIES_INSTANCE_NAME
 	fi
 	if [[ "$RUN_CREATE_EVENT_HUB" == "1" ]]; then
 		if [[ "$EVENTHUB_INGEST_URI" == "" ]]; then

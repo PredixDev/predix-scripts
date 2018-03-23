@@ -87,12 +87,8 @@ function createTimeseries()
 	fi
 
 	if [[ "$TRUSTED_ISSUER_ID" == "" ]]; then
-	if [[ ( $BINDING_APP == 0 ) ]]; then
 	  getTrustedIssuerIdFromInstance $UAA_INSTANCE_NAME
-    else
-      getTrustedIssuerId $1
-	 fi 
-    fi
+  fi
 
 	if [[ $USE_TRAINING_UAA == 1 ]]; then
 		configParameters="{\"trustedIssuerIds\":[\"$TRUSTED_ISSUER_ID\"]}"
@@ -105,13 +101,13 @@ function createTimeseries()
 	if [[ ( $BINDING_APP == 1 ) ]]; then
 		# Bind Temp App to TimeSeries Instance
 		__try_bind $1 $TIMESERIES_INSTANCE_NAME
-	else 
-	  # set all the timeseries zone urls 	
+	else
+	  # set all the timeseries zone urls
 	  getTimeseriesZoneIdFromInstance $TIMESERIES_INSTANCE_NAME
 	  getTimeseriesIngestUriFromInstance $TIMESERIES_INSTANCE_NAME
 	  getTimeseriesQueryUriFromInstance $TIMESERIES_INSTANCE_NAME
-	 fi 
-	
+	 fi
+
 }
 
 function createACSService() {
@@ -122,7 +118,7 @@ function createACSService() {
 	fi
 
 	if [[ "$TRUSTED_ISSUER_ID" == "" ]]; then
-		getTrustedIssuerId $1
+		getTrustedIssuerIdFromInstance $UAA_INSTANCE_NAME
 	fi
 
 	if [[ $USE_TRAINING_UAA == 1 ]]; then
@@ -146,8 +142,13 @@ function createAssetService() {
 	fi
 
 	if [[ "$TRUSTED_ISSUER_ID" == "" ]]; then
-    getTrustedIssuerId $1
-  fi
+		if [[ ( $BINDING_APP == 0 ) ]]; then
+			getTrustedIssuerIdFromInstance $UAA_INSTANCE_NAME
+		else
+			getTrustedIssuerIdFromInstance $UAA_INSTANCE_NAME
+		fi
+
+  	fi
 
 	if [[ $USE_TRAINING_UAA == 1 ]]; then
 		configParameters="{\"trustedIssuerIds\":[\"$TRUSTED_ISSUER_ID\"]}"
@@ -157,13 +158,28 @@ function createAssetService() {
 		__try_create_predix_service $ASSET_SERVICE_NAME $ASSET_SERVICE_PLAN $ASSET_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET "Predix Asset"
 	fi
 
-	# Bind Temp App to Asset Instance
-	__try_bind $1 $ASSET_INSTANCE_NAME
+	if [[ ( $BINDING_APP == 1 ) ]]; then
+	 # Bind Temp App to Asset Instance
+		__try_bind $1 $ASSET_INSTANCE_NAME
+	fi
 
 	# Get the Zone ID from the environment variables (for use when querying Asset data)
-	if [[ "$ASSET_ZONE_ID" == "" ]]; then
-    getAssetZoneId $1
-  fi
+	if [[ ( $BINDING_APP == 0 ) ]]; then
+		if [[ "$ASSET_ZONE_ID" == "" ]]; then
+			getAssetZoneIdFromInstance $ASSET_INSTANCE_NAME
+		fi
+		if [[ "$ASSET_URI" == "" ]]; then
+			getAssetUriFromInstance $ASSET_INSTANCE_NAME
+		fi
+	else
+		if [[ "$ASSET_ZONE_ID" == "" ]]; then
+			getAssetZoneIdFromInstance $ASSET_INSTANCE_NAME
+		fi
+		if [[ "$ASSET_URI" == "" ]]; then
+			getAssetUriFromInstance $ASSET_INSTANCE_NAME
+		fi
+
+	fi
 }
 function createBlobstoreService() {
 	__append_new_head_log "Create Blobstore Service Instance" "-" "$logDir"
@@ -215,7 +231,7 @@ function createEventHubService() {
 	fi
 
 	if [[ "$TRUSTED_ISSUER_ID" == "" ]]; then
-    getTrustedIssuerId $1
+    getTrustedIssuerIdFromInstance $UAA_INSTANCE_NAME
   fi
 
 	if [[ $USE_TRAINING_UAA == 1 ]]; then
@@ -248,6 +264,8 @@ function createMobileService() {
 	   __try_delete_service $MOBILE_INSTANCE_NAME
 	fi
 
+	getMobileZoneIdFromInstance $MOBILE_INSTANCE_NAME
+
 	# Create instance of Predix Mobile Service
 	#__try_create_predix_service $MOBILE_SERVICE_NAME $MOBILE_SERVICE_PLAN $MOBILE_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET \"\" \"\" "Predix Mobile"
     # px create-service predix-mobile Free igor.gurovich-mobile3 igor.gurovich-uaa --pm-api-gateway-oauth-secret secret   -d app_user_1 -e app_user_1@ge.com -p App_User_111
@@ -270,7 +288,6 @@ function createMobileService() {
 
 function createMobileReferenceApp() {
 	__append_new_head_log "Create Mobile Reference App Instance" "-" "$logDir"
-  set -x
 
     echo "*********************  inside  createMobileReferenceApp *********************** "
 	echo $MOBILE_INSTANCE_NAME
@@ -357,7 +374,7 @@ function createAnalyticFrameworkServiceInstance() {
 	fi
 
 	if [[ "$TRUSTED_ISSUER_ID" == "" ]]; then
-	  getTrustedIssuerId $1
+	  getTrustedIssuerIdFromInstance $UAA_INSTANCE_NAME
 	fi
 
 	if [[ $USE_TRAINING_UAA == 1 ]]; then
@@ -411,7 +428,7 @@ function restageApp() {
 function createDeviceService() {
   __append_new_head_log "Create Client for Devices" "-" "$logDir"
 	if [[ "$UAA_URL" == "" ]]; then
-		getUaaUrl $1
+		getUaaUrlFromInstance $UAA_INSTANCE_NAME
 	fi
 	__createDeviceClient "$UAA_URL" "$UAA_CLIENTID_DEVICE" "$UAA_CLIENTID_DEVICE_SECRET"
 	__addTimeseriesAuthorities $UAA_CLIENTID_DEVICE
@@ -454,12 +471,7 @@ function __setupServices() {
 		# Create client ID for generic use by applications - including timeseries and asset scope
 		__append_new_head_log "Registering Client on UAA to access the Predix Services" "-" "$logDir"
 		if [[ "$UAA_URL" == "" ]]; then
-			if [[ ( $BINDING_APP == 0 ) ]]; then
-				getUaaUrlFromInstance $UAA_INSTANCE_NAME
-			else 
-				getUaaUrl $1
-			fi
-			
+			getUaaUrlFromInstance $UAA_INSTANCE_NAME
 		fi
 
 		__createUaaLoginClient "$UAA_URL" "$UAA_CLIENTID_LOGIN" "$UAA_CLIENTID_LOGIN_SECRET"
@@ -532,17 +544,17 @@ function __setupServices() {
 			if [[ "$TIMESERIES_ZONE_ID" == "" ]]; then
 				getTimeseriesZoneIdFromInstance $TIMESERIES_INSTANCE_NAME
 			fi
-		else 
+		else
 			if [[ "$TIMESERIES_INGEST_URI" == "" ]]; then
-				getTimeseriesIngestUri $1
+				getTimeseriesIngestUriFromInstance $TIMESERIES_INSTANCE_NAME
 			fi
 			if [[ "$TIMESERIES_QUERY_URI" == "" ]]; then
-				getTimeseriesQueryUri $1
+				getTimeseriesQueryUriFromInstance $TIMESERIES_INSTANCE_NAME
 			fi
 			if [[ "$TIMESERIES_ZONE_ID" == "" ]]; then
-				getTimeseriesZoneId $1
+				getTimeseriesZoneIdFromInstance $TIMESERIES_INSTANCE_NAME
 			fi
-		fi	
+		fi
 	fi
 	cd "$rootDir"
 
@@ -583,7 +595,7 @@ function __setupServices() {
 	fi
 
 	if [[ ( $RUN_CREATE_ASSET == 1 ) ]]; then
-        echo "Asset URL:  $assetURI" >> $SUMMARY_TEXTFILE
+        echo "Asset URL:  $ASSET_URI" >> $SUMMARY_TEXTFILE
         echo "Asset Zone ID: $ASSET_ZONE_ID" >> $SUMMARY_TEXTFILE
 	fi
 

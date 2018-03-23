@@ -43,10 +43,6 @@ function edge-starter-kit-device-personal-main() {
   __find_and_replace "kit_service_url = .*" "kit_service_url = $KIT_APP_URL" "$PREDIX_KIT_PROPERTY_FILE" "$logDir"
   __find_and_replace "default_kit_service_xxx" "default_kit_service_url" "$PREDIX_KIT_PROPERTY_FILE" "$logDir"
   cat $PREDIX_KIT_PROPERTY_FILE
-  #getTimeseriesZoneId $FRONT_END_KIT_APP_NAME
-  #getTrustedIssuerId $FRONT_END_KIT_APP_NAME
-
-  #/usr/local/PredixMachine/quickstart_configure_machine.sh -predix-machine-home /usr/local/PredixMachine -kitservice-url $APP_URL -uaa-clientid-secret $(echo "$UAA_CLIENTID_DEVICE:$UAA_CLIENTID_DEVICE_SECRET" | base64) -timeseries-zone-id $TIMESERIES_ZONE_ID -uaa-url $UAA_URL
 
   echo ""  >> $SUMMARY_TEXTFILE
   echo "Put Device in Personal Cloud App mode"  >> $SUMMARY_TEXTFILE

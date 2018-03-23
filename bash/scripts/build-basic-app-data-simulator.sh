@@ -30,9 +30,6 @@ function build-basic-app-data-simulator-main() {
 
   __append_new_head_log "Build & Deploy Data-Simulator Back-end Microservice" "-" "$logDir"
 
-  # Get the UAA environment variables (VCAPS)
-  fetchVCAPSInfo $1
-
   cd "$rootDir"
   if [[ "$USE_DATA_SIMULATOR" == "1" ]]; then
     # Checkout the repo

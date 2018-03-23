@@ -36,19 +36,19 @@ function build-basic-app-polymerseed-rmd-main() {
 
   # Get the environment variables (VCAPS)
   if [[ "$ASSET_URI" == "" ]]; then
-    getAssetUri $1
+    getAssetUriFromInstance $ASSET_INSTANCE_NAME
   fi
   if [[ "$TIMESERIES_QUERY_URI" == "" ]]; then
-    getTimeseriesQueryUri $1
+    getTimeseriesQueryUriFromInstance $TIMESERIES_INSTANCE_NAME
   fi
   if [[ "$uaaURL" == "" ]]; then
-    getUaaUrl $1
+    getUaaUrlFromInstance $UAA_INSTANCE_NAME
   fi
   if [[ "$TIMESERIES_ZONE_ID" == "" ]]; then
-    getTimeseriesZoneId $1
+    getTimeseriesZoneIdFromInstance $TIMESERIES_INSTANCE_NAME
   fi
   if [[ "$ASSET_ZONE_ID" == "" ]]; then
-    getAssetZoneId $1
+    getAssetZoneIdFromInstance $ASSET_INSTANCE_NAME
   fi
   MYLOGIN_SECRET=$(echo -ne $UAA_CLIENTID_LOGIN:$UAA_CLIENTID_LOGIN_SECRET | base64)
   MYGENERICS_SECRET=$(echo -ne $UAA_CLIENTID_GENERIC:$UAA_CLIENTID_GENERIC_SECRET | base64)

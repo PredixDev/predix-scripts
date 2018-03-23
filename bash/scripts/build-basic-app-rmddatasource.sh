@@ -32,7 +32,7 @@ function build-basic-app-rmddatasource-main() {
 
   # Get the UAA environment variables (VCAPS)
   if [[ "$uaaURL" == "" ]]; then
-    getUaaUrl $1
+    getUaaUrlFromInstance $UAA_INSTANCE_NAME
   fi
 
   cd "$rootDir"

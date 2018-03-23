@@ -30,9 +30,6 @@ function build-basic-app-dataexchange-main() {
 
   __append_new_head_log "Build & Deploy Data-Exchange Back-end Microservice" "-" "$logDir"
 
-  # Get the UAA environment variables (VCAPS)
-  #fetchVCAPSInfo $1
-
   cd "$rootDir"
   if [[ "$USE_DATAEXCHANGE" == "1" ]]; then
     # Checkout the repo

@@ -30,9 +30,6 @@ function build-basic-app-winddata-main() {
 
   __append_new_head_log "Build & Deploy Wind-Data Back-end Microservice" "-" "$logDir"
 
-  # Get the UAA environment variables (VCAPS)
-  #fetchVCAPSInfo $1
-
   cd "$rootDir"
   if [[ "$USE_WINDDATA_SERVICE" == "1" ]]; then
     # Checkout the repo
