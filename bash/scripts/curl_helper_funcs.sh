@@ -326,7 +326,7 @@ function __addAnalyticFrameworkAuthorities {
     getUaaUrlFromInstance $UAA_INSTANCE_NAME
   fi
   if [[ "$AF_ZONE_ID" == "" ]]; then
-    getAFZoneId $TEMP_APP
+    getAFZoneIdFromInstance $ANALYTIC_FRAMEWORK_SERVICE_INSTANCE_NAME
   fi
   __append_new_line_log "Add Analytic Framwork Authorities: AnalyticFrameworkServiceName=$ANALYTIC_FRAMEWORK_SERVICE_NAME, AnalyticFrameworkZoneId=$AF_ZONE_ID" "$logDir"
 
@@ -552,7 +552,7 @@ function getUaaUrlFromInstance() {
 }
 
 function getTimeseriesIngestUriFromInstance() {
-  __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesIngestUriIstance\" expected in order: Name of Predix Service Instance used to get VCAP configurations  " "$logDir"
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesIngestUriFromInstance\" expected in order: Name of Predix Service Instance used to get VCAP configurations  " "$logDir"
     VCAP_JSON=$(getServiceInfoJSON $1)
   if TIMESERIES_INGEST_URI=$(echo $VCAP_JSON |jq -r '.ingest.uri' | tr -d '"'| head -1); then
   	if [[ "$TIMESERIES_INGEST_URI" == "" ]] ; then
@@ -566,7 +566,7 @@ function getTimeseriesIngestUriFromInstance() {
 }
 
 function getTimeseriesQueryUriFromInstance() {
-  __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesQueryUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesQueryUriFromInstance\" expected in order: Name of Predix Service Instance used to get VCAP configurations  " "$logDir"
   VCAP_JSON=$(getServiceInfoJSON $1)
   if TIMESERIES_QUERY_URI=$(echo $VCAP_JSON | jq -r '.query.uri' | tr -d '"'| head -1); then
     __append_new_line_log "Timeseries Query URI copied from environment variables! $TIMESERIES_QUERY_URI" "$logDir"
@@ -576,7 +576,7 @@ function getTimeseriesQueryUriFromInstance() {
 }
 
 function getTimeseriesZoneIdFromInstance() {
-  __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesZoneId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getTimeseriesZoneIdFromInstance\" expected in order: Name of Predix Service Instance used to get VCAP configurations  " "$logDir"
    VCAP_JSON=$(getServiceInfoJSON $1)
   if TIMESERIES_ZONE_ID=$(echo $VCAP_JSON | jq -r '.query["zone-http-header-value"]' | tr -d '"'| head -1); then
     if [[ "$TIMESERIES_ZONE_ID" == "null" ]] ; then
@@ -590,7 +590,7 @@ function getTimeseriesZoneIdFromInstance() {
 }
 
 function getMobileZoneIdFromInstance() {
-  __validate_num_arguments 1 $# "\"curl_helper_funcs:getMobileZoneId\" expected in order: Name of MobileService Instance " "$logDir"
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getMobileZoneIdFromInstance\" expected in order: Name of MobileService Instance " "$logDir"
   VCAP_JSON=$(getServiceInfoJSON $1)
   if MOBILE_ZONE_ID=$(echo $VCAP_JSON | jq -r '.instance_id' ); then
     if [[ "$MOBILE_ZONE_ID" == "null" ]] ; then
@@ -617,6 +617,7 @@ function getEventHubIngestUri() {
 		__error_exit "There was an error getting EVENTHUB_ZONE_ID..." "$logDir"
 	fi
 }
+
 function getEventHubZoneId() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getEventHubZoneId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
   VCAP_JSON=$(getVCAPJSON $1)
@@ -641,8 +642,9 @@ function getAssetUriFromInstance() {
 	fi
 }
 
+
 function getAssetZoneIdFromInstance() {
-  __validate_num_arguments 1 $# "\"curl_helper_funcs:getAssetZoneId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getAssetZoneIdFromInstance\" expected in order: Name of Predix Service Instance used to get VCAP configurations  " "$logDir"
   VCAP_JSON=$(getServiceInfoJSON $1)
   #note double quotes needed because of dash
   #note square brackets needed for jq 1.3 compatibility and jenkins still has that sometimes
@@ -657,18 +659,18 @@ function getAssetZoneIdFromInstance() {
   fi
 }
 
-function getAFUri() {
-  __validate_num_arguments 1 $# "\"curl_helper_funcs:getAFUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
-  VCAP_JSON=$(getVCAPJSON $1)
-  if AF_URI=$(echo $VCAP_JSON |  jq -r '.["VCAP_SERVICES"]["predix-analytics-framework"][].credentials["execution_uri"]'); then
-		__append_new_line_log "AF URI copied from environment variables! $AF_URI" "$logDir"
+function getAFUriFromInstance() {
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getAFUriFromInstance\" expected in order: Name of Predix Service Instance used to get VCAP configurations  " "$logDir"
+  VCAP_JSON=$(getServiceInfoJSON $1)
+  if AF_URI=$(echo $VCAP_JSON | jq -r '.execution_uri'); then
+  	__append_new_line_log "AF URI copied from environment variables! $AF_URI" "$logDir"
 	else
 		__error_exit "There was an error getting AF URI..." "$logDir"
 	fi
 }
 
 function getVCAPJSON() {
-  __validate_num_arguments 1 $# "\"curl_helper_funcs:getsVCAPJSON\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getsVCAPJSON\" expected in order: Name of Predix Service Instance used to get VCAP configurations  " "$logDir"
   if VCAP=$(px env $1 | sed '/VCAP_APPLICATION/q' | sed '$ d' | sed '$ d' ); then
     while true; do
       if [[ $VCAP == {* ]]; then
@@ -693,10 +695,11 @@ function getServiceInfoJSON() {
   echo $serviceInfo
 }
 
-function getAFZoneId() {
-  __validate_num_arguments 1 $# "\"curl_helper_funcs:getAFZoneId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
-  VCAP_JSON=$(getVCAPJSON $1)
-  if AF_ZONE_ID=$(echo $VCAP_JSON |  jq -r '.["VCAP_SERVICES"]["predix-analytics-framework"][].credentials["zone-http-header-value"]'); then
+
+function getAFZoneIdFromInstance() {
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getAFZoneIdFromInstance\" expected in order: Name of Predix Service Instance used to get VCAP configurations  " "$logDir"
+  VCAP_JSON=$(getServiceInfoJSON $1)
+  if AF_ZONE_ID=$(echo $VCAP_JSON | jq -r '.["zone-http-header-value"]'); then
 	  if [[ "$AF_ZONE_ID" == "" ]] ; then
 	    __error_exit "The AF Zone ID was not found for \"$1\"..." "$logDir"
 	  fi
@@ -709,8 +712,9 @@ function getAFZoneId() {
 
 function getTrustedIssuerIdFromInstance()
 {
-  __validate_num_arguments 1 $# "\"curl_helper_funcs:getTrustedIssuerId\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
-  if trustedIssuerID=$(px si $1 | grep issuerId*| awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}' ); then
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getTrustedIssuerIdFromInstance\" expected in order: Name of Predix Service Instance used to get VCAP configurations  " "$logDir"
+  VCAP_JSON=$(getServiceInfoJSON $1)
+  if trustedIssuerID=$(echo $VCAP_JSON | jq -r '.issuerId'); then
 		if [[ "$trustedIssuerID" == "" ]] ; then
 			__error_exit "The UAA trustedIssuerID was not found for \"$1\"..." "$logDir"
 		fi

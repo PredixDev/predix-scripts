@@ -351,7 +351,7 @@ function __predix_kit_admin_user_create() {
 	if __predix_kit_admin_user_exists $1; then
 		px uaa user delete $1 > /dev/null 2>&1
  	fi
-  echo "Creating on Kit Admin User $KIT_ADMIN_USER_NAME $KIT_ADMIN_USER_EMAIL $KIT_ADMIN_PASSWORD" 
+  echo "Creating on Kit Admin User $KIT_ADMIN_USER_NAME $KIT_ADMIN_USER_EMAIL $KIT_ADMIN_PASSWORD"
   px uaa user create $1  --emails $2 --password $3
 }
 
@@ -360,7 +360,7 @@ function __predix_kit_admin_group_membership_setup() {
   if __predix_kit_admin_group_exists $1; then
    echo ""
    echo "Looks like predix kit admin group exists."
-  else 
+  else
     echo ""
     echo "Creating predix kit admin group"
     px uaa group create $1
@@ -368,7 +368,7 @@ function __predix_kit_admin_group_membership_setup() {
   if __predix_kit_admin_group_membeship_exists $1 $2; then
       echo ""
       echo "Looks like you are member of the predix kit admin Group."
-  else 
+  else
       px uaa member add $1 $2
 	fi
 }
@@ -377,15 +377,14 @@ function __predix_kit_admim_client_exits() {
 	return $?
 }
 
-# Predix Kit client managment 
+# Predix Kit client managment
 function __predix_kit_admin_client_setup() {
 	if __predix_kit_admin_user_exists $1 $2; then
 	echo ""
   echo "Looks like $1 client is setup as predix kit admin Group."
-  else 
+  else
     px uaa client update $1 --authorities $2  --scope $2
     echo ""
     echo "$1 UAA client is setup as predix kit admin Group for $2."
 	fi
 }
-	

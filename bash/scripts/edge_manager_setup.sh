@@ -32,38 +32,20 @@ if [ "$2" == "1" ]; then
 	__append_new_head_log "Creating Predix Machine Container" "#" "$logDir"
 	__append_new_line_log "Reading Predix Machine configuration from VCAP properties" "$logDir"
 
-	# Get the UAA enviorment variables (VCAPS)
-	if trustedIssuerID=$(px env $1 | grep predix-uaa* | grep issuerId*| awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}' ); then
-	  if [[ "$trustedIssuerID" == "" ]] ; then
-	    __error_exit "The UAA trustedIssuerID was not found for \"$1\"..." "$logDir"
-	  fi
-	  __append_new_line_log "trustedIssuerID copied from environmental variables!" "$logDir"
-	else
-		__error_exit "There was an error getting the UAA trustedIssuerID..." "$logDir"
+	if [[ "$TRUSTED_ISSUER_ID" == "" ]]; then
+	  getTrustedIssuerIdFromInstance $UAA_INSTANCE_NAME
+  fi
+
+	if [[ "$UAA_URL" == "" ]]; then
+		getUaaUrlFromInstance $UAA_INSTANCE_NAME
 	fi
 
-	if uaaURL=$(px env $1 | grep predix-uaa* | grep uri*| awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}' ); then
-	  if [[ "$uaaURL" == "" ]] ; then
-	    __error_exit "The UAA URL was not found for \"$1\"..." "$logDir"
-	  fi
-	  __append_new_line_log "UAA URL copied from environmental variables!" "$logDir"
-	else
-		__error_exit "There was an error getting the UAA URL..." "$logDir"
+	if [[ "$TIMESERIES_INGEST_URI" == "" ]]; then
+		getTimeseriesIngestUriFromInstance $TIMESERIES_INSTANCE_NAME
 	fi
 
-	if TIMESERIES_INGEST_URI=$(px env $TEMP_APP | grep -m 100 uri | grep wss: | awk -F"\"" '{print $4}'); then
-		if [[ "$TIMESERIES_INGEST_URI" == "" ]] ; then
-			__error_exit "The TIMESERIES_INGEST_URI was not found for \"$1\"..." "$logDir"
-		fi
-		__append_new_line_log "TIMESERIES_INGEST_URI copied from environmental variables!" "$logDir"
-	else
-		__error_exit "There was an error getting TIMESERIES_INGEST_URI..." "$logDir"
-	fi
-
-	if TIMESERIES_ZONE_ID=$(px env $TEMP_APP | grep zone-http-header-value |head -n 1 | awk -F"\"" '{print $4}'); then
-		__append_new_line_log "TIMESERIES_ZONE_ID copied from environmental variables!" "$logDir"
-	else
-		__error_exit "There was an error getting TIMESERIES_ZONE_ID..." "$logDir"
+	if [[ "$TIMESERIES_ZONE_ID" == "" ]]; then
+		getTimeseriesZoneIdFromInstance $TIMESERIES_INSTANCE_NAME
 	fi
 
 	if [[ "$RUN_EDGE_MANAGER_SETUP" == "1" ]]; then

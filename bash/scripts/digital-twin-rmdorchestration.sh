@@ -54,10 +54,10 @@ function digital-twin-rmdorchestration-main() {
     __find_and_replace "predix_oauth_clientId : .*" "predix_oauth_clientId: $UAA_CLIENTID_GENERIC:$UAA_CLIENTID_GENERIC_SECRET" "manifest.yml" "$logDir"
 
     if [[ "$AF_URI" == "" ]]; then
-       getAFUri $1
+       getAFUriFromInstance $ANALYTIC_FRAMEWORK_SERVICE_INSTANCE_NAME
     fi
     if [[ "$AF_ZONE_ID" == "" ]]; then
-       getAFZoneId $1
+       getAFZoneIdFromInstance $ANALYTIC_FRAMEWORK_SERVICE_INSTANCE_NAME
     fi
     __find_and_replace "predix_orchestration_zoneid : .*" "predix_orchestration_zoneid : $AF_ZONE_ID" "manifest.yml" "$logDir"
     AF_HOST=$(echo $AF_URI | awk -F/ '{print $3}')

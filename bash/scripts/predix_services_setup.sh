@@ -68,14 +68,6 @@ function createUaa()
 		__try_bind $1 $UAA_INSTANCE_NAME
 	fi
 
-	# if uaaURL=$(px env $1 | grep predix-uaa* | grep uri*| awk 'BEGIN {FS=":"}{print "https:"$3}' | awk 'BEGIN {FS="\","}{print $1}' ); then
-	#   if [[ "$uaaURL" == "" ]] ; then
-	#     __error_exit "The UAA URL was not found for \"$1\"..." "$logDir"
-	#   fi
-	#   __append_new_line_log "UAA URL copied from environmental variables!" "$logDir"
-	# else
-	# 	__error_exit "There was an error getting the UAA URL..." "$logDir"
-	# fi
 }
 
 function createTimeseries()
@@ -266,23 +258,7 @@ function createMobileService() {
 
 	getMobileZoneIdFromInstance $MOBILE_INSTANCE_NAME
 
-	# Create instance of Predix Mobile Service
-	#__try_create_predix_service $MOBILE_SERVICE_NAME $MOBILE_SERVICE_PLAN $MOBILE_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET \"\" \"\" "Predix Mobile"
-    # px create-service predix-mobile Free igor.gurovich-mobile3 igor.gurovich-uaa --pm-api-gateway-oauth-secret secret   -d app_user_1 -e app_user_1@ge.com -p App_User_111
-	# MOBILE_SERVICE_NAME = predix-mobile
-	# MOBILE_SERVICE_PLAN = Free
-	# MOBILE_INSTANCE_NAME = igor.gurovich-mobile3
-	# UAA_INSTANCE_NAME  = igor.gurovich-uaa
-	# UAA_ADMIN_SECRET = secret
-	####
-	# UAA_USER_NAME
-	# UAA_USER_EMAIL
-	# UAA_USER_PASSWORD
-	# __try_create_predix_mobile_service $MOBILE_SERVICE_NAME $MOBILE_SERVICE_PLAN $MOBILE_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET \"\" \"\" "Predix Mobile"
-
 	__try_create_predix_mobile_service $MOBILE_SERVICE_NAME $MOBILE_SERVICE_PLAN $MOBILE_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET  $UAA_USER_NAME $UAA_USER_EMAIL $UAA_USER_PASSWORD "Predix Mobile"
-	# Bind Temp App to Asset Instance
-	#__try_bind $1 $MOBILE_INSTANCE_NAME
 
 }
 
@@ -346,24 +322,6 @@ EOF
 	pwd
     echo "*********************  done  createMobileReferenceApp *********************** "
 
-	# Create instance of Predix Mobile Service
-	#__try_create_predix_service $MOBILE_SERVICE_NAME $MOBILE_SERVICE_PLAN $MOBILE_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET \"\" \"\" "Predix Mobile"
-    # px create-service predix-mobile Free igor.gurovich-mobile3 igor.gurovich-uaa --pm-api-gateway-oauth-secret secret   -d app_user_1 -e app_user_1@ge.com -p App_User_111
-	# MOBILE_SERVICE_NAME = predix-mobile
-	# MOBILE_SERVICE_PLAN = Free
-	# MOBILE_INSTANCE_NAME = igor.gurovich-mobile3
-	# UAA_INSTANCE_NAME  = igor.gurovich-uaa
-	# UAA_ADMIN_SECRET = secret
-	####
-	# UAA_USER_NAME
-	# UAA_USER_EMAIL
-	# UAA_USER_PASSWORD
-	# __try_create_predix_mobile_service $MOBILE_SERVICE_NAME $MOBILE_SERVICE_PLAN $MOBILE_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET \"\" \"\" "Predix Mobile"
-
-	#__try_create_predix_mobile_service $MOBILE_SERVICE_NAME $MOBILE_SERVICE_PLAN $MOBILE_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET  $UAA_USER_NAME $UAA_USER_EMAIL $UAA_USER_PASSWORD "Predix Mobile"
-	# Bind Temp App to Asset Instance
-	#__try_bind $1 $MOBILE_INSTANCE_NAME
-
 }
 
 function createAnalyticFrameworkServiceInstance() {
@@ -386,9 +344,6 @@ function createAnalyticFrameworkServiceInstance() {
 		__try_create_af_service $ANALYTIC_FRAMEWORK_SERVICE_NAME $ANALYTIC_FRAMEWORK_SERVICE_PLAN $ANALYTIC_FRAMEWORK_SERVICE_INSTANCE_NAME $UAA_INSTANCE_NAME $ASSET_INSTANCE_NAME $TIMESERIES_INSTANCE_NAME $UAA_ADMIN_SECRET $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET $UAA_CLIENTID_LOGIN $UAA_CLIENTID_LOGIN_SECRET $ANALYTIC_UI_USER_NAME $ANALYTIC_UI_PASSWORD $ANALYTIC_UI_USER_EMAIL $INSTANCE_PREPENDER "Predix AF Service"
 		#__try_create_service_using_cfcli $ANALYTIC_FRAMEWORK_SERVICE_NAME $ANALYTIC_FRAMEWORK_SERVICE_PLAN $ANALYTIC_FRAMEWORK_SERVICE_INSTANCE_NAME $configParameters "Analytic Framework Service"
 	fi
-
-	# Bind Temp App to Analytic framework Instance
-	__try_bind $1 $ANALYTIC_FRAMEWORK_SERVICE_INSTANCE_NAME
 }
 
 function createRabbitMQInstance() {
@@ -403,7 +358,7 @@ function createRabbitMQInstance() {
 	__try_create_service_using_cfcli $RABBITMQ_SERVICE_NAME $RABBITMQ_SERVICE_PLAN $RABBITMQ_SERVICE_INSTANCE_NAME $configParameters "Predix RabbitMQ Service"
 
 	# Bind Temp App to RabbitMQ Service Instance
-	__try_bind $1 $RABBITMQ_SERVICE_INSTANCE_NAME
+	#__try_bind $1 $RABBITMQ_SERVICE_INSTANCE_NAME
 }
 
 function bindRabbitMQInstance() {

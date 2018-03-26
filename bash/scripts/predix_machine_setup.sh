@@ -40,7 +40,7 @@ if [ "$2" == "1" ]; then
 	__append_new_head_log "Creating/Updating Predix Machine Container" "#" "$logDir"
 	__append_new_line_log "Reading Predix Machine configuration from VCAP properties" "$logDir"
 
-	# Get the UAA enviorment variables (VCAPS)
+	# Get the environment variables (VCAPS)
 	if [[ "$TRUSTED_ISSUER_ID" == "" ]]; then
 		getTrustedIssuerIdFromInstance $UAA_INSTANCE_NAME
 	fi
