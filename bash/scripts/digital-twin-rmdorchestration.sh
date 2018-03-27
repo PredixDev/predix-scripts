@@ -107,5 +107,5 @@ function digital-twin-rmdorchestration-main() {
   echo "App URL: https://$RMD_ORCHESTRATION_APP_NAME.run.$CLOUD_ENDPONT" >> $SUMMARY_TEXTFILE
   echo -e "You can execute 'px env "$RMD_ORCHESTRATION_APP_NAME"' to view info about your back-end microservice, and the bound UAA, Asset, and Time Series" >> $SUMMARY_TEXTFILE
   echo "Front-end App URL: https://$FRONT_END_POLYMER_SEED_APP_NAME.run.$CLOUD_ENDPONT" >> $SUMMARY_TEXTFILE
-  echo "Front-end App Login: app_user_1/app_user_1" >> $SUMMARY_TEXTFILE
+  echo "Front-end App Login: app_user_1/App_User_111" >> $SUMMARY_TEXTFILE
 }
