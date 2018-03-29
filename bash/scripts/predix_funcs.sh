@@ -330,10 +330,6 @@ function __verifyPxLogin() {
   fi
 }
 
-function __predix_kit_admin_user_exists() {
-	px uaa users | grep $1 > /dev/null 2>&1
-	return $?
-}
 function __predix_kit_admin_group_exists() {
 	px uaa groups | grep $1 > /dev/null 2>&1
 	return $?
@@ -348,10 +344,11 @@ function __predix_kit_admin_group_membeship_exists() {
 function __predix_kit_admin_user_create() {
   echo ""
   echo "Checking on Kit Admin User "
-	if __predix_kit_admin_user_exists $1; then
+	if px uaa user get $1; then
+    echo "Deleting old Kit Admin User"
 		px uaa user delete $1 > /dev/null 2>&1
  	fi
-  echo "Creating on Kit Admin User $KIT_ADMIN_USER_NAME $KIT_ADMIN_USER_EMAIL $KIT_ADMIN_PASSWORD"
+  echo "Creating Kit Admin User $KIT_ADMIN_USER_NAME $KIT_ADMIN_USER_EMAIL $KIT_ADMIN_PASSWORD"
   px uaa user create $1  --emails $2 --password $3
 }
 
@@ -372,14 +369,14 @@ function __predix_kit_admin_group_membership_setup() {
       px uaa member add $1 $2
 	fi
 }
-function __predix_kit_admim_client_exits() {
+function __predix_kit_admin_client_exists() {
 	px uaa client get $1 | grep $2 > /dev/null 2>&1
 	return $?
 }
 
 # Predix Kit client managment
 function __predix_kit_admin_client_setup() {
-	if __predix_kit_admin_user_exists $1 $2; then
+	if __predix_kit_admin_client_exists $1 $2; then
 	echo ""
   echo "Looks like $1 client is setup as predix kit admin Group."
   else
