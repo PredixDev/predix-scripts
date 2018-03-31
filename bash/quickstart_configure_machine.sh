@@ -189,17 +189,17 @@ if [[ "$UPGRAGE_MACHINE" == "1" ]]; then
 	cp $PREDIX_MACHINE_HOME-$CURRENT_MACHINE_VERSION/$0 $PREDIX_MACHINE_HOME/$0
 fi
 if [[ "$HTTPS_PROXY" != "" ]]; then
-	PROXY_HOST=$(echo $HTTPS_PROXY | awk -F":" '{print $1}')
-	PROXY_PORT=$(echo $HTTPS_PROXY | awk -F":" '{print $2}')
+	PROXY_HOST=$(echo $HTTPS_PROXY | awk -F"/" '{print $3}' | awk -F":" '{print $1}')
+	PROXY_PORT=$(echo $HTTPS_PROXY | awk -F"/" '{print $3}' | awk -F":" '{print $2}')
 elif [[ "$HTTP_PROXY" != "" ]]; then
-	PROXY_HOST=$(echo $HTTP_PROXY | awk -F":" '{print $1}')
-	PROXY_PORT=$(echo $HTTP_PROXY | awk -F":" '{print $2}')
+	PROXY_HOST=$(echo $HTTP_PROXY | awk -F"/" '{print $3}' | awk -F":" '{print $1}')
+	PROXY_PORT=$(echo $HTTP_PROXY | awk -F"/" '{print $3}' | awk -F":" '{print $2}')
 elif [[ "$https_proxy" != "" ]]; then
-	PROXY_HOST=$(echo $https_proxy | awk -F":" '{print $1}')
-	PROXY_PORT=$(echo $https_proxy | awk -F":" '{print $2}')
+	PROXY_HOST=$(echo $https_proxy | awk -F"/" '{print $3}' | awk -F":" '{print $1}')
+	PROXY_PORT=$(echo $https_proxy | awk -F"/" '{print $3}' | awk -F":" '{print $2}')
 elif [[ "$http_proxy" != "" ]]; then
-	PROXY_HOST=$(echo $http_proxy | awk -F":" '{print $1}')
-	PROXY_PORT=$(echo $http_proxy | awk -F":" '{print $2}')
+	PROXY_HOST=$(echo $http_proxy | awk -F"/" '{print $3}' | awk -F":" '{print $1}')
+	PROXY_PORT=$(echo $http_proxy | awk -F"/" '{print $3}' | awk -F":" '{print $2}')
 fi
 cd "$PREDIX_MACHINE_HOME/configuration/machine/"
 if [[ "$GET_MACHINE_CONFIG" == "1" ]]; then
