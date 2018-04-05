@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -x
 rootDir=$quickstartRootDir
 logDir="$rootDir/log"
 
@@ -17,9 +17,9 @@ echo "MAVEN_SETTINGS_FILE : $MAVEN_SETTINGS_FILE"
 
 echo "Deploying predix-machine-template-processor"
 rm -rf predix-machine-template-processor
-getRepoURL "predix-machine-template-processor" git_url version.json
+getRepoURL "predix-machine-template-processor" git_url ../version.json
 echo "git url : $git_url"
-getRepoVersion "predix-machine-template-processor" branch version.json
+getRepoVersion "predix-machine-template-processor" branch ../version.json
 echo "git repo version : $branch"
 
 __echo_run git clone $git_url -b $branch
@@ -32,15 +32,18 @@ else
 fi
 
 echo "Fetching project name"
-PROJECT_ARTIFACT_ID=$(printf 'VER\t${project.artifactId}' | mvn -q help:evaluate | grep '^VER' | cut -f2)
+PROJECT_ARTIFACT_ID=$(printf 'VER\t${project.artifactId}' | mvn help:evaluate | grep '^VER' | cut -f2)
 echo "PROJECT_ARTIFACT_ID : $PROJECT_ARTIFACT_ID"
 echo "Fetching project version"
-PROJECT_VERSION=$(printf 'VER\t${project.version}' | mvn -q help:evaluate | grep '^VER' | cut -f2)
+PROJECT_VERSION=$(printf 'VER\t${project.version}' | mvn help:evaluate | grep '^VER' | cut -f2)
 echo "PROJECT_VERSION : $PROJECT_VERSION"
 
 MACHINE_BUNDLE="$PROJECT_ARTIFACT_ID-$PROJECT_VERSION.jar"
 echo "MACHINE_BUNDLE_JAR : $MACHINE_BUNDLE"
 
+if [[ ! -e $MACHINE_HOME/machine/bin/vms/solution.ini ]]; then
+  cp config/solution.ini $MACHINE_HOME/machine/bin/vms/
+fi
 __find_and_replace_string "{MACHINE_PROCESSOR_VERSION}" "$PROJECT_VERSION" "$MACHINE_HOME/machine/bin/vms/solution.ini" "$buildBasicAppLogDir" "$MACHINE_HOME/machine/bin/vms/solution.ini"
 
 #sed 's#{MACHINE_BUNDLE_JAR}#${MACHINE_BUNDLE}#' config/solution.ini > "$MACHINE_HOME/machine/bin/vms/solution.ini"
@@ -53,17 +56,3 @@ rm -rf predix-machine-template-processor
 echo "#################### Build and setup the adatper end ####################"
 
 cd "$CURRENT_DIR"
-if [[ $SKIP_SERVICES -eq 0 ]]; then
-	__print_center "Archive and copy Predix Machine container to the target device" "#"
- 	__echo_run $rootDir/bash/scripts/predix_machine_setup.sh "$TEMP_APP" "0" "1"
-else
-	read -p "Enter the IP Address of your device(press enter if you want to copy to different directory on the host)> " TARGETDEVICEIP
-	TARGETDEVICEIP=${TARGETDEVICEIP:localhost}
-	read -p "Enter the Username on your device(this is the username which you use to ssh to the device> " TARGETDEVICEUSER
-	read -p "Enter the Predix Machine Home Directry> " PREDIX_MACHINE_ROOT_DIR
-
-	__echo_run cp "$CURRENT_DIR/target/$MACHINE_BUNDLE" "$MACHINE_HOME/machine/bundles"
-
-	__echo_run scp "$CURRENT_DIR/target/$MACHINE_BUNDLE" $TARGETDEVICEUSER@$TARGETDEVICEIP:$PREDIX_MACHINE_ROOT_DIR/machine/bundles
-	echo "Transferred Predix Machine bundle!" "#"
-fi

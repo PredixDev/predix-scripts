@@ -109,46 +109,55 @@ __try_create_uaa() {
 __try_create_predix_service() {
   __validate_num_arguments 8 $# "\"predix_funcs:__try_create_predix_service\" expected in order: service name, pricing plan, instance name, uaa name, admin secret, clientid, client secret, service name for log" "$logDir"
   echo "__try_create_predix_service $1 $2 $3 $4 $5 $6 $7"
+  service=$1
+  plan=$2
+  instance=$3
+  uaa_instance=$4
+  admin_secret=$5
+  client=$6
+  client_secret=$7
+  name=$8
+
   #
-  px uaa login $4 admin --secret $5
-  if __service_exists $3 ; then
-    echo "Service $3 already exists" # Do nothing
+  px uaa login $uaa_instance admin --secret $admin_secret
+  if __service_exists $instance ; then
+    echo "Service $instance already exists" # Do nothing
   else
-    if [[ $6 == \"\" ]]; then
-      echo -e "\n$ px create-service $1 $2 $3 $4 --client-secret $7\n"
-      if [[ $7 == \"\" ]]; then
-        if px cs $1 $2 $3 $4 ; then
-      	   __append_new_line_log "$8 service instance successfully created!" "$logDir"
+    if [[ $client == \"\" ]]; then
+      echo -e "\n$ px create-service $service $plan $instance $uaa_instance --client-secret $client_secret\n"
+      if [[ $client_secret == \"\" ]]; then
+        if px cs $service $plan $instance $uaa_instance ; then
+      	   __append_new_line_log "$name service instance successfully created!" "$logDir"
         else
-      	   __append_new_line_log "Couldn't create $8 service. Retrying..." "$logDir"
-      	   if px cs $1 $2 $3 $4 ; then
-      		     __append_new_line_log "$8 service instance successfully created!" "$logDir"
+      	   __append_new_line_log "Couldn't create $name service. Retrying..." "$logDir"
+      	   if px cs $service $plan $instance $uaa_instance ; then
+      		     __append_new_line_log "$name service instance successfully created!" "$logDir"
       	   else
-      		     __error_exit "Couldn't create $8 service instance..." "$logDir"
+      		     __error_exit "Couldn't create $name service instance..." "$logDir"
       	   fi
         fi
       else
-        if px cs $1 $2 $3 $4 --client-secret $7; then
-      	   __append_new_line_log "$8 service instance successfully created!" "$logDir"
+        if px cs $service $plan $instance $uaa_instance --client-secret $client_secret; then
+      	   __append_new_line_log "$name service instance successfully created!" "$logDir"
         else
-      	   __append_new_line_log "Couldn't create $8 service. Retrying..." "$logDir"
-      	   if px cs $1 $2 $3 $4 --client-secret $7; then
-      		     __append_new_line_log "$8 service instance successfully created!" "$logDir"
+      	   __append_new_line_log "Couldn't create $name service. Retrying..." "$logDir"
+      	   if px cs $service $plan $instance $uaa_instance --client-secret $client_secret; then
+      		     __append_new_line_log "$name service instance successfully created!" "$logDir"
       	   else
-      		     __error_exit "Couldn't create $8 service instance..." "$logDir"
+      		     __error_exit "Couldn't create $name service instance..." "$logDir"
       	   fi
         fi
       fi
     else
-      echo -e "\n$ px create-service $1 $2 $3 $4 --client-id $6 --client-secret $7\n"
-      if px cs $1 $2 $3 $4 --client-id $6 --client-secret $7; then
-    	   __append_new_line_log "$8 service instance successfully created!" "$logDir"
+      echo -e "\n$ px create-service $service $plan $instance $uaa_instance --client-id $client --client-secret $7\n"
+      if px cs $service $plan $instance $uaa_instance --client-id $client --client-secret $client_secret; then
+    	   __append_new_line_log "$name service instance successfully created!" "$logDir"
       else
-    	   __append_new_line_log "Couldn't create $8 service. Retrying..." "$logDir"
-    	   if px cs $1 $2 $3 $4 --client-id $6 --client-secret $7; then
-    		     __append_new_line_log "$8 service instance successfully created!" "$logDir"
+    	   __append_new_line_log "Couldn't create $name service. Retrying..." "$logDir"
+    	   if px cs $service $plan $instance $uaa_instance --client-id $client --client-secret $client_secret; then
+    		     __append_new_line_log "$name service instance successfully created!" "$logDir"
     	   else
-    		     __error_exit "Couldn't create $8 service instance..." "$logDir"
+    		     __error_exit "Couldn't create $name service instance..." "$logDir"
     	   fi
       fi
     fi
@@ -173,19 +182,29 @@ __try_create_predix_service() {
 __try_create_predix_mobile_service() {
   __validate_num_arguments 9 $# "\"predix_funcs:__try_create_predix_mobile_service\" expected in order: service name, pricing plan, instance name, uaa name, admin secret, username, email, user password, service name for log" "$logDir"
   echo "__try_create_predix_service $1 $2 $3 $4 $5 $6 $7 $8 $9"
-  px uaa login $4 admin --secret $5
-  if __service_exists $3 ; then
-    echo -n "Service $3 already exists" # Do nothing
+  service=$1
+  plan=$2
+  instance=$3
+  uaa_instance=$4
+  admin_secret=$5
+  dev_user=$6
+  user_email=$7
+  user_password=$8
+  name=$9
+
+  px uaa login $uaa_instance admin --secret $admin_secret
+  if __service_exists $instance ; then
+    echo -n "Service $instance already exists" # Do nothing
   else
-    echo -e "\n$ px create-service $1 $2 $3 $4 -d $6 -e $7 -p $8 --pm-api-gateway-oauth-secret secret \n"
-    if px create-service $1 $2 $3 $4 -d $6 -e $7 -p $8 --pm-api-gateway-oauth-secret secret ; then
-        __append_new_line_log "$9 service instance successfully created!" "$logDir"
+    echo -e "\n$ px create-service $service $plan $instance $uaa_instance -d $dev_user -e $user_email -p $user_password --pm-api-gateway-oauth-secret secret \n"
+    if px create-service $service $plan $instance $uaa_instance -d $dev_user -e $user_email -p $user_password --pm-api-gateway-oauth-secret secret ; then
+        __append_new_line_log "$name service instance successfully created!" "$logDir"
     else
-        __append_new_line_log "Couldn't create $9 service. Retrying..." "$logDir"
-        if px create-service $1 $2 $3 $4 -d $6 -e $7 -p $8 --pm-api-gateway-oauth-secret secret ; then
-            __append_new_line_log "$9 service instance successfully created!" "$logDir"
+        __append_new_line_log "Couldn't create $name service. Retrying..." "$logDir"
+        if px create-service $service $plan $instance $uaa_instance -d $dev_user -e $user_email -p $user_password --pm-api-gateway-oauth-secret secret ; then
+            __append_new_line_log "$name service instance successfully created!" "$logDir"
         else
-            __error_exit "Couldn't create $9 service instance..." "$logDir"
+            __error_exit "Couldn't create $name service instance..." "$logDir"
         fi
     fi
   fi
@@ -284,7 +303,7 @@ __service_exists() {
 	px service $1 > /dev/null 2>&1
 	if [ $? -eq 1 ]; then
 	  echo "px service $1 failed to find service"
-	  px service $1
+	  #px service $1
 	  return 1
 	fi
 	return $?

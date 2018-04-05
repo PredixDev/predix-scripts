@@ -280,6 +280,7 @@ function fetchArtifactoryKey(){
 	echo ""
 	echo "Artifactory Key is $artifactoryKey"
 	export ARTIFACTORY_APIKEY=$artifactoryKey
+	echo "Artifactory information username $ARTIFACTORY_USERNAME with ApiKey $ARTIFACTORY_APIKEY" >> $SUMMARY_TEXTFILE
 }
 
 function postArtifactoryKey() {

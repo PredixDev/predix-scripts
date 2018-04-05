@@ -33,59 +33,6 @@ function build-basic-app-mobilestarter-main() {
 
   __append_new_head_log "Build & Deploy Predix Mobile Starter" "-" "$logDir"
 
-
-  getGitRepo "predix-mobile-starter"
-  cd predix-mobile-starter
-
-  #Checkout the tag if provided by user
-  #__checkoutTags "$GIT_DIR"
-
-  # Edit the manifest.yml files
-
-  #    Modify the name of the applications
-  #__find_and_replace "- name: .*" "- name: $FRONT_END_POLYMER_SEED_APP_NAME" "manifest.yml" "$logDir"
-
-  #cat manifest.yml
-
-  #cat server/localConfig.json
-
-  #npm install
-  #bower install
-  #gulp dist
-
-  #sed '/passport-predix-oauth.git/d' package.json > package1.json
-  #mv package1.json package.json
-
-  # __append_new_head_log "Deploying the application \"$MOBILE_STARTER_APP_NAME\"" "-" "$logDir"
-  # if px push; then
-  #   __append_new_line_log "Successfully deployed!" "$logDir"
-  # else
-  #   __append_new_line_log "Failed to deploy application. Retrying..." "$logDir"
-  #   if px push; then
-  #     __append_new_line_log "Successfully deployed!" "$logDir"
-  #   else
-  #     __error_exit "There was an error pushing using: \"px push\"" "$logDir"
-  #   fi
-  # fi
-
-  # Automagically open the application in browser, based on OS
-  # if [[ $SKIP_BROWSER == 0 ]]; then
-  #   getUrlForAppName $MOBILE_STARTER_APP_NAME apphost "https"
-  #
-  #   case "$(uname -s)" in
-  #      Darwin)
-  #        # OSX
-  #        open $apphost
-  #        ;;
-  #
-  #      CYGWIN*|MINGW32*|MINGW64*|MSYS*)
-  #        # Windows
-  #        start "" $apphost
-  #        ;;
-  #   esac
-  # fi
-
-  # Generate the build-basic-app-summary.txt
   cd "$rootDir"
   if [ -f "$BUILD_APP_TEXTFILE" ]
   then
@@ -97,24 +44,70 @@ function build-basic-app-mobilestarter-main() {
     fi
   fi
 
-  # if __echo_run px start $MOBILE_STARTER_APP_NAME; then
-  #   __append_new_line_log "$MOBILE_STARTER_APP_NAME started!" "$logDir" 1>&2
-  # else
-  #   __error_exit "Couldn't start $MOBILE_STARTER_APP_NAME" "$logDir"
-  # fi
+  #getGitRepo "predix-mobile-starter"
+  #cd predix-mobile-starter
+
+  __append_new_line_log "Running pm api $API_GATEWAY_SHORT_ROUTE" "$logDir"
+	pm api $API_GATEWAY_SHORT_ROUTE
+
+	__append_new_line_log "Logging in to your Mobile Sync service with pm auth $UAA_USER_NAME $UAA_USER_PASSWORD" "$logDir"
+	pm auth $UAA_USER_NAME $UAA_USER_PASSWORD
+
+	cd ..
+	__append_new_head_log "Creating mobile workspace" "-" "$logDir"
+	mkdir -p mobile_workspace
+	cd mobile_workspace
+	MOBILE_WORKSPACE="$( pwd )"
+	pm workspace --create
+  echo "Notice there is now a pm-apps and webapps directory in your mobile-workspace directory.  Each App consists of multiple web-apps."
+
+	__append_new_head_log "Building and publishing webapp" "-" "$logDir"
+	cd webapps
+	rm -rf MobileExample-WebApp-Sample
+	git clone https://github.com/PredixDev/MobileExample-WebApp-Sample.git
+	cd MobileExample-WebApp-Sample
+	npm install
+	npm run build
+
+  __append_new_head_log "Publish WebApp binary to the Mobile Synch Service" "-" "$logDir"
+  __append_new_line_log "Notice the webapp.json file, which is referenced by the pm publish command\r " "$logDir"
+  cat webapp.json
+  echo "pm publish"
+	pm publish
 
 
-  CLOUD_ENDPONT=$(echo $ENDPOINT | cut -d '.' -f3-6 )
+	__append_new_head_log "Defining mobile Sample App which registers Web App with Predix Mobile Synch service" "-" "$logDir"
+  __append_new_line_log "Creating Mobile Sample App Config - app.json" "$logDir"
+	cd ${MOBILE_WORKSPACE}/pm-apps/Sample1
+
+	cat <<EOF > app.json
+{
+    "name": "Sample1",
+    "version": "1.0",
+    "starter": "sample-webapp",
+    "dependencies": {
+        "sample-webapp": "0.0.1"
+    }
+}
+EOF
+  cat app.json
+  echo "Note that the dependency name and version need to match what was posted with pm publish in web.json "
+  echo ""
+  echo "pm define"
+	pm define
+
+	__append_new_head_log "Loading Mobile Sample App Data" "-" "$logDir"
+	cd ${MOBILE_WORKSPACE}/webapps/MobileExample-WebApp-Sample
+	pm import --data ./test/data/data.json --app ../../pm-apps/Sample1/app.json
+
+  cd ${MOBILE_WORKSPACE}/..
+  pwd
 
   echo ""  >> $SUMMARY_TEXTFILE
   echo "Predix Mobile Starter App"  >> $SUMMARY_TEXTFILE
   echo "--------------------------------------------------"  >> $SUMMARY_TEXTFILE
   echo "Installed a mobile app named $MOBILE_STARTER_APP_NAME and updated the property files and manifest.yml" >> $SUMMARY_TEXTFILE
-  #echo "Setup localconfig.json which is used when developing locally on your laptop" >> $SUMMARY_TEXTFILE
   echo "" >> $SUMMARY_TEXTFILE
-  #echo "Front-end App URL: https://$FRONT_END_POLYMER_SEED_APP_NAME.run.$CLOUD_ENDPONT" >> $SUMMARY_TEXTFILE
   echo "Mobile App Login: app_user_1/App_User_111" >> $SUMMARY_TEXTFILE
   echo "" >> $SUMMARY_TEXTFILE
-  #echo -e "You can execute 'px env "$MOBILE_STARTER_APP_NAME"' to view info about your mobile app" >> $SUMMARY_TEXTFILE
-  #echo -e "In your web browser, navigate to your front-end application endpoint" >> $SUMMARY_TEXTFILE
 }

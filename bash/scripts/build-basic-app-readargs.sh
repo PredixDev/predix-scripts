@@ -18,7 +18,6 @@ RUN_CREATE_ASSET=0
 RUN_CREATE_EVENT_HUB=0
 RUN_CREATE_PREDIX_CACHE=0
 RUN_CREATE_MOBILE=0
-RUN_CREATE_MOBILE_REF_APP=0
 RUN_CREATE_TIMESERIES=0
 RUN_CREATE_BLOBSTORE=0
 RUN_CREATE_UAA=0
@@ -46,6 +45,7 @@ USE_POLYMER_SEED_TIMESERIES=0
 USE_POLYMER_SEED_RMD=0
 MACHINE_CONTAINER_TYPE="EdgeStarter"
 MACHINE_CUSTOM_IMAGE_NAME="PredixMachineDebug"
+MACHINE_USE_PROCESSOR=0
 function __print_out_usage
 {
 	echo -e "Usage:\n"
@@ -285,13 +285,6 @@ function processBuildBasicAppReadargsSwitch() {
           PRINT_USAGE=0
           LOGIN=1
           ;;
-				-mobile-ref-app|--create-mobile-ref-app)
-          RUN_CREATE_MOBILE_REF_APP=1
-          SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-mobile-ref-app | --create-mobile-ref-app"
-					SWITCH_ARRAY[SWITCH_INDEX++]="-mobile-ref-app"
-          PRINT_USAGE=0
-          LOGIN=1
-          ;;
         -ts|--create-timeseries)
           RUN_CREATE_TIMESERIES=1
           SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-ts | --create-timeseries"
@@ -376,6 +369,9 @@ function processBuildBasicAppReadargsSwitch() {
             exit 1
           fi
           ;;
+				-mp|--use-machine-processor)
+					MACHINE_USE_PROCESSOR=1
+				;;
 				-custom-image-name)
           if [ -n "$2" ]; then
             MACHINE_CUSTOM_IMAGE_NAME=$2
@@ -553,7 +549,6 @@ function printBBAVariables() {
 		echo "    RUN_CREATE_BLOBSTORE                     : $RUN_CREATE_BLOBSTORE"
 	  echo "    RUN_CREATE_PREDIX_CACHE                  : $RUN_CREATE_PREDIX_CACHE"
 	  echo "    RUN_CREATE_MOBILE                        : $RUN_CREATE_MOBILE"
-		echo "    RUN_CREATE_MOBILE_REF_APP                : $RUN_CREATE_MOBILE_REF_APP"
 	  echo "    RUN_CREATE_TIMESERIES                    : $RUN_CREATE_TIMESERIES"
 	  echo "    RUN_CREATE_UAA                           : $RUN_CREATE_UAA"
 	  echo "    USE_TRAINING_UAA                         : $USE_TRAINING_UAA"
@@ -575,7 +570,6 @@ function printBBAVariables() {
 	  echo "    USE_DATAEXCHANGE_UI                      : $USE_DATAEXCHANGE_UI"
 	  echo "    USE_NODEJS_STARTER                       : $USE_NODEJS_STARTER"
 	  echo "    USE_NODEJS_STARTER_W_TIMESERIES          : $USE_NODEJS_STARTER_W_TIMESERIES"
-	  echo "    USE_MOBILE_STARTER                       : $USE_MOBILE_STARTER"
 	  echo "    USE_POLYMER_SEED                         : $USE_POLYMER_SEED"
 	  echo "    USE_POLYMER_SEED_UAA                     : $USE_POLYMER_SEED_UAA"
 	  echo "    USE_POLYMER_SEED_ASSET                   : $USE_POLYMER_SEED_ASSET"
@@ -594,6 +588,7 @@ function printBBAVariables() {
 	  echo "    MACHINE_CONTAINER_TYPE                   : $MACHINE_CONTAINER_TYPE"
 	  echo "    RUN_MACHINE_TRANSFER                     : $RUN_MACHINE_TRANSFER"
 	  echo "    MACHINE_CUSTOM_IMAGE_NAME                : $MACHINE_CUSTOM_IMAGE_NAME"
+		echo "    MACHINE_USE_PROCESSOR                    : $MACHINE_USE_PROCESSOR"
 	  echo ""
 	fi
 
@@ -638,6 +633,7 @@ function printBBAVariables() {
 	export USE_POLYMER_SEED_RMD
 	export PREDIX_MACHINE_HOME
 	export MACHINE_CONTAINER_TYPE
+	export MACHINE_USE_PROCESSOR
 	export MACHINE_CUSTOM_IMAGE_NAME
 	export MACHINE_VERSION
 	export ENDPOINT

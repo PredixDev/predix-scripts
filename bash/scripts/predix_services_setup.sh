@@ -237,86 +237,12 @@ function createMobileService() {
 	fi
 
 	__try_create_predix_mobile_service $MOBILE_SERVICE_NAME $MOBILE_SERVICE_PLAN $MOBILE_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET  $UAA_USER_NAME $UAA_USER_EMAIL $UAA_USER_PASSWORD "Predix Mobile"
-}
 
-function createMobileReferenceApp() {
-	__append_new_head_log "Create Mobile Reference App Instance" "-" "$logDir"
-
-    echo "*********************  inside  createMobileReferenceApp *********************** "
-	echo $MOBILE_INSTANCE_NAME
 	API_GATEWAY_SHORT_ROUTE=`px si $MOBILE_INSTANCE_NAME | grep api_gateway_short_route | sed 's/.*\(https.*\)",/\1/'`
-    echo $API_GATEWAY_SHORT_ROUTE
-	__append_new_head_log "API_GATEWAY_SHORT_ROUTE: $API_GATEWAY_SHORT_ROUTE" "-" "$logDir"
+	export API_GATEWAY_SHORT_ROUTE
+	__append_new_line_log "API_GATEWAY_SHORT_ROUTE: $API_GATEWAY_SHORT_ROUTE" "$logDir"
 
-
-	echo pm api $API_GATEWAY_SHORT_ROUTE
-	__append_new_head_log "Running pm api $API_GATEWAY_SHORT_ROUTE" "-" "$logDir"
-	pm api $API_GATEWAY_SHORT_ROUTE
-
-	echo pm auth $UAA_USER_NAME $UAA_USER_PASSWORD
-	__append_new_head_log "Running pm auth $UAA_USER_NAME $UAA_USER_PASSWORD" "-" "$logDir"
-	pm auth $UAA_USER_NAME $UAA_USER_PASSWORD
-
-	cd ..
-	__append_new_head_log "Creating mobile workspace" "-" "$logDir"
-	mkdir -p mobile_workspace
-	cd mobile_workspace
-	MOBILE_WORKSPACE="$( pwd )"
-	pm workspace --create
-
-	__append_new_head_log "Building and publishing webapp" "-" "$logDir"
-	cd webapps
-	rm -rf MobileExample-WebApp-Sample
-	git clone https://github.com/PredixDev/MobileExample-WebApp-Sample.git
-	cd MobileExample-WebApp-Sample
-	npm install
-	npm run build
-	pm publish
-
-
-	__append_new_head_log "Creating Mobile Sample App Config" "-" "$logDir"
-	cd ${MOBILE_WORKSPACE}/pm-apps/Sample1
-
-	cat <<EOF > app.json
-{
-    "name": "Sample1",
-    "version": "1.0",
-    "starter": "sample-webapp",
-    "dependencies": {
-        "sample-webapp": "0.0.1"
-    }
-}
-
-EOF
-
-	__append_new_head_log "Defining mobile Sample App" "-" "$logDir"
-	pm define
-
-	__append_new_head_log "Loading Mobile Sample App Data" "-" "$logDir"
-	cd ${MOBILE_WORKSPACE}/webapps/MobileExample-WebApp-Sample
-	pm import --data ./test/data/data.json --app ../../pm-apps/Sample1/app.json
-
-	pwd
-    echo "*********************  done  createMobileReferenceApp *********************** "
-
-	# Create instance of Predix Mobile Service
-	#__try_create_predix_service $MOBILE_SERVICE_NAME $MOBILE_SERVICE_PLAN $MOBILE_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET \"\" \"\" "Predix Mobile"
-    # px create-service predix-mobile Free igor.gurovich-mobile3 igor.gurovich-uaa --pm-api-gateway-oauth-secret secret   -d app_user_1 -e app_user_1@ge.com -p App_User_111
-	# MOBILE_SERVICE_NAME = predix-mobile
-	# MOBILE_SERVICE_PLAN = Free
-	# MOBILE_INSTANCE_NAME = igor.gurovich-mobile3
-	# UAA_INSTANCE_NAME  = igor.gurovich-uaa
-	# UAA_ADMIN_SECRET = secret
-	####
-	# UAA_USER_NAME
-	# UAA_USER_EMAIL
-	# UAA_USER_PASSWORD
-	# __try_create_predix_mobile_service $MOBILE_SERVICE_NAME $MOBILE_SERVICE_PLAN $MOBILE_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET \"\" \"\" "Predix Mobile"
-
-	#__try_create_predix_mobile_service $MOBILE_SERVICE_NAME $MOBILE_SERVICE_PLAN $MOBILE_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET  $UAA_USER_NAME $UAA_USER_EMAIL $UAA_USER_PASSWORD "Predix Mobile"
-	# Bind Temp App to Asset Instance
-	#__try_bind $1 $MOBILE_INSTANCE_NAME
-
+	getMobileZoneIdFromInstance $MOBILE_INSTANCE_NAME
 }
 
 function createAnalyticFrameworkServiceInstance() {
@@ -450,10 +376,6 @@ function __setupServices() {
 		createMobileService $1
 	fi
 
-	if [[ ( $RUN_CREATE_MOBILE_REF_APP == 1 ) ]]; then
-		createMobileReferenceApp
-	fi
-
 	if [[ ( "$RUN_CREATE_TIMESERIES" == "1" || "$USE_WINDDATA_SERVICE" == "1" ) ]]; then
 		createTimeseries $1
 		if [[ $USE_TRAINING_UAA == 1 ]]; then
@@ -504,26 +426,33 @@ function __setupServices() {
 	echo ""  >> $SUMMARY_TEXTFILE
 	echo "Predix Services Configuration"  >> $SUMMARY_TEXTFILE
 	echo "--------------------------------------------------"  >> $SUMMARY_TEXTFILE
-	echo ""  >> $SUMMARY_TEXTFILE
-	echo "Installed UAA with a client_id/secret (for your app) and a user/password (for your users to log in to your app)" >> $SUMMARY_TEXTFILE
-	echo "Installed Time Series and added time series scopes as client_id authorities" >> $SUMMARY_TEXTFILE
-	echo "Installed Asset and added asset scopes as client_id authorities" >> $SUMMARY_TEXTFILE
-	echo "" >> $SUMMARY_TEXTFILE
-	echo "UAA URL: $UAA_URL" >> $SUMMARY_TEXTFILE
-	echo "UAA Admin Client ID: admin" >> $SUMMARY_TEXTFILE
-	echo "UAA Admin Client Secret: $UAA_ADMIN_SECRET" >> $SUMMARY_TEXTFILE
-	echo "UAA Generic Client ID: $UAA_CLIENTID_GENERIC" >> $SUMMARY_TEXTFILE
-	echo "UAA Generic Client Secret: $UAA_CLIENTID_GENERIC_SECRET" >> $SUMMARY_TEXTFILE
-	echo "UAA User ID: $UAA_USER_NAME" >> $SUMMARY_TEXTFILE
-	echo "UAA User PASSWORD: $UAA_USER_PASSWORD" >> $SUMMARY_TEXTFILE
-	echo "Mobile Api Gateway Short Route Url: $API_GATEWAY_SHORT_ROUTE" >> $SUMMARY_TEXTFILE
-	echo "TimeSeries Ingest URL:  $TIMESERIES_INGEST_URI" >> $SUMMARY_TEXTFILE
-	echo "TimeSeries Query URL:  $TIMESERIES_QUERY_URI" >> $SUMMARY_TEXTFILE
-	echo "TimeSeries ZoneID: $TIMESERIES_ZONE_ID" >> $SUMMARY_TEXTFILE
-	echo "Asset URL:  $assetURI" >> $SUMMARY_TEXTFILE
-	echo "Asset Zone ID: $ASSET_ZONE_ID" >> $SUMMARY_TEXTFILE
-	echo "Mobile Zone ID: $MOBILE_ZONE_ID" >> $SUMMARY_TEXTFILE
-
+	if [[ $RUN_CREATE_UAA == 1 ]]; then
+		echo "Installed UAA with a client_id/secret (for your app) and a user/password (for your users to log in to your app)" >> $SUMMARY_TEXTFILE
+    echo "UAA URL: $UAA_URL" >> $SUMMARY_TEXTFILE
+	  echo "UAA Admin Client ID: admin" >> $SUMMARY_TEXTFILE
+	  echo "UAA Admin Client Secret: $UAA_ADMIN_SECRET" >> $SUMMARY_TEXTFILE
+	  echo "UAA Generic Client ID: $UAA_CLIENTID_GENERIC" >> $SUMMARY_TEXTFILE
+	  echo "UAA Generic Client Secret: $UAA_CLIENTID_GENERIC_SECRET" >> $SUMMARY_TEXTFILE
+	  echo "UAA User ID: $UAA_USER_NAME" >> $SUMMARY_TEXTFILE
+	  echo "UAA User PASSWORD: $UAA_USER_PASSWORD" >> $SUMMARY_TEXTFILE
+  fi
+	if [[ "$RUN_CREATE_TIMESERIES" == "1" ]]; then
+		echo "" >> $SUMMARY_TEXTFILE
+		echo "Installed Time Series and added time series scopes as client_id authorities" >> $SUMMARY_TEXTFILE
+		echo "TimeSeries Query URL:  $TIMESERIES_QUERY_URI" >> $SUMMARY_TEXTFILE
+		echo "TimeSeries ZoneID: $TIMESERIES_ZONE_ID" >> $SUMMARY_TEXTFILE
+	fi
+	if [[ $RUN_CREATE_ASSET == 1 ]]; then
+		echo "" >> $SUMMARY_TEXTFILE
+		echo "Installed Asset and added asset scopes as client_id authorities" >> $SUMMARY_TEXTFILE
+    echo "Asset URL:  $assetURI" >> $SUMMARY_TEXTFILE
+	  echo "Asset Zone ID: $ASSET_ZONE_ID" >> $SUMMARY_TEXTFILE
+	fi
+	if [[ $RUN_CREATE_MOBILE == 1 ]]; then
+		echo "" >> $SUMMARY_TEXTFILE
+		echo "Mobile Api Gateway Short Route Url: $API_GATEWAY_SHORT_ROUTE" >> $SUMMARY_TEXTFILE
+    echo "Mobile Zone ID: $MOBILE_ZONE_ID" >> $SUMMARY_TEXTFILE
+  fi
 	if [[ ( $RUN_CREATE_BLOBSTORE == 1 ) ]]; then
 		echo "" >> $SUMMARY_TEXTFILE
 		echo "Blobstore SDK Application has been installed. You can submit and query blobstore using the SDK urls below"
