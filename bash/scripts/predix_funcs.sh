@@ -396,12 +396,4 @@ function __predix_kit_admin_client_exists() {
 # Predix Kit client managment
 function __predix_kit_admin_client_setup() {
   echo "Please add the predixkit.admin scope and authority to app_client_id using UAA Dashboard or Predix Toolkit."
-	# if __predix_kit_admin_client_exists $1 $2; then
-	# echo ""
-  # echo "Looks like $1 client is setup as predix kit admin Group."
-  # else
-  #   px uaa client update $1 --authorities $2  --scope $2
-  #   echo ""
-  #   echo "$1 UAA client is setup as predix kit admin Group for $2."
-	# fi
 }
