@@ -98,7 +98,7 @@ function create_machine_container-main() {
     fi
     cd $MACHINE_HOME
     rm -rf ../../../../$PREDIX_MACHINE_TAR_NAME
-    tar -cvf ../../../../$PREDIX_MACHINE_TAR_NAME .
+    tar -cvf ../../../../$PREDIX_MACHINE_TAR_NAME *
 
     __append_new_line_log "PredixMachine tar ball available at location $rootDir/$PREDIX_MACHINE_TAR_NAME" "$logDir"
     echo "Created Machine container successfully"
