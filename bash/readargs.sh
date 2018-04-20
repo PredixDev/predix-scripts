@@ -113,7 +113,7 @@ function processSwitchCommon() {
 			;;
 		-i|--instance-appender)       # Takes an option argument, ensuring it has been specified.
 			if [ -n "$2" ]; then
-				INSTANCE_PREPENDER=$(echo $2 | tr 'A-Z' 'a-z')
+				INSTANCE_PREPENDER=$(echo $2 | tr -dc '[:alnum:]\n\r' |tr 'A-Z' 'a-z')
 				shift
 				doShift=1
 			else

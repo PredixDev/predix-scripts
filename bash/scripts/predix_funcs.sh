@@ -180,8 +180,8 @@ __try_create_predix_service() {
 #     nothing
 #	----------------------------------------------------------------
 __try_create_predix_mobile_service() {
-  __validate_num_arguments 9 $# "\"predix_funcs:__try_create_predix_mobile_service\" expected in order: service name, pricing plan, instance name, uaa name, admin secret, username, email, user password, service name for log" "$logDir"
-  echo "__try_create_predix_service $1 $2 $3 $4 $5 $6 $7 $8 $9"
+  __validate_num_arguments 11 $# "\"predix_funcs:__try_create_predix_mobile_service\" expected in order: service name, pricing plan, instance name, uaa name, admin secret, username, email, user password, service name, oauth api client, oauth api secret for log" "$logDir"
+  echo "__try_create_predix_mobile_service $1 $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11}"
   service=$1
   plan=$2
   instance=$3
@@ -190,18 +190,20 @@ __try_create_predix_mobile_service() {
   dev_user=$6
   user_email=$7
   user_password=$8
-  name=$9
-
+  oauthapiclient=$9
+  oauthapiclientsecret=${10}
+  name=${11}
+  
   px uaa login $uaa_instance admin --secret $admin_secret
   if __service_exists $instance ; then
     echo -n "Service $instance already exists" # Do nothing
   else
-    echo -e "\n$ px create-service $service $plan $instance $uaa_instance -d $dev_user -e $user_email -p $user_password --pm-api-gateway-oauth-secret secret \n"
-    if px create-service $service $plan $instance $uaa_instance -d $dev_user -e $user_email -p $user_password --pm-api-gateway-oauth-secret secret ; then
+    echo -e "\n$ px create-service $service $plan $instance $uaa_instance -d $dev_user -e $user_email -p $user_password --oauth-api-client $oauthapiclient --oauth-api-client-secret $oauthapiclientsecret \n"
+    if px create-service $service $plan $instance $uaa_instance -d $dev_user -e $user_email -p $user_password --oauth-api-client $oauthapiclient --oauth-api-secret $oauthapiclientsecret ; then
         __append_new_line_log "$name service instance successfully created!" "$logDir"
     else
         __append_new_line_log "Couldn't create $name service. Retrying..." "$logDir"
-        if px create-service $service $plan $instance $uaa_instance -d $dev_user -e $user_email -p $user_password --pm-api-gateway-oauth-secret secret ; then
+        if px create-service $service $plan $instance $uaa_instance -d $dev_user -e $user_email -p $user_password --oauth-api-client $oauthapiclient --oauth-api-secret $oauthapiclientsecret ; then
             __append_new_line_log "$name service instance successfully created!" "$logDir"
         else
             __error_exit "Couldn't create $name service instance..." "$logDir"
@@ -327,7 +329,7 @@ __is_bound() {
 
 function __get_login() {
   if [ "$INSTANCE_PREPENDER" == "" ]; then
-    INSTANCE_PREPENDER=$(px target | grep -i 'User' | awk '{print $2}' | cut -d@ -f1)
+    INSTANCE_PREPENDER=$(px target | grep -i 'User' | awk '{print $2}' | cut -d@ -f1 | tr -dc '[:alnum:]\n\r')
     export INSTANCE_PREPENDER
   fi
 }

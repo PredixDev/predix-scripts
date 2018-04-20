@@ -210,6 +210,10 @@ MOBILE_SERVICE_PLAN="Free"
 #Name of your Mobile instance - default already set
 MOBILE_INSTANCE_NAME="$INSTANCE_PREPENDER-mobile"
 
+# MOBILE UAA Client/secret for API GATEWAY OAUTH
+MOBILE_OAUTH_API_CLIENT="pm-api-gateway-oauth"
+MOBILE_OAUTH_API_CLIENT_SECRET="Pr3dixMob1le"
+
 RABBITMQ_SERVICE_INSTANCE_NAME="$INSTANCE_PREPENDER-rmq"
 RABBITMQ_SERVICE_PLAN="standard"
 RABBITMQ_SERVICE_NAME="rabbitmq-36"
@@ -258,3 +262,5 @@ EDGE_DEVICE_ID="$INSTANCE_PREPENDER-workshopedisondevice1"
 EDGE_DEVICE_KIT_USER="gwuser"
 
 PREDIX_KIT_PROPERTY_FILE="/etc/predix/predix.conf"
+
+

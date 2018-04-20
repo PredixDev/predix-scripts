@@ -95,7 +95,7 @@ function createTimeseries()
 		__try_create_service_using_cfcli $TIMESERIES_SERVICE_NAME $TIMESERIES_SERVICE_PLAN $TIMESERIES_INSTANCE_NAME $configParameters "Predix Timeseries"
 	else
 		# Create instance of Predix TimeSeries Service
-		__try_create_predix_service $TIMESERIES_SERVICE_NAME $TIMESERIES_SERVICE_PLAN $TIMESERIES_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET "Predix TimeSeries"
+		__try_create_predix_service $TIMESERIES_SERVICE_NAME $TIMESERIES_SERVICE_PLAN $TIMESERIES_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET "Predix_TimeSeries"
 	fi
 
 	# Bind Temp App to TimeSeries Instance
@@ -118,7 +118,7 @@ function createACSService() {
 		__try_create_service_using_cfcli $ACCESS_CONTROL_SERVICE_NAME $ACCESS_CONTROL_SERVICE_PLAN $ACCESS_CONTROL_INSTANCE_NAME $configParameters "Predix Access Control Service"
 	else
 		# Create instance of Predix Access Control Service
-		__try_create_predix_service $ACCESS_CONTROL_SERVICE_NAME $ACCESS_CONTROL_SERVICE_PLAN $ACCESS_CONTROL_SERVICE_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET "Predix Access Control Service"
+		__try_create_predix_service $ACCESS_CONTROL_SERVICE_NAME $ACCESS_CONTROL_SERVICE_PLAN $ACCESS_CONTROL_SERVICE_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET "Predix_Access_Control_Service"
 	fi
 
 	# Bind Temp App to ACS Instance
@@ -142,7 +142,7 @@ function createAssetService() {
 		__try_create_service_using_cfcli $ASSET_SERVICE_NAME $ASSET_SERVICE_PLAN $ASSET_INSTANCE_NAME $configParameters "Predix Asset Service"
 	else
 		# Create instance of Predix Asset Service
-		__try_create_predix_service $ASSET_SERVICE_NAME $ASSET_SERVICE_PLAN $ASSET_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET "Predix Asset"
+		__try_create_predix_service $ASSET_SERVICE_NAME $ASSET_SERVICE_PLAN $ASSET_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET "Predix_Asset"
 	fi
 
 	# Bind Temp App to Asset Instance
@@ -211,7 +211,7 @@ function createEventHubService() {
 		__try_create_service_using_cfcli $EVENTHUB_SERVICE_NAME $EVENTHUB_SERVICE_PLAN $EVENTHUB_INSTANCE_NAME $configParameters "Predix EventHub Service"
 	else
 		# Create instance of Predix Asset Service
-		#__try_create_predix_service $EVENTHUB_SERVICE_NAME $EVENTHUB_SERVICE_PLAN $EVENTHUB_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET "$UAA_CLIENTID_GENERIC" $UAA_CLIENTID_GENERIC_SECRET "Event Hub Service"
+		#__try_create_predix_service $EVENTHUB_SERVICE_NAME $EVENTHUB_SERVICE_PLAN $EVENTHUB_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET "$UAA_CLIENTID_GENERIC" $UAA_CLIENTID_GENERIC_SECRET "Event_Hub_Service"
 		#px uaa login $UAA_INSTANCE_NAME admin --secret $UAA_ADMIN_SECRET
 		if __service_exists $EVENTHUB_INSTANCE_NAME ; then
 	    echo "Service $EVENTHUB_INSTANCE_NAME already exists" # Do nothing
@@ -236,7 +236,7 @@ function createMobileService() {
 	   __try_delete_service $MOBILE_INSTANCE_NAME
 	fi
 
-	__try_create_predix_mobile_service $MOBILE_SERVICE_NAME $MOBILE_SERVICE_PLAN $MOBILE_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET  $UAA_USER_NAME $UAA_USER_EMAIL $UAA_USER_PASSWORD "Predix Mobile"
+	__try_create_predix_mobile_service $MOBILE_SERVICE_NAME $MOBILE_SERVICE_PLAN $MOBILE_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET  $UAA_USER_NAME $UAA_USER_EMAIL $UAA_USER_PASSWORD $MOBILE_OAUTH_API_CLIENT $MOBILE_OAUTH_API_CLIENT_SECRET "Predix-Mobile"
 
 	API_GATEWAY_SHORT_ROUTE=`px si $MOBILE_INSTANCE_NAME | grep api_gateway_short_route | sed 's/.*\(https.*\)",/\1/'`
 	export API_GATEWAY_SHORT_ROUTE
