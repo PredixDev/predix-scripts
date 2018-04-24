@@ -237,7 +237,11 @@ function createMobileService() {
 	fi
 
 	__try_create_predix_mobile_service $MOBILE_SERVICE_NAME $MOBILE_SERVICE_PLAN $MOBILE_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET  $UAA_USER_NAME $UAA_USER_EMAIL $UAA_USER_PASSWORD $MOBILE_OAUTH_API_CLIENT $MOBILE_OAUTH_API_CLIENT_SECRET "Predix-Mobile"
-
+	
+	px si $MOBILE_INSTANCE_NAME
+	px si $MOBILE_INSTANCE_NAME | grep api_gateway_short_route
+	px si $MOBILE_INSTANCE_NAME | grep api_gateway_short_route | sed 's/.*\(https.*\)",/\1/'
+	
 	API_GATEWAY_SHORT_ROUTE=`px si $MOBILE_INSTANCE_NAME | grep api_gateway_short_route | sed 's/.*\(https.*\)",/\1/'`
 	export API_GATEWAY_SHORT_ROUTE
 	__append_new_line_log "API_GATEWAY_SHORT_ROUTE: $API_GATEWAY_SHORT_ROUTE" "$logDir"

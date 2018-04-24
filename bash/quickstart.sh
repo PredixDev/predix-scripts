@@ -142,11 +142,10 @@ if [[ ( $LOGIN == 1 ) ]]; then
   #UNIQUE Prefix
   if [[ "$INSTANCE_PREPENDER" == "" ]]; then
     __get_login
-    echo "Apps and Services in the Predix Cloud need unique names"
+    echo "Apps and Services in the Predix Cloud need unique names" 
     read -p "Enter a unique string to be used as an prefix for service names and app names, e.g. thomas-edison default=[$INSTANCE_PREPENDER]>" INPUT
-    INSTANCE_PREPENDER="${INPUT:-$INSTANCE_PREPENDER}" | tr -dc '[:alnum:]\n\r'
-    
-    echo $INSTANCE_PREPENDER
+    INSTANCE_PREPENDER="${INPUT:-$INSTANCE_PREPENDER}"
+    INSTANCE_PREPENDER=$(echo $INSTANCE_PREPENDER | tr -dc '[:alnum:]\n\r')
   fi
 
   while true; do
@@ -156,7 +155,7 @@ if [[ ( $LOGIN == 1 ) ]]; then
     else
       echo "Unique prefix cannot have underscore(_)"
       read -p "Enter a unique prefix with dash (-) in place of underscore(_)> " INSTANCE_PREPENDER
-      INSTANCE_PREPENDER=echo $INSTANCE_PREPENDER | tr -dc '[:alnum:]\n\r'
+      INSTANCE_PREPENDER=$(echo $INSTANCE_PREPENDER | tr -dc '[:alnum:]\n\r')
     fi
   done
 

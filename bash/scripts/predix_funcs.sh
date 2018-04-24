@@ -193,21 +193,25 @@ __try_create_predix_mobile_service() {
   oauthapiclient=$9
   oauthapiclientsecret=${10}
   name=${11}
-  
+
   px uaa login $uaa_instance admin --secret $admin_secret
   if __service_exists $instance ; then
     echo -n "Service $instance already exists" # Do nothing
   else
     echo -e "\n$ px create-service $service $plan $instance $uaa_instance -d $dev_user -e $user_email -p $user_password --oauth-api-client $oauthapiclient --oauth-api-client-secret $oauthapiclientsecret \n"
-    if px create-service $service $plan $instance $uaa_instance -d $dev_user -e $user_email -p $user_password --oauth-api-client $oauthapiclient --oauth-api-secret $oauthapiclientsecret ; then
+    if px create-service $service $plan $instance $uaa_instance -d $dev_user -e $user_email -p $user_password --oauth-api-client $oauthapiclient --oauth-api-client-secret $oauthapiclientsecret ; then
         __append_new_line_log "$name service instance successfully created!" "$logDir"
-    else
-        __append_new_line_log "Couldn't create $name service. Retrying..." "$logDir"
-        if px create-service $service $plan $instance $uaa_instance -d $dev_user -e $user_email -p $user_password --oauth-api-client $oauthapiclient --oauth-api-secret $oauthapiclientsecret ; then
-            __append_new_line_log "$name service instance successfully created!" "$logDir"
-        else
-            __error_exit "Couldn't create $name service instance..." "$logDir"
-        fi
+    # else
+      # __append_new_line_log "Couldn't create $name service. Retrying..." "$logDir"
+
+      # if [[ $RUN_DELETE_SERVICES -eq 1 ]]; then
+    	#    __try_delete_service $instance
+    	# fi
+      # if px create-service $service $plan $instance $uaa_instance -d $dev_user -e $user_email -p $user_password --oauth-api-client $oauthapiclient --oauth-api-client-secret $oauthapiclientsecret ; then
+      #   __append_new_line_log "$name service instance successfully created!" "$logDir"
+      # else
+      #   __error_exit "Couldn't create $name service instance..." "$logDir"
+      # fi
     fi
   fi
 }
