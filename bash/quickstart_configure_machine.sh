@@ -188,19 +188,21 @@ if [[ "$UPGRAGE_MACHINE" == "1" ]]; then
 	chown -R gwuser $PREDIX_MACHINE_HOME
 	cp $PREDIX_MACHINE_HOME-$CURRENT_MACHINE_VERSION/$0 $PREDIX_MACHINE_HOME/$0
 fi
-if [[ "$HTTPS_PROXY" != "" ]]; then
-	PROXY_HOST=$(echo $HTTPS_PROXY | awk -F"/" '{print $3}' | awk -F":" '{print $1}')
-	PROXY_PORT=$(echo $HTTPS_PROXY | awk -F"/" '{print $3}' | awk -F":" '{print $2}')
-elif [[ "$HTTP_PROXY" != "" ]]; then
-	PROXY_HOST=$(echo $HTTP_PROXY | awk -F"/" '{print $3}' | awk -F":" '{print $1}')
-	PROXY_PORT=$(echo $HTTP_PROXY | awk -F"/" '{print $3}' | awk -F":" '{print $2}')
-elif [[ "$https_proxy" != "" ]]; then
-	PROXY_HOST=$(echo $https_proxy | awk -F"/" '{print $3}' | awk -F":" '{print $1}')
-	PROXY_PORT=$(echo $https_proxy | awk -F"/" '{print $3}' | awk -F":" '{print $2}')
-elif [[ "$http_proxy" != "" ]]; then
-	PROXY_HOST=$(echo $http_proxy | awk -F"/" '{print $3}' | awk -F":" '{print $1}')
-	PROXY_PORT=$(echo $http_proxy | awk -F"/" '{print $3}' | awk -F":" '{print $2}')
+
+PROXY_HOST_PORT=$(echo $http_proxy | awk -F"//" '{print $2}')
+if [[ -z "$PROXY_HOST_PORT" ]]; then
+  PROXY_HOST_PORT=$(echo $https_proxy | awk -F"//" '{print $2}')
 fi
+if [[ -z "$PROXY_HOST_PORT" ]]; then
+  PROXY_HOST_PORT=$(echo $HTTP_PROXY | awk -F"//" '{print $2}')
+fi
+if [[ -z "$PROXY_HOST_PORT" ]]; then
+  PROXY_HOST_PORT=$(echo $HTTPS_PROXY | awk -F"//" '{print $2}')
+fi
+
+PROXY_HOST=$(echo $PROXY_HOST_PORT | awk -F":" '{print $1}')
+PROXY_PORT=$(echo $PROXY_HOST_PORT | awk -F":" '{print $2}')
+
 cd "$PREDIX_MACHINE_HOME/configuration/machine/"
 if [[ "$GET_MACHINE_CONFIG" == "1" ]]; then
 	TIMESERIES_INGEST_URI=$(grep "com.ge.dspmicro.websocketriver.send.destination.url" com.ge.dspmicro.websocketriver.send-0.config | awk -F"=" '{print $2}' | tr -d '"')

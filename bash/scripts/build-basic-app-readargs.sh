@@ -59,6 +59,7 @@ function __print_out_usage
   echo "[-asset|   --create-asset]                  => Create the asset service instance"
 	echo "[-bs|      --create-blobstore]              => Create the Blobstore service instance"
   echo "[-eh|      --create-event-hub]              => Create the Event Hub service instance"
+	echo "[-eh-topics| --event-hub-topics]            => Comma separated names of the topics to be created"
   echo "[-ts|      --create-timeseries]             => Create the time series service instance"
   echo "[-tu|      --training-uaa]                  => Use a Training UAA Instance. Default does not use the Training UAA instance"
   echo "[-uaa|     --create-uaa]                    => Create the uaa service instance"
@@ -86,7 +87,7 @@ function __print_out_usage
 
 
   echo -e "*** examples\n"
-  echo -e "./$SCRIPT_NAME -uaa -asset -ts -eh              => install services"
+  echo -e "./$SCRIPT_NAME -uaa -asset -ts -eh -eh-topics   => install services"
   echo -e "./$SCRIPT_NAME -uaa -asset -ts -eh -nodestarter => only services and front-end app deployed"
   echo -e "./$SCRIPT_NAME -uaa -asset -ts -mc -eh          => only services deployed and predix machine configured"
   echo -e "./$SCRIPT_NAME -uaa -asset -ts -mc -cc -eh -mt  => create services, machine config, compile repos and transfer machine container"
@@ -484,6 +485,13 @@ function processBuildBasicAppReadargsSwitch() {
             VERIFY_MVN=1
             LOGIN=1
           ;;
+				-eh-topics|--eventhub-topics)
+						EVENTHUB_TOPICS="$2"
+						SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-eh | --create-event-hub"
+						SWITCH_ARRAY[SWITCH_INDEX++]="-eh"
+						PRINT_USAGE=0
+						LOGIN=1
+					;;
         -sim|--data-simulator)       # Takes an option argument, ensuring it has been specified.
             USE_DATA_SIMULATOR=1
             SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-sim | --data-simulator"
@@ -541,6 +549,7 @@ function printBBAVariables() {
 	  echo "    CUSTOM_ASSET_INSTANCE                    : $CUSTOM_ASSET_INSTANCE"
 	  echo "    CUSTOM_TIMESERIES_INSTANCE               : $CUSTOM_TIMESERIES_INSTANCE"
 	  echo "    CUSTOM_EVENTHUB_INSTANCE                 : $CUSTOM_EVENTHUB_INSTANCE"
+		echo "    EVENTHUB_TOPICS                          : $EVENTHUB_TOPICS"
 	  echo "    CUSTOM_PREDIXCACHE_INSTANCE              : $CUSTOM_PREDIXCACHE_INSTANCE"
 	  echo "    RUN_CREATE_SERVICES                      : $RUN_CREATE_SERVICES"
 	  echo "    RUN_CREATE_ACS                           : $RUN_CREATE_ACS"
@@ -637,6 +646,7 @@ function printBBAVariables() {
 	export MACHINE_CUSTOM_IMAGE_NAME
 	export MACHINE_VERSION
 	export ENDPOINT
+	export EVENTHUB_TOPICS
 
 }
 

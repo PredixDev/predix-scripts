@@ -29,8 +29,8 @@ if [[ ( "$PREDIX_MACHINE_HOME" == "") ]]; then
 	PREDIX_MACHINE_HOME="$rootDir/PredixMachine$MACHINE_CONTAINER_TYPE-$MACHINE_VERSION"
 fi
 
-MACHINE_CONTAINER_ZIP_NAME="PredixMachine$MACHINE_CONTAINER_TYPE-$MACHINE_VERSION.zip"
-echo "MACHINE_CONTAINER_ZIP_NAME=$MACHINE_CONTAINER_ZIP_NAME"
+MACHINE_CONTAINER_TAR_NAME="PredixMachine$MACHINE_CONTAINER_TYPE-$MACHINE_VERSION.tar.gz"
+echo "MACHINE_CONTAINER_TAR_NAME=$MACHINE_CONTAINER_TAR_NAME"
 
 # Trap ctrlc and exit if encountered
 trap "trap_ctrlc" 2
@@ -60,19 +60,21 @@ if [ "$2" == "1" ]; then
 			getEventHubZoneId $1
 		fi
 	fi
+	rm -rf $PREDIX_MACHINE_HOME
 	#download the predix machine container
 	if [[ ! -d "$PREDIX_MACHINE_HOME" ]]; then
-		__echo_run  mvn -U -B org.apache.maven.plugins:maven-dependency-plugin:2.6:copy -Dartifact=predix-machine-containers:PredixMachine$MACHINE_CONTAINER_TYPE:$MACHINE_VERSION:zip  -s $MAVEN_SETTINGS_FILE -DoutputDirectory=.
+		__echo_run  mvn -U -B org.apache.maven.plugins:maven-dependency-plugin:2.6:copy -Dartifact=predix-machine-containers:PredixMachine$MACHINE_CONTAINER_TYPE:$MACHINE_VERSION:tar  -s $MAVEN_SETTINGS_FILE -DoutputDirectory=.
 
 		#getRepoURL "predix-machine-container-url" MACHINE_CONTAINER_URL ../version.json
 		#echo "MACHINE_CONTAINER_URL : $MACHINE_CONTAINER_URL"
 		#if [[ "$MACHINE_CONTAINER_URL" != "" ]]; then
-			#__echo_run  curl $MACHINE_CONTAINER_URL -o $MACHINE_CONTAINER_ZIP_NAME
+			#__echo_run  curl $MACHINE_CONTAINER_URL -o $MACHINE_CONTAINER_TAR_NAME
 
 			#Unzip the original PredixMachine container
 			#rm -rf "$PREDIX_MACHINE_HOME"
 			mkdir $PREDIX_MACHINE_HOME
-			__echo_run unzip $MACHINE_CONTAINER_ZIP_NAME  -d "$PREDIX_MACHINE_HOME"
+			__echo_run tar xvfz "PredixMachine$MACHINE_CONTAINER_TYPE-$MACHINE_VERSION.tar"  -C "$PREDIX_MACHINE_HOME"
+
 		#fi
 	else
 		echo "Warning: PredixMachineHome already exists, did not download and unzip new machine file. $PREDIX_MACHINE_HOME" "$logDir"
@@ -101,9 +103,9 @@ if [ "$3" == "1" ]; then
 	__append_new_head_log "Transferring Predix Machine Container" "#" "$logDir"
 	echo "Current Dir is"
 	pwd
-	rm -rf $MACHINE_CONTAINER_ZIP_NAME
+	rm -rf $MACHINE_CONTAINER_TAR_NAME
 	PREDIX_MACHINE_DIR=$(basename $PREDIX_MACHINE_HOME)
-	MACHINE_CONTAINER_TAR_NAME=${MACHINE_CONTAINER_ZIP_NAME%.zip}.tar.gz
+	#MACHINE_CONTAINER_TAR_NAME=${MACHINE_CONTAINER_TAR_NAME%.zip}.tar.gz
 	tar -czf $MACHINE_CONTAINER_TAR_NAME $PREDIX_MACHINE_DIR
 	if [[ "$RUN_EDGE_MANAGER_SETUP" == "1" ]]; then
 		echo "Creating Configuration and Software package"

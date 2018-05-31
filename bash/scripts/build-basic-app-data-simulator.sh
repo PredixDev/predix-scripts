@@ -38,6 +38,7 @@ function build-basic-app-data-simulator-main() {
 
     #Checkout the tag if provided by user
     #__checkoutTags "$GIT_DIR"
+    getTrustedIssuerIdFromInstance $UAA_INSTANCE_NAME    
 
     # Edit the manifest.yml files
 
@@ -53,11 +54,12 @@ function build-basic-app-data-simulator-main() {
     UAA_HOSTNAME=$(echo $uaaURL | awk -F"/" '{print $3}')
     __find_and_replace "predix_uaa_name: .*" "predix_uaa_name: $UAA_INSTANCE_NAME" "manifest.yml" "$logDir"
     __find_and_replace "{uaaService}" "$UAA_INSTANCE_NAME" "manifest.yml" "$logDir"
+    __find_and_replace "{trustedIssuer}" "$TRUSTED_ISSUER_ID" "manifest.yml" "$logDir"
     __find_and_replace "predix_asset_name : .*" "predix_asset_name: $ASSET_INSTANCE_NAME" "manifest.yml" "$logDir"
     __find_and_replace "{assetService}" "$ASSET_INSTANCE_NAME" "manifest.yml" "$logDir"
     __find_and_replace "predix_oauth_clientId : .*" "predix_oauth_clientId: $UAA_CLIENTID_GENERIC:$UAA_CLIENTID_GENERIC_SECRET" "manifest.yml" "$logDir"
     CLOUD_ENDPONT=$(echo $ENDPOINT | cut -d '.' -f3-6 )
-    __find_and_replace "predix_dataexchange_url : .*" "predix_dataexchange_url: https://$DATAEXCHANGE_APP_NAME"".run.$CLOUD_ENDPONT/services/fdhrouter/fielddatahandler/putfielddata" "manifest.yml" "$logDir"
+    __find_and_replace "predix_dataexchange_url : .*" "predix_dataexchange_url: wss://$DATAEXCHANGE_APP_NAME"".run.$CLOUD_ENDPONT/livestream/messages" "manifest.yml" "$logDir"
     cat manifest.yml
 
     # Push the application

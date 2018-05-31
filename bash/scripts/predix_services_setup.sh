@@ -223,10 +223,25 @@ function createEventHubService() {
 	fi
 
 	# Bind Temp App to Asset Instance
-	# __try_bind $1 $EVENTHUB_INSTANCE_NAME
+	__try_bind $1 $EVENTHUB_INSTANCE_NAME
 
 	getEventHubIngestUri $1
 	getEventHubZoneId $1
+
+	#Create Topics if Topics are proviced
+
+	if [[ "$EVENTHUB_TOPICS" != "" ]]; then
+		clientToken=$( __getUaaClientToken $uaaURL $UAA_CLIENTID_LOGIN $UAA_CLIENTID_LOGIN_SECRET)
+		getEventHubAdminURI $1
+		for topic in $(echo $EVENTHUB_TOPICS | tr "," "\n");
+		do
+			echo "curl '$EVENTHUB_ADMIN_URL/v2/admin/service_instances/$EVENTHUB_ZONE_ID/topics/$topic' -X PUT -H \"Authorization: $clientToken\""
+		 	curl "$EVENTHUB_ADMIN_URL/v2/admin/service_instances/$EVENTHUB_ZONE_ID/topics/$topic" -X PUT -H "Authorization: $clientToken"
+			_arrayScope=("predix-event-hub.zones.$EVENTHUB_ZONE_ID.$topic.publish" "predix-event-hub.zones.$EVENTHUB_ZONE_ID.$topic.subscribe" "predix-event-hub.zones.$EVENTHUB_ZONE_ID.$topic.user")
+			__updateUaaClient "$uaaURL" "$UAA_CLIENTID_GENERIC" _arrayScope[@] _arrayScope[@]
+		done
+
+	fi
 }
 
 function createMobileService() {
@@ -237,11 +252,11 @@ function createMobileService() {
 	fi
 
 	__try_create_predix_mobile_service $MOBILE_SERVICE_NAME $MOBILE_SERVICE_PLAN $MOBILE_INSTANCE_NAME $UAA_INSTANCE_NAME $UAA_ADMIN_SECRET  $UAA_USER_NAME $UAA_USER_EMAIL $UAA_USER_PASSWORD $MOBILE_OAUTH_API_CLIENT $MOBILE_OAUTH_API_CLIENT_SECRET "Predix-Mobile"
-	
+
 	px si $MOBILE_INSTANCE_NAME
 	px si $MOBILE_INSTANCE_NAME | grep api_gateway_short_route
 	px si $MOBILE_INSTANCE_NAME | grep api_gateway_short_route | sed 's/.*\(https.*\)",/\1/'
-	
+
 	API_GATEWAY_SHORT_ROUTE=`px si $MOBILE_INSTANCE_NAME | grep api_gateway_short_route | sed 's/.*\(https.*\)",/\1/'`
 	export API_GATEWAY_SHORT_ROUTE
 	__append_new_line_log "API_GATEWAY_SHORT_ROUTE: $API_GATEWAY_SHORT_ROUTE" "$logDir"
@@ -275,25 +290,23 @@ function createAnalyticFrameworkServiceInstance() {
 }
 
 function createRabbitMQInstance() {
-	__append_new_head_log "Create RabbitMQ Service Instance" "-" "$logDir"
+	__append_new_head_log "Create Predix MQ Service Instance" "-" "$logDir"
 
 	if [[ $RUN_DELETE_SERVICES -eq 1 ]]; then
 	   __try_delete_service $RABBITMQ_SERVICE_INSTANCE_NAME
 	fi
 
-	# Create instance of RabbitMQ Service
-	configParameters="{}" #no config params for rabbit mq creation
-	__try_create_service_using_cfcli $RABBITMQ_SERVICE_NAME $RABBITMQ_SERVICE_PLAN $RABBITMQ_SERVICE_INSTANCE_NAME $configParameters "Predix RabbitMQ Service"
-
-	# Bind Temp App to RabbitMQ Service Instance
-	# __try_bind $1 $RABBITMQ_SERVICE_INSTANCE_NAME
+	if __service_exists $RABBITMQ_SERVICE_INSTANCE_NAME ; then
+		echo "Service $RABBITMQ_SERVICE_INSTANCE_NAME already exists" # Do nothing
+	else
+		px cs $RABBITMQ_SERVICE_NAME $RABBITMQ_SERVICE_PLAN $RABBITMQ_SERVICE_INSTANCE_NAME
+	fi
 }
 
 function bindRabbitMQInstance() {
 	__append_new_head_log "Bind RabbitMQ Service Instance" "-" "$logDir"
-
-	# Bind Given App to RabbitMQ Service Instance
-	# __try_bind $1 $RABBITMQ_SERVICE_INSTANCE_NAME
+  # Bind Given App to RabbitMQ Service Instance
+	__try_bind $1 $RABBITMQ_SERVICE_INSTANCE_NAME
 }
 
 function setEnv() {
@@ -315,18 +328,6 @@ function createDeviceService() {
 	fi
 	__createDeviceClient "$UAA_URL" "$UAA_CLIENTID_DEVICE" "$UAA_CLIENTID_DEVICE_SECRET"
 	__addTimeseriesAuthorities $UAA_CLIENTID_DEVICE
-}
-
-# one arg: service name
-function createRedisInstance() {
-    __append_new_head_log "Create Redis Service Instance" "-" "$logDir"
-
-	if [[ $RUN_DELETE_SERVICES -eq 1 ]]; then
-	   __try_delete_service $REDIS_INSTANCE_NAME
-	fi
-
-	# Create instance of RabbitMQ Service
-	__try_create_service_using_cfcli $1 $REDIS_SERVICE_PLAN $REDIS_INSTANCE_NAME "{}" "Redis Service"
 }
 
 # one arg: service name

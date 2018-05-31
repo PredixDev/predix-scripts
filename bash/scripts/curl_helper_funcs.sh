@@ -264,10 +264,11 @@ function __addEventHubAuthorities {
   ## check if the client exists
   __checkUaaClient $UAA_URL $1 getResponseStatus
   if [[ $getResponseStatus -eq 200 ]]; then
-      _arrayScope=("eventhub.zones.$EVENTHUB_ZONE_ID.publish" "eventhub.zones.$EVENTHUB_ZONE_ID.subscribe" "eventhub.zones.$EVENTHUB_ZONE_ID.user")
+      _arrayScope=("predix-event-hub.zones.$EVENTHUB_ZONE_ID.publish" "predix-event-hub.zones.$EVENTHUB_ZONE_ID.subscribe" "predix-event-hub.zones.$EVENTHUB_ZONE_ID.user" "predix-event-hub.zones.$EVENTHUB_ZONE_ID.admin")
       __updateUaaClient "$uaaURL" "$1" _arrayScope[@] _arrayScope[@]
   fi
 }
+
 #	----------------------------------------------------------------
 #	Function for adding ACS Authorities
 #		Accepts 1 arguments:
@@ -602,7 +603,20 @@ function getMobileZoneIdFromInstance() {
 		__error_exit "There was an error getting MOBILE_ZONE_ID..." "$logDir"
 	fi
 }
-
+function getEventHubAdminURI() {
+  __validate_num_arguments 1 $# "\"curl_helper_funcs:getEventHubAdminURI\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
+  VCAP_JSON=$(getVCAPJSON $1)
+  echo "$VCAP_JSON"
+  if EVENTHUB_ADMIN_URL=$(echo $VCAP_JSON | jq -r '.["VCAP_SERVICES"]["predix-event-hub"][].credentials.admin.protocol_details[0].uri' | tr -d '"'| head -1); then
+    if [[ "$EVENTHUB_ADMIN_URL" == "" ]] ; then
+      __error_exit "The EVENTHUB_ADMIN_URL was not found for \"$1\"..." "$logDir"
+    fi
+    __append_new_line_log "EVENTHUB_ADMIN_URL=$EVENTHUB_ADMIN_URL copied from VCAP environmental variables!" "$logDir"
+    export EVENTHUB_ADMIN_URL="${EVENTHUB_ADMIN_URL}"
+	else
+		__error_exit "There was an error getting EVENTHUB_ADMIN_URL..." "$logDir"
+	fi
+}
 function getEventHubIngestUri() {
   __validate_num_arguments 1 $# "\"curl_helper_funcs:getEventHubIngestUri\" expected in order: Name of Predix Application used to get VCAP configurations  " "$logDir"
   VCAP_JSON=$(getVCAPJSON $1)

@@ -95,4 +95,91 @@ This script will hold a group of helper methods that will all for error handling
 ### files_helper_funcs.sh
 This script will hold a group of helper methods that will perform File modification (appending, finding/replacing lines in files).
 
-[![Analytics](https://ga-beacon.appspot.com/UA-82773213-1/predix-scripts/readme?pixel)](https://github.com/PredixDev)
+## Predix Scripts installers supported (as of 5/11/2018)
+```
+---------------------------------------- Setting the local to en-US for the quickstart script ----------------------------------------
+arguments : -pxclimin 0.6.3 -ba -uaa -asset -ts -wd -nsts -mc -script build-basic-app.sh -script-readargs build-basic-app-readargs.sh
+  COMMON CONFIGURATIONS:
+    quickstartRootDir                        : /Users/212307911/internal/tmp/edge-simulator/predix-scripts
+    APP_SCRIPT                               : build-basic-app.sh
+    SCRIPT_READARGS                          : build-basic-app-readargs.sh
+    BINDING_APP                              : 1
+    BRANCH                                   : master
+    CONTINUE_FROM                            : 0
+    CONTINUE_FROM_SWITCH                     : 
+    LOGIN                                    : 1
+    INSTANCE_PREPENDER                       : 
+    PREDIX_CLI_MIN                           : 0.6.3
+    QUIET_MODE                               : 0
+    RUN_COMPILE_REPO                         : 0
+    RUN_DELETE_SERVICES                      : 0
+    RUN_DELETE_APPS                          : 0
+    SKIP_ALL_DONE                            : 1
+    SKIP_BROWSER                             : 0
+    SKIP_INTERACTIVE                         : 0
+
+  BACK-END:
+    MAVEN_SETTINGS_FILE                      : /Users/212307911/.m2/settings.xml
+    VERIFY_MVN                               : 1
+    VERIFY_ARTIFACTORY                       : 0
+
+
+BUILD-BASIC-APP:
+  SERVICES:
+    CUSTOM_UAA_INSTANCE                      : 
+    CUSTOM_ASSET_INSTANCE                    : 
+    CUSTOM_TIMESERIES_INSTANCE               : 
+    CUSTOM_EVENTHUB_INSTANCE                 : 
+    CUSTOM_PREDIXCACHE_INSTANCE              : 
+    RUN_CREATE_SERVICES                      : 0
+    RUN_CREATE_ACS                           : 0
+    RUN_CREATE_ASSET                         : 1
+    RUN_CREATE_EVENT_HUB                     : 0
+    RUN_CREATE_BLOBSTORE                     : 0
+    RUN_CREATE_PREDIX_CACHE                  : 0
+    RUN_CREATE_MOBILE                        : 0
+    RUN_CREATE_MOBILE_REF_APP                : 0
+    RUN_CREATE_TIMESERIES                    : 1
+    RUN_CREATE_UAA                           : 1
+    USE_TRAINING_UAA                         : 0
+
+  ASSET-MODEL:
+    RUN_CREATE_ASSET_MODEL_DEVICE1           : 0
+    RUN_CREATE_ASSET_MODEL_RMD               : 0
+    RUN_CREATE_ASSET_MODEL_RMD_METADATA_FILE : 
+    RUN_CREATE_ASSET_MODEL_RMD_FILE          : 
+
+  BACK-END:
+    USE_DATAEXCHANGE                         : 0
+    USE_DATA_SIMULATOR                       : 0
+    USE_RMD_DATASOURCE                       : 0
+    USE_WEBSOCKET_SERVER                     : 0
+    USE_WINDDATA_SERVICE                     : 1
+
+  FRONT-END:
+    USE_DATAEXCHANGE_UI                      : 0
+    USE_NODEJS_STARTER                       : 0
+    USE_NODEJS_STARTER_W_TIMESERIES          : 1
+    USE_MOBILE_STARTER                       : 0
+    USE_POLYMER_SEED                         : 0
+    USE_POLYMER_SEED_UAA                     : 0
+    USE_POLYMER_SEED_ASSET                   : 0
+    USE_POLYMER_SEED_TIMESERIES              : 0
+    USE_POLYMER_SEED_RMD                     : 0
+
+  MOBILE:
+    USE_MOBILE_STARTER                       : 0
+
+  MACHINE:
+    PREDIX_MACHINE_HOME			     : /Users/212307911/internal/tmp/edge-simulator/predix-scripts/PredixMachineEdgeStarter
+    RUN_MACHINE_CONFIG                       : 1
+    RUN_CREATE_MACHINE_CONTAINER             : 0
+    RUN_EDGE_MANAGER_SETUP                   : 
+    MACHINE_VERSION                          : 17.1.3
+    MACHINE_CONTAINER_TYPE                   : EdgeStarter
+    RUN_MACHINE_TRANSFER                     : 0
+    MACHINE_CUSTOM_IMAGE_NAME                : PredixMachineDebug
+ ```
+    
+ [![Analytics](https://ga-beacon.appspot.com/UA-82773213-1/predix-scripts/readme?pixel)](https://github.com/PredixDev)
+

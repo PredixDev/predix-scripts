@@ -50,7 +50,6 @@ TOOLS_SWITCHES="--cf --git --maven --nodejs --predixcli"
 local_read_args $@
 IZON_SH="https://raw.githubusercontent.com/PredixDev/izon/$BRANCH/izon.sh"
 
-
 function check_internet() {
   set +e
   echo ""
