@@ -796,5 +796,22 @@ function getRedisServiceName() {
     eval $result="'$redisName'"
     __append_new_line_log "Redis service name found: $redisName" "$logDir"
   fi
+}
 
+# 2 args: simulator URI, path to simulation JSON file
+function startSimulation() {
+  __validate_num_arguments 2 $# "\"curl_helper_funcs:__startSimulation\" expected in order: Simulator URI, Path to simulation JSON file" "$logDir"
+  SIMULATION_JSON=`cat $2`
+  # Remove all whitespace & carriage returns
+  SIMULATION_JSON_TRIMMED="$(echo -e "${SIMULATION_JSON}" | tr -d '[:space:]')"
+  # curl -X POST $1 -H "Content-Type: application/json" -H "cache-control: no-cache" -d $SIMULATION_JSON_TRIMMED
+
+  local responseCurl=`curl --write-out %{http_code} -X POST $1 -H "Content-Type: application/json" -H "cache-control: no-cache" -d $SIMULATION_JSON_TRIMMED`
+  echo ""
+  echo $responseCurl
+  if [[ $responseCurl == *"200" ]]; then
+    __append_new_line_log "Successfully started simulation using this file: \"$2\"" "$logDir"    
+  else
+    __error_exit "Failed to start simulation at this URL: \"$1\"" "$logDir"
+  fi  
 }

@@ -27,6 +27,7 @@ RUN_MACHINE_CONFIG=0
 RUN_COMPILE_REPO=0
 RUN_MACHINE_TRANSFER=0
 RUN_PRINT_VARIABLES=0
+RUN_EDGE_STARTER=0
 SKIP_SERVICES=0
 RUN_CREATE_MACHINE_CONTAINER=0
 USE_WINDDATA_SERVICE=0
@@ -327,6 +328,13 @@ function processBuildBasicAppReadargsSwitch() {
           PRINT_USAGE=0
           LOGIN=1
           ;;
+				-es|--edge-starter)
+					RUN_EDGE_STARTER=1
+					SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-es | --edge-starter"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-es"
+          PRINT_USAGE=0
+          LOGIN=1
+				  ;;
         -cc|--clean-compile)
           RUN_COMPILE_REPO=1
           SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-cc | --clean-compile"
@@ -497,8 +505,17 @@ function processBuildBasicAppReadargsSwitch() {
             SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-sim | --data-simulator"
 						SWITCH_ARRAY[SWITCH_INDEX++]="-sim"
             PRINT_USAGE=0
-            VERIFY_MVN=1
             LOGIN=1
+          ;;
+				-sim-file)
+          if [ -n "$2" ]; then
+            SIMULATION_FILE=$2
+            doShift=1
+            shift
+          else
+						printf 'ERROR: "sim-file" requires an argument\n' >&2
+            exit 1
+          fi
           ;;
         -rmd|--rmd-datasource)       # Takes an option argument, ensuring it has been specified.
             USE_RMD_DATASOURCE=1
@@ -571,6 +588,7 @@ function printBBAVariables() {
 	  echo "  BACK-END:"
 	  echo "    USE_DATAEXCHANGE                         : $USE_DATAEXCHANGE"
 	  echo "    USE_DATA_SIMULATOR                       : $USE_DATA_SIMULATOR"
+    echo "    SIMULATION_FILE                          : $SIMULATION_FILE"
 	  echo "    USE_RMD_DATASOURCE                       : $USE_RMD_DATASOURCE"
 	  echo "    USE_WEBSOCKET_SERVER                     : $USE_WEBSOCKET_SERVER"
 	  echo "    USE_WINDDATA_SERVICE                     : $USE_WINDDATA_SERVICE"
@@ -598,6 +616,7 @@ function printBBAVariables() {
 	  echo "    RUN_MACHINE_TRANSFER                     : $RUN_MACHINE_TRANSFER"
 	  echo "    MACHINE_CUSTOM_IMAGE_NAME                : $MACHINE_CUSTOM_IMAGE_NAME"
 		echo "    MACHINE_USE_PROCESSOR                    : $MACHINE_USE_PROCESSOR"
+		echo "    RUN_EDGE_STARTER                         : $RUN_EDGE_STARTER"
 	  echo ""
 	fi
 
@@ -622,6 +641,7 @@ function printBBAVariables() {
 	export RUN_CREATE_TIMESERIES
 	export RUN_CREATE_UAA
 	export RUN_MACHINE_CONFIG
+	export RUN_EDGE_STARTER
 	export RUN_CREATE_MACHINE_CONTAINER
 	export RUN_COMPILE_REPO
 	export RUN_EDGE_MANAGER_SETUP
@@ -631,6 +651,7 @@ function printBBAVariables() {
 	export USE_DATAEXCHANGE_UI
 	export USE_WEBSOCKET_SERVER
 	export USE_DATA_SIMULATOR
+  export SIMULATION_FILE
 	export USE_RMD_DATASOURCE
 	export USE_NODEJS_STARTER
 	export USE_NODEJS_STARTER_W_TIMESERIES
@@ -737,6 +758,13 @@ function runFunctionsForBasicApp() {
 					    __echo_run  "$rootDir/bash/scripts/predix_machine_setup.sh" "$TEMP_APP" "$RUN_MACHINE_CONFIG" "$RUN_MACHINE_TRANSFER"
 					  fi
 	          break
+						;;
+					-es|--edge-starter)
+						if [[ $RUN_EDGE_STARTER -eq 1 ]]; then
+							source "$rootDir/bash/scripts/edge-starter-hello-world.sh"
+							edge-starter-hello-world-main $1
+						fi
+						break
 						;;
 	        -mt|--machine-transfer)
 	          break

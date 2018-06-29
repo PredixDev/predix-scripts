@@ -33,45 +33,47 @@ function build-basic-app-data-simulator-main() {
   cd "$rootDir"
   if [[ "$USE_DATA_SIMULATOR" == "1" ]]; then
     # Checkout the repo
-    getGitRepo "data-exchange-simulator"
+    getGitRepo "data-exchange-simulator" "true" "true"
     cd data-exchange-simulator
 
-    #Checkout the tag if provided by user
-    #__checkoutTags "$GIT_DIR"
-    getTrustedIssuerIdFromInstance $UAA_INSTANCE_NAME    
-
+    # get values for manifest
+    if [[ "$TRUSTED_ISSUER_ID" == "" ]]; then
+      getTrustedIssuerIdFromInstance $UAA_INSTANCE_NAME
+    fi
+    if [[ "$TIMESERIES_ZONE_ID" == "" ]]; then
+      getTimeseriesZoneIdFromInstance $TIMESERIES_INSTANCE_NAME
+    fi
     # Edit the manifest.yml files
-
-    #    a) Modify the name of the applications
+    #    Modify the name of the applications
     __find_and_replace "- name: .*" "- name: $DATA_SIMULATOR_APP_NAME" "manifest.yml" "$logDir"
-
-    #    b) Add the services to bind to the application
-    __find_and_replace "\#services:" "services:" "manifest.yml" "$logDir"
-    __find_and_replace "- <your-name>-uaa" "- $UAA_INSTANCE_NAME" "manifest.yml" "$logDir"
-    __find_and_replace "- <your-name>-timeseries" "- $TIMESERIES_INSTANCE_NAME" "manifest.yml" "$logDir"
-
-    #    c) Set the clientid and base64ClientCredentials
+    #    Set the clientid and base64ClientCredentials
     UAA_HOSTNAME=$(echo $uaaURL | awk -F"/" '{print $3}')
-    __find_and_replace "predix_uaa_name: .*" "predix_uaa_name: $UAA_INSTANCE_NAME" "manifest.yml" "$logDir"
-    __find_and_replace "{uaaService}" "$UAA_INSTANCE_NAME" "manifest.yml" "$logDir"
     __find_and_replace "{trustedIssuer}" "$TRUSTED_ISSUER_ID" "manifest.yml" "$logDir"
-    __find_and_replace "predix_asset_name : .*" "predix_asset_name: $ASSET_INSTANCE_NAME" "manifest.yml" "$logDir"
-    __find_and_replace "{assetService}" "$ASSET_INSTANCE_NAME" "manifest.yml" "$logDir"
-    __find_and_replace "predix_oauth_clientId : .*" "predix_oauth_clientId: $UAA_CLIENTID_GENERIC:$UAA_CLIENTID_GENERIC_SECRET" "manifest.yml" "$logDir"
+    __find_and_replace "predix_oauth_clientId: .*" "predix_oauth_clientId: $UAA_CLIENTID_GENERIC:$UAA_CLIENTID_GENERIC_SECRET" "manifest.yml" "$logDir"
     CLOUD_ENDPONT=$(echo $ENDPOINT | cut -d '.' -f3-6 )
-    __find_and_replace "predix_dataexchange_url : .*" "predix_dataexchange_url: wss://$DATAEXCHANGE_APP_NAME"".run.$CLOUD_ENDPONT/livestream/messages" "manifest.yml" "$logDir"
+
+    if [[ "$USE_DATAEXCHANGE" == "1" ]]; then
+      __find_and_replace "{predix.timeseries.websocket.uri}" "wss://$DATAEXCHANGE_APP_NAME"".run.$CLOUD_ENDPONT/livestream/messages" "manifest.yml" "$logDir"
+    else
+      TIMESERIES_INGEST_URI=wss://gateway-predix-data-services.run.$CLOUD_ENDPONT/v1/stream/messages
+      __find_and_replace "{predix.timeseries.websocket.uri}" "$TIMESERIES_INGEST_URI" "manifest.yml" "$logDir"
+    fi
+    __find_and_replace "{predix.timeseries.zoneid}" "$TIMESERIES_ZONE_ID" "manifest.yml" "$logDir"
     cat manifest.yml
 
     # Push the application
     if [[ $USE_TRAINING_UAA -eq 1 ]]; then
       sed -i -e 's/uaa_service_label : predix-uaa/uaa_service_label : predix-uaa-training/' manifest.yml
     fi
-    __append_new_head_log "Retrieving the application $DATA_SIMULATOR_APP_NAME" "-" "$logDir"
-    if [[ $RUN_COMPILE_REPO -eq 1 ]]; then
-      mvn clean package -U -B -s $MAVEN_SETTINGS_FILE
-    else
-      mvn clean dependency:copy -B -s $MAVEN_SETTINGS_FILE
-    fi
+    # __append_new_head_log "Retrieving the application $DATA_SIMULATOR_APP_NAME" "-" "$logDir"
+    # if [[ $RUN_COMPILE_REPO -eq 1 ]]; then
+    #   mvn clean package -U -B -s $MAVEN_SETTINGS_FILE
+    # else
+    #   mvn clean dependency:copy -B -s $MAVEN_SETTINGS_FILE
+    # fi
+    mkdir -p target
+    cp dist/*.jar target
+
     __append_new_head_log "Deploying the application $DATA_SIMULATOR_APP_NAME" "-" "$logDir"
     if px push; then
       __append_new_line_log "Successfully deployed!" "$logDir"
@@ -89,10 +91,11 @@ function build-basic-app-data-simulator-main() {
     cd ..
   fi
 
-  echo "sleep for 30 seconds so we can generate some data"
-  sleep 30
-  px stop $DATA_SIMULATOR_APP_NAME
-
+  if [[ ! -z $SIMULATION_FILE ]]; then
+    startSimulation "$APP_URL/start-simulation" "$quickstartRootDir/$SIMULATION_FILE"
+  else
+    __error_exit "No simulation file specified." "$logDir"
+  fi
 
   SUMMARY_TEXTFILE="$logDir/quickstart-summary.txt"
   echo ""  >> $SUMMARY_TEXTFILE
@@ -102,6 +105,5 @@ function build-basic-app-data-simulator-main() {
   echo "App URL: https://$DATA_SIMULATOR_APP_NAME.run.$CLOUD_ENDPONT" >> $SUMMARY_TEXTFILE
   echo -e "You can execute 'px env "$DATA_SIMULATOR_APP_NAME"' to view info about your back-end microservice, and the bound UAA and Asset" >> $SUMMARY_TEXTFILE
   echo ""  >> $SUMMARY_TEXTFILE
-  echo "Note: The simulator is turned on for only 30 seconds.  To generate more time series data please turn on your simulator, e.g. using the predix cli, px start $APP_URL"  >> $SUMMARY_TEXTFILE
 
 }

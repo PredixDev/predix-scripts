@@ -172,20 +172,21 @@ function getCurrentRepo() {
   quickstartRootDir="$( pwd )/$PREDIX_SCRIPTS"
   cd $PREDIX_SCRIPTS
   source bash/scripts/files_helper_funcs.sh
-  getGitRepo $REPO_NAME
+  getGitRepo $REPO_NAME "false" $1
   cd ..
 }
 
 
 #	----------------------------------------------------------------
 #	Function for getting a gitRepo
-#		Accepts 1 argument (+1 optional argument):
+#		Accepts 1 argument (+2 optional argument):
 #			string of repo to clone, must be in version.json
 #			boolean string indicating whether delete the dir
+#     boolean string indicating whether clone with depth = 1
 #  Returns:
 #	----------------------------------------------------------------
 function getGitRepo() {
-	validate_num_arguments 1 $# "\"local-setup-funcs:getGitRepo\" Directory to clone to, optional arg whether to remove dir" "$localSetupLogDir"
+	# validate_num_arguments 1 $# "\"local-setup-funcs:getGitRepo\" Directory to clone to, optional arg whether to remove dir" "$localSetupLogDir"
 
 	if [[ $2 == "" ]] || $2 == "false" || $2 == "FALSE" ]]; then
 		rm -rf $1
@@ -227,7 +228,11 @@ function getGitRepo() {
 	if [ ! -n "$branch" ]; then
 		branch="$BRANCH"
 	fi
-	if git clone -b "$branch" "$git_url" "$1"; then
+  git_arg=""
+  if [[ $3 == "true" || $3 == "TRUE" ]]; then
+    git_arg="--depth 1"
+  fi
+	if git clone $git_arg -b "$branch" "$git_url" "$1"; then
 		append_new_line_log "Successfully cloned \"$git_url\" and checkout the branch \"$branch\"" "$localSetupLogDir"
 	else
 		__error_exit "There was an error cloning the repo \"$1\". Is the repo listed in version.json?  Also, be sure to have permissions to the repo, or SSH keys created for your account" "$localSetupLogDir"

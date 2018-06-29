@@ -60,7 +60,9 @@ if [[ $UAA_CLIENTID_LOGIN_SECRET == "" ]]; then
 fi
 
 # The generic client ID that will be created with necessary UAA scope/autherities
-UAA_CLIENTID_GENERIC="app_client_id"
+if [[ $UAA_CLIENTID_GENERIC == "" ]]; then
+  UAA_CLIENTID_GENERIC="app_client_id"
+fi
 
 # The generic client ID password
 if [[ $UAA_CLIENTID_GENERIC_SECRET == "" ]]; then

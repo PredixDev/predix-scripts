@@ -44,7 +44,7 @@ function build-basic-app-polymerseed-timeseries-main() {
   # Edit the manifest.yml files
 
   #    Modify the name of the applications
-  __find_and_replace "- name: .*" "- name: $FRONT_END_POLYMER_SEED_APP_NAME-RMD" "manifest.yml" "$logDir"
+  __find_and_replace "- name: .*" "- name: $FRONT_END_POLYMER_SEED_APP_NAME" "manifest.yml" "$logDir"
 
   #    Add the services to bind to the application
   __find_and_replace "\#services:" "services:" "manifest.yml" "$logDir"
@@ -54,6 +54,12 @@ function build-basic-app-polymerseed-timeseries-main() {
   #    Set the clientid and base64ClientCredentials
   __find_and_replace "\#clientId: .*" "clientId: $UAA_CLIENTID_GENERIC" "manifest.yml" "$logDir"
   __find_and_replace "\#base64ClientCredential: .*" "base64ClientCredential: $MYGENERICS_SECRET" "manifest.yml" "$logDir"
+  echo "TIMESERIES_CHART_ONLY : $TIMESERIES_CHART_ONLY"
+  if [[ "$TIMESERIES_CHART_ONLY" == "true" ]]; then
+    __find_and_replace "timeSeriesOnly: .*" "timeSeriesOnly: true" "manifest.yml" "$logDir"
+  else
+    __find_and_replace "timeSeriesOnly: .*" "timeSeriesOnly: false" "manifest.yml" "$logDir"
+  fi
 
   cat manifest.yml
 
@@ -64,6 +70,11 @@ function build-basic-app-polymerseed-timeseries-main() {
   __find_and_replace ".*base64ClientCredential\":.*" "    \"base64ClientCredential\": \"$MYGENERICS_SECRET\"," "server/localConfig.json" "$logDir"
   __find_and_replace ".*timeseriesURL\":.*" "    \"timeseriesURL\": \"$TIMESERIES_QUERY_URI\"," "server/localConfig.json" "$logDir"
 
+  if [[ "$TIMESERIES_CHART_ONLY" == "true" ]]; then
+    __find_and_replace ".*timeSeriesOnly\":.*" "    \"timeSeriesOnly\": \"true\"" "server/localConfig.json" "$logDir"
+  else
+    __find_and_replace ".*timeSeriesOnly\":.*" "    \"timeSeriesOnly\": \"false\"" "server/localConfig.json" "$logDir"
+  fi
   cat server/localConfig.json
 
   # Push the application

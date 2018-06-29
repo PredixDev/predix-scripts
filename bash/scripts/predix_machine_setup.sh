@@ -73,7 +73,7 @@ if [ "$2" == "1" ]; then
 			#Unzip the original PredixMachine container
 			#rm -rf "$PREDIX_MACHINE_HOME"
 			mkdir $PREDIX_MACHINE_HOME
-			__echo_run tar xvfz "PredixMachine$MACHINE_CONTAINER_TYPE-$MACHINE_VERSION.tar"  -C "$PREDIX_MACHINE_HOME"
+			__echo_run tar xvf "PredixMachine$MACHINE_CONTAINER_TYPE-$MACHINE_VERSION.tar"  -C "$PREDIX_MACHINE_HOME"
 
 		#fi
 	else
