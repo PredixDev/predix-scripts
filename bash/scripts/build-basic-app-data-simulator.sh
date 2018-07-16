@@ -92,6 +92,7 @@ function build-basic-app-data-simulator-main() {
   fi
 
   if [[ ! -z $SIMULATION_FILE ]]; then
+    sleep 10
     startSimulation "$APP_URL/start-simulation" "$quickstartRootDir/$SIMULATION_FILE"
   else
     __error_exit "No simulation file specified." "$logDir"
@@ -101,9 +102,18 @@ function build-basic-app-data-simulator-main() {
   echo ""  >> $SUMMARY_TEXTFILE
   echo "Back-end Data Simulator Spring Boot Microservice App"  >> $SUMMARY_TEXTFILE
   echo "--------------------------------------------------"  >> $SUMMARY_TEXTFILE
-  echo "Installed DataSimulator back-end microservice to the cloud and updated the manifest file with UAA, Asset and DataExchange info"  >> $SUMMARY_TEXTFILE
+  echo ""
+  echo "Installed DataSimulator back-end microservice to the cloud and updated the manifest file with UAA, TimeSeries and DataExchange info"  >> $SUMMARY_TEXTFILE
   echo "App URL: https://$DATA_SIMULATOR_APP_NAME.run.$CLOUD_ENDPONT" >> $SUMMARY_TEXTFILE
-  echo -e "You can execute 'px env "$DATA_SIMULATOR_APP_NAME"' to view info about your back-end microservice, and the bound UAA and Asset" >> $SUMMARY_TEXTFILE
+  echo -e "You can execute 'px env "$DATA_SIMULATOR_APP_NAME"' to view info about your back-end microservice, and the bound UAA and TimeSeries" >> $SUMMARY_TEXTFILE
+  echo -e "You can execute 'px logs "$DATA_SIMULATOR_APP_NAME"' to see it sending data to Time Series" >> $SUMMARY_TEXTFILE
+  echo -e "You can visit https://predix-toolkit.run.aws-usw02-pr.ice.predix.io/#!/apiLoginClient to login to UAA and do Time Series Queries.  Learn more about the Time Series API here https://www.predix.io/resources/tutorials/tutorial-details.html?tutorial_id=1556&tag=Time%20Series&journey=Time%20Series" >> $SUMMARY_TEXTFILE
+  echo -e "You can execute 'cat $quickstartRootDir/$SIMULATION_FILE' to see the name of the simulation and the start-simulation request.  You can back up the original file and make changes too, read on!" >> $SUMMARY_TEXTFILE
+  echo -e "You can execute 'curl $APP_URL/stop-simulation -X POST  -H \"Content-Type: text/plain\"  --data-binary \"Sample-Random-Simulation-1\"' to stop the simulation" >> $SUMMARY_TEXTFILE
+  echo -e "You can execute 'curl $APP_URL/start-simulation -X POST -H \"Content-Type: application/json\" --data-binary \"@$quickstartRootDir/$SIMULATION_FILE\"' to stop the simulation" >> $SUMMARY_TEXTFILE
+  echo -e "If you prefer a UI, you can execute the stop-simulation and start-simulation commands using the Predix Toolkit at https://predix-toolkit.run.aws-usw02-pr.ice.predix.io/#!/restClient" >> $SUMMARY_TEXTFILE
+  echo -e "For APM, you can follow the tutorial (https://predix.io/resources/tutorials/tutorial-details.html?tutorial_id=2585&tag=2583&journey=APM%20Basic%20Configuration&resources=2584,2579,2585) to see the data in a Dashboard" >> $SUMMARY_TEXTFILE
+  
   echo ""  >> $SUMMARY_TEXTFILE
 
 }
