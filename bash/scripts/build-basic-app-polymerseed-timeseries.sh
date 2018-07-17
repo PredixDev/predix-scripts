@@ -33,6 +33,7 @@ function build-basic-app-polymerseed-timeseries-main() {
 
   __append_new_head_log "Build & Deploy Predix UI Polymer Starter which is based on Node.js Starter Front-End Microservice" "-" "$logDir"
 
+  MYLOGIN_SECRET=$(echo -ne $UAA_CLIENTID_LOGIN:$UAA_CLIENTID_LOGIN_SECRET | base64)
   MYGENERICS_SECRET=$(echo -ne $UAA_CLIENTID_GENERIC:$UAA_CLIENTID_GENERIC_SECRET | base64)
 
   getGitRepo "predix-webapp-starter"
@@ -54,6 +55,7 @@ function build-basic-app-polymerseed-timeseries-main() {
   #    Set the clientid and base64ClientCredentials
   __find_and_replace "\#clientId: .*" "clientId: $UAA_CLIENTID_GENERIC" "manifest.yml" "$logDir"
   __find_and_replace "\#base64ClientCredential: .*" "base64ClientCredential: $MYGENERICS_SECRET" "manifest.yml" "$logDir"
+  __find_and_replace "\#loginBase64ClientCredential: .*" "loginBase64ClientCredential: $MYLOGIN_SECRET" "manifest.yml" "$logDir"
   echo "TIMESERIES_CHART_ONLY : $TIMESERIES_CHART_ONLY"
   if [[ "$TIMESERIES_CHART_ONLY" == "true" ]]; then
     __find_and_replace "timeSeriesOnly: .*" "timeSeriesOnly: true" "manifest.yml" "$logDir"
@@ -68,6 +70,7 @@ function build-basic-app-polymerseed-timeseries-main() {
   __find_and_replace ".*timeseriesZoneId\":.*" "    \"timeseriesZoneId\": \"$TIMESERIES_ZONE_ID\"," "server/localConfig.json" "$logDir"
   __find_and_replace ".*clientId\":.*" "    \"clientId\": \"$UAA_CLIENTID_GENERIC\"," "server/localConfig.json" "$logDir"
   __find_and_replace ".*base64ClientCredential\":.*" "    \"base64ClientCredential\": \"$MYGENERICS_SECRET\"," "server/localConfig.json" "$logDir"
+  __find_and_replace "\#loginBase64ClientCredential: .*" "loginBase64ClientCredential: $MYLOGIN_SECRET" "server/localConfig.json" "$logDir"
   __find_and_replace ".*timeseriesURL\":.*" "    \"timeseriesURL\": \"$TIMESERIES_QUERY_URI\"," "server/localConfig.json" "$logDir"
 
   if [[ "$TIMESERIES_CHART_ONLY" == "true" ]]; then

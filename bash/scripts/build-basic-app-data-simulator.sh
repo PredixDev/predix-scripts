@@ -33,7 +33,7 @@ function build-basic-app-data-simulator-main() {
   cd "$rootDir"
   if [[ "$USE_DATA_SIMULATOR" == "1" ]]; then
     # Checkout the repo
-    getGitRepo "data-exchange-simulator" "true" "true"
+    getGitRepo "data-exchange-simulator"
     cd data-exchange-simulator
 
     # get values for manifest
