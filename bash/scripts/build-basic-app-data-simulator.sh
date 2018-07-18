@@ -110,7 +110,7 @@ function build-basic-app-data-simulator-main() {
   echo -e "You can visit https://predix-toolkit.run.aws-usw02-pr.ice.predix.io/#!/apiLoginClient to login to UAA and do Time Series Queries.  Learn more about the Time Series API here https://www.predix.io/resources/tutorials/tutorial-details.html?tutorial_id=1556&tag=Time%20Series&journey=Time%20Series" >> $SUMMARY_TEXTFILE
   echo -e "You can execute 'cat $quickstartRootDir/$SIMULATION_FILE' to see the name of the simulation and the start-simulation request.  You can back up the original file and make changes too, read on!" >> $SUMMARY_TEXTFILE
   echo -e "You can execute 'curl $APP_URL/stop-simulation -X POST  -H \"Content-Type: text/plain\"  --data-binary \"Sample-Random-Simulation-1\"' to stop the simulation" >> $SUMMARY_TEXTFILE
-  echo -e "You can execute 'curl $APP_URL/start-simulation -X POST -H \"Content-Type: application/json\" --data-binary \"@$quickstartRootDir/$SIMULATION_FILE\"' to stop the simulation" >> $SUMMARY_TEXTFILE
+  echo -e "You can execute 'curl $APP_URL/start-simulation -X POST -H \"Content-Type: application/json\" --data-binary \"@$quickstartRootDir/$SIMULATION_FILE\"' to start the simulation" >> $SUMMARY_TEXTFILE
   echo -e "If you prefer a UI, you can execute the stop-simulation and start-simulation commands using the Predix Toolkit at https://predix-toolkit.run.aws-usw02-pr.ice.predix.io/#!/restClient" >> $SUMMARY_TEXTFILE
   echo -e "For APM, you can follow the tutorial (https://predix.io/resources/tutorials/tutorial-details.html?tutorial_id=2585&tag=2583&journey=APM%20Basic%20Configuration&resources=2584,2579,2585) to see the data in a Dashboard" >> $SUMMARY_TEXTFILE
   
