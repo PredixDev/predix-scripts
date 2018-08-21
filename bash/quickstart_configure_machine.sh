@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+echo "$#"
 quickstartRootDir="$( pwd )"
 UPGRAGE_MACHINE_VERSION="17.1.3"
 PREDIX_MACHINE_URL="https://raw.githubusercontent.com/PredixDev/predix-machine-templates/master/PredixMachine17.1.3.tar"
