@@ -192,8 +192,7 @@ if [[ "$UPGRAGE_MACHINE" == "1" ]]; then
 	find $PREDIX_MACHINE_HOME -name "._*" -exec rm {} \;
 	chmod -R 777 $PREDIX_MACHINE_HOME
 	chown -R gwuser $PREDIX_MACHINE_HOME
-	echo "$0"
-	cp $0 $PREDIX_MACHINE_HOME/$0
+	cp $PREDIX_MACHINE_HOME-$CURRENT_MACHINE_VERSION/$(basename "$0") $PREDIX_MACHINE_HOME
 fi
 
 PROXY_HOST_PORT=$(echo $http_proxy | awk -F"//" '{print $2}')
