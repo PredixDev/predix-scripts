@@ -167,8 +167,12 @@ if [[ ! -d $PREDIX_MACHINE_HOME ]]; then
   exit 1
 fi
 #Check if the current version is < $UPGRAGE_MACHINE_VERSION
-CURRENT_MACHINE_VERSION=$(grep "predix.version" $PREDIX_MACHINE_HOME/machine/bin/predix/predix.home.prs| awk -F"=" '{print $2}' | tr -d '"')
-CURRENT_MACHINE_VERSION=${CURRENT_MACHINE_VERSION:"17.1.2"}
+if [[ -e $PREDIX_MACHINE_HOME/machine/bin/predix/predix.home.prs ]]; then
+   CURRENT_MACHINE_VERSION=$(grep "predix.version" $PREDIX_MACHINE_HOME/machine/bin/predix/predix.home.prs| awk -F"=" '{print $2}' | tr -d '"')
+else
+   CURRENT_MACHINE_VERSION="17.1.2"
+fi
+
 echo "CURRENT_MACHINE_VERSION : $CURRENT_MACHINE_VERSION"
 if [ $(version "$CURRENT_MACHINE_VERSION") -lt $(version "$UPGRAGE_MACHINE_VERSION") ]; then
     UPGRAGE_MACHINE="1"
