@@ -192,6 +192,7 @@ if [[ "$UPGRAGE_MACHINE" == "1" ]]; then
 	find $PREDIX_MACHINE_HOME -name "._*" -exec rm {} \;
 	chmod -R 777 $PREDIX_MACHINE_HOME
 	chown -R gwuser $PREDIX_MACHINE_HOME
+	echo "$0"
 	cp $0 $PREDIX_MACHINE_HOME/$0
 fi
 
