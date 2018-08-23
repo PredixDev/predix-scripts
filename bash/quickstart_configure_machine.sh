@@ -179,21 +179,23 @@ if [ $(version "$CURRENT_MACHINE_VERSION") -lt $(version "$UPGRAGE_MACHINE_VERSI
     UPGRAGE_MACHINE="1"
 fi
 if [[ "$UPGRAGE_MACHINE" == "1" ]]; then
-	systemctl stop predixmachine
-	curl -O $PREDIX_MACHINE_URL
-	ls
-	mkdir -p "$PREDIX_MACHINE_HOME-$CURRENT_MACHINE_VERSION"
-	cp -rf $PREDIX_MACHINE_HOME/* "$PREDIX_MACHINE_HOME-$CURRENT_MACHINE_VERSION"
-	ls $PREDIX_MACHINE_HOME/../
-	rm -rf $PREDIX_MACHINE_HOME/*
-	#find . ! -name '$0' -type f -exec rm -f {} +
-	#mkdir -p $PREDIX_MACHINE_HOME
-	tar xvf $PREDIXMACHINE_TAR_FILENAME -C $PREDIX_MACHINE_HOME
-	cp $PREDIX_MACHINE_HOME-$CURRENT_MACHINE_VERSION/machine/bin/predix/setvars.sh $PREDIX_MACHINE_HOME/machine/bin/predix/setvars.sh
-	find $PREDIX_MACHINE_HOME -name "._*" -exec rm {} \;
-	chmod -R 777 $PREDIX_MACHINE_HOME
-	chown -R gwuser $PREDIX_MACHINE_HOME
-	cp $PREDIX_MACHINE_HOME-$CURRENT_MACHINE_VERSION/$(basename "$0") $PREDIX_MACHINE_HOME
+  systemctl stop predixmachine
+  curl -O $PREDIX_MACHINE_URL
+  ls
+  mkdir -p "$PREDIX_MACHINE_HOME-$CURRENT_MACHINE_VERSION"
+  cp -rf $PREDIX_MACHINE_HOME/* "$PREDIX_MACHINE_HOME-$CURRENT_MACHINE_VERSION"
+  ls $PREDIX_MACHINE_HOME/../
+  rm -rf $PREDIX_MACHINE_HOME/*
+  #find . ! -name '$0' -type f -exec rm -f {} +
+  #mkdir -p $PREDIX_MACHINE_HOME
+  tar xvf $PREDIXMACHINE_TAR_FILENAME -C $PREDIX_MACHINE_HOME
+  cp $PREDIX_MACHINE_HOME-$CURRENT_MACHINE_VERSION/machine/bin/predix/setvars.sh $PREDIX_MACHINE_HOME/machine/bin/predix/setvars.sh
+  find $PREDIX_MACHINE_HOME -name "._*" -exec rm {} \;
+  chmod -R 777 $PREDIX_MACHINE_HOME
+  chown -R gwuser $PREDIX_MACHINE_HOME
+  if [[ -e $PREDIX_MACHINE_HOME-$CURRENT_MACHINE_VERSION/$(basename "$0") ]]; then
+   cp $PREDIX_MACHINE_HOME-$CURRENT_MACHINE_VERSION/$(basename "$0") $PREDIX_MACHINE_HOME
+  fi
 fi
 
 PROXY_HOST_PORT=$(echo $http_proxy | awk -F"//" '{print $2}')
