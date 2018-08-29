@@ -72,6 +72,28 @@ function __getUaaClientToken
     echo "$tokenType $accessToken"
 }
 
+#	----------------------------------------------------------------
+#	Function for getting a Client Token from UAA
+#		Accepts 3 arguments:
+#			string of UAA URL
+#			string of Client Id
+#			string of Client Id Secret
+#  Returns:
+#     String of the the UAA Token
+#	----------------------------------------------------------------
+function __getUaaUserToken
+{
+  UAA_URL=$1
+  UAA_APP_CLIENT_ID=$2
+  UAA_APP_CLIENT_SECRET=$3
+  UAA_APP_USER_ID=$4
+  UAA_APP_USER_SECRET=$5
+  UAA_ADMIN_BASE64=$(echo -ne $UAA_APP_CLIENT_ID:$UAA_APP_CLIENT_SECRET | base64)
+  responseCurl=$(curl --silent "$UAA_URL/oauth/token?username=$UAA_APP_USER_ID&password=$UAA_APP_USER_SECRET&grant_type=password" -H "Pragma: no-cache" -H "content-type: application/x-www-form-urlencoded" -H "Cache-Control: no-cache" -H "Authorization: Basic $UAA_ADMIN_BASE64")
+  accessToken=$( __jsonval "$responseCurl" "access_token" )
+  echo "$accessToken"
+}
+
 #---------------------------------
 # Check if the clientId exists and return the clientId details as json
 # Accepts 3 arguments
@@ -810,8 +832,8 @@ function startSimulation() {
   echo ""
   echo $responseCurl
   if [[ $responseCurl == *"200" ]]; then
-    __append_new_line_log "Successfully started simulation using this file: \"$2\"" "$logDir"    
+    __append_new_line_log "Successfully started simulation using this file: \"$2\"" "$logDir"
   else
     __error_exit "Failed to start simulation at this URL: \"$1\"" "$logDir"
-  fi  
+  fi
 }

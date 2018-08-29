@@ -1,6 +1,5 @@
 #!/bin/bash
 set -e
-echo "$#"
 quickstartRootDir="$( pwd )"
 UPGRAGE_MACHINE_VERSION="17.1.3"
 PREDIX_MACHINE_URL="https://raw.githubusercontent.com/PredixDev/predix-machine-templates/master/PredixMachine17.1.3.tar"
@@ -168,34 +167,26 @@ if [[ ! -d $PREDIX_MACHINE_HOME ]]; then
   exit 1
 fi
 #Check if the current version is < $UPGRAGE_MACHINE_VERSION
-if [[ -e $PREDIX_MACHINE_HOME/machine/bin/predix/predix.home.prs ]]; then
-   CURRENT_MACHINE_VERSION=$(grep "predix.version" $PREDIX_MACHINE_HOME/machine/bin/predix/predix.home.prs| awk -F"=" '{print $2}' | tr -d '"')
-else
-   CURRENT_MACHINE_VERSION="17.1.2"
-fi
-
-echo "CURRENT_MACHINE_VERSION : $CURRENT_MACHINE_VERSION"
+CURRENT_MACHINE_VERSION=$(grep "predix.version" $PREDIX_MACHINE_HOME/machine/bin/predix/predix.home.prs| awk -F"=" '{print $2}' | tr -d '"')
 if [ $(version "$CURRENT_MACHINE_VERSION") -lt $(version "$UPGRAGE_MACHINE_VERSION") ]; then
     UPGRAGE_MACHINE="1"
 fi
 if [[ "$UPGRAGE_MACHINE" == "1" ]]; then
-  systemctl stop predixmachine
-  curl -O $PREDIX_MACHINE_URL
-  ls
-  mkdir -p "$PREDIX_MACHINE_HOME-$CURRENT_MACHINE_VERSION"
-  cp -rf $PREDIX_MACHINE_HOME/* "$PREDIX_MACHINE_HOME-$CURRENT_MACHINE_VERSION"
-  ls $PREDIX_MACHINE_HOME/../
-  rm -rf $PREDIX_MACHINE_HOME/*
-  #find . ! -name '$0' -type f -exec rm -f {} +
-  #mkdir -p $PREDIX_MACHINE_HOME
-  tar xvf $PREDIXMACHINE_TAR_FILENAME -C $PREDIX_MACHINE_HOME
-  cp $PREDIX_MACHINE_HOME-$CURRENT_MACHINE_VERSION/machine/bin/predix/setvars.sh $PREDIX_MACHINE_HOME/machine/bin/predix/setvars.sh
-  find $PREDIX_MACHINE_HOME -name "._*" -exec rm {} \;
-  chmod -R 777 $PREDIX_MACHINE_HOME
-  chown -R gwuser $PREDIX_MACHINE_HOME
-  if [[ -e $PREDIX_MACHINE_HOME-$CURRENT_MACHINE_VERSION/$(basename "$0") ]]; then
-   cp $PREDIX_MACHINE_HOME-$CURRENT_MACHINE_VERSION/$(basename "$0") $PREDIX_MACHINE_HOME
-  fi
+	systemctl stop predixmachine
+	curl -O $PREDIX_MACHINE_URL
+	ls
+	mkdir -p "$PREDIX_MACHINE_HOME-$CURRENT_MACHINE_VERSION"
+	cp -rf $PREDIX_MACHINE_HOME/* "$PREDIX_MACHINE_HOME-$CURRENT_MACHINE_VERSION"
+	ls $PREDIX_MACHINE_HOME/../
+	rm -rf $PREDIX_MACHINE_HOME/*
+	#find . ! -name '$0' -type f -exec rm -f {} +
+	#mkdir -p $PREDIX_MACHINE_HOME
+	tar xvf $PREDIXMACHINE_TAR_FILENAME -C $PREDIX_MACHINE_HOME
+	cp $PREDIX_MACHINE_HOME-$CURRENT_MACHINE_VERSION/machine/bin/predix/setvars.sh $PREDIX_MACHINE_HOME/machine/bin/predix/setvars.sh
+	find $PREDIX_MACHINE_HOME -name "._*" -exec rm {} \;
+	chmod -R 777 $PREDIX_MACHINE_HOME
+	chown -R gwuser $PREDIX_MACHINE_HOME
+	cp $PREDIX_MACHINE_HOME-$CURRENT_MACHINE_VERSION/$0 $PREDIX_MACHINE_HOME/$0
 fi
 
 PROXY_HOST_PORT=$(echo $http_proxy | awk -F"//" '{print $2}')

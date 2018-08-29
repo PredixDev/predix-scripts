@@ -264,3 +264,13 @@ EDGE_DEVICE_ID="$INSTANCE_PREPENDER-workshopedisondevice1"
 EDGE_DEVICE_KIT_USER="gwuser"
 
 PREDIX_KIT_PROPERTY_FILE="/etc/predix/predix.conf"
+
+EM_DEVICE_MANAGEMENT_URL="https://em-api-apidocs.run.aws-usw02-pr.ice.predix.io/emapi/beta/device-management/devices"
+EM_PACKAGE_MANAGEMENT_URL="https://em-api-apidocs.run.aws-usw02-pr.ice.predix.io/emapi/beta/package-management/packages"
+
+#EM_TENANT_ID=predix-adoption
+#EM_UAA_ZONE_ID=eec17b49-c3e5-4c49-9f97-0a58930931cb
+#EM_USER_ID=predix-adoption-admin
+#EM_USER_SECRET=Pr3d1xAdmin
+#EM_CLIENT_ID=predix-adoption-app-client
+#EM_CLIENT_SECRET=uHcJCrbLwWOvbAH

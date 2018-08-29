@@ -1,0 +1,37 @@
+#!/bin/bash
+
+set -x
+
+trap "trap_ctrlc" 2
+
+APPLICATION_ID="$1"
+APP_SERVICE_NAME="$APPLICATION_ID_$APPLICATION_ID"
+HELLO_WORLD_APP="$APPLICATION_ID.tar.gz"
+HELLO_WORLD_CONFIG="$APPLICATION_ID-config.zip"
+
+ROOT_DIR=$(pwd)
+echo $APP_SERVICE_NAME
+if [[ $(docker service ls -f "name=$APP_SERVICE_NAME" -q | wc -l) -eq 1 ]]; then
+  docker service rm "$APP_SERVICE_NAME"
+  echo "$APPLICATION_ID service removed"
+else
+  echo "$APPLICATION_ID service not found"
+fi
+
+
+mkdir -p /var/lib/edge-agent/app/$APPLICATION_ID/conf/
+rm -rf /var/lib/edge-agent/app/$APPLICATION_ID/conf/*
+unzip /mnt/data/downloads/$HELLO_WORLD_CONFIG -d /var/lib/edge-agent/app/$APPLICATION_ID/conf/
+
+#/opt/edge-agent/app-start --appInstanceId=$APPLICATION_ID
+
+#if [[ $(curl http://localhost/api/v1/applications --unix-socket /var/run/edge-core/edge-core.sock -X POST -F "file=@/mnt/data/downloads/$HELLO_WORLD_APP" -H "app_name: $APPLICATION_ID") ]]; then
+/opt/edge-agent/app-deploy --enable-core-api $APPLICATION_ID /mnt/data/downloads/$HELLO_WORLD_APP
+
+if [[ $(docker service ls -f "name=$APP_SERVICE_NAME" -q | wc -l) > 0 ]]; then
+  echo "$APPLICATION_ID service started"
+else
+  echo "$APPLICATION_ID not service started"
+fi
+
+docker service logs $(docker service ls -f "name=$APP_SERVICE_NAME" -q)

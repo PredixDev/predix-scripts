@@ -56,6 +56,9 @@ __append_new_head_log "Welcome to the Predix Quickstart script!" "-" "$quickstar
 
 __append_new_head_log "Setting the local to en-US for the quickstart script" "-" "$quickstartLogDir"
 export PREDIX_NO_CF_BYPASS=false
+if [ ! -e DYLD_INSERT_LIBRARIES ]; then
+  export DYLD_INSERT_LIBRARIES=""
+fi
 px config --locale en-US
 
 # Check and install tools
