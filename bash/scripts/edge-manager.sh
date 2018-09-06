@@ -36,28 +36,28 @@ __append_new_head_log "Create/Manage Edge Manager operations" "#" "$logDir"
 #	----------------------------------------------------------------
 function main() {
   #execute the build a basic app and switches
+  echo "EDGE_APP_NAME : $EDGE_APP_NAME"
   if [[ ! -n $EM_TENANT_TOKEN ]]; then
     getEMUserToken
   fi
   if [[ $RUN_CREATE_DEVICE == 1 ]]; then
     echo "Create Device"
     edgeEdgeManagerCreateDevice
-
   fi
 
   if [[ $RUN_CREATE_CONFIGIURATION == 1 ]]; then
     echo "Upload Configuration package"
-    PACKAGE_NAME="$APP_NAME\_Config"
-    PACKAGE_DESCRIPTION="Package for configuration for $APP_NAME"
-    PACKAGE_CONTENT_FILE="$REPO_NAME/$APP_NAME-config.zip"
+    PACKAGE_NAME="$EDGE_APP_NAME\_Config"
+    PACKAGE_DESCRIPTION="Package for configuration for $EDGE_APP_NAME"
+    PACKAGE_CONTENT_FILE="$REPO_NAME/$EDGE_APP_NAME-config.zip"
     createEMPackage "configuration"
   fi
 
   if [[ $RUN_CREATE_APPLICATION == 1 ]]; then
     echo "Upload Application package"
-    PACKAGE_NAME="$APP_NAME"
-    PACKAGE_DESCRIPTION="Package for Application $APP_NAME"
-    PACKAGE_CONTENT_FILE="$REPO_NAME/$APP_NAME.tar.gz"
+    PACKAGE_NAME="$EDGE_APP_NAME"
+    PACKAGE_DESCRIPTION="Package for Application $EDGE_APP_NAME"
+    PACKAGE_CONTENT_FILE="$REPO_NAME/$EDGE_APP_NAME.tar.gz"
     createEMPackage "multi-container-app"
   fi
 
@@ -173,6 +173,10 @@ function uploadPackageContent {
   esac
   echo "$responseCurl"
   getPackageUploadStatus $UPLOAD_ID
+  if [[ "$PACKAGE_UPLOAD_STATUS" == "complete" ]]; then
+    deployPackageToDevice
+  fi
+
 }
 
 function getEMUserToken() {
@@ -212,11 +216,25 @@ function getEMUserToken() {
 function getPackageUploadStatus {
   __validate_num_arguments 1 $# "\"getPackageUploadStatus\" expected in order: String of uploadId used to get status of package upload" "$logDir"
   UPLOAD_ID="$1"
-  responseCurl=$(curl --silent -X GET "$EM_PACKAGE_MANAGEMENT_URL/uploads/$UPLOAD_ID" -H "accept: application/json" -H "Authorization: Bearer $EM_TENANT_TOKEN" -H "Predix-Zone-Id: predix-adoption")
-  status=$( echo "$responseCurl" | jq -r .status)
-  echo "Package upload Status : $status"
+  status="pending"
+  while [[ "$status" == "pending" ]]; do
+    responseCurl=$(curl --silent -X GET "$EM_PACKAGE_MANAGEMENT_URL/uploads/$UPLOAD_ID" -H "accept: application/json" -H "Authorization: Bearer $EM_TENANT_TOKEN" -H "Predix-Zone-Id: predix-adoption")
+    status=$( echo "$responseCurl" | jq -r .status)
+    echo "status : $status"
+  done
+  export PACKAGE_UPLOAD_STATUS="$status"
 }
 
+function deployPackageToDevice {
+  if [[ ! -n $EM_TENANT_TOKEN ]]; then
+    getEMUserToken
+    echo "$EM_TENANT_TOKEN"
+  fi
+  if [[ ! -n $DEVICE_ID ]]; then
+    read -p "Enter your Device ID> " DEVICE_ID
+    export DEVICE_ID
+  fi
+}
 function startEnrollement {
   if [[ ! -n $EM_TENANT_TOKEN ]]; then
     getEMUserToken

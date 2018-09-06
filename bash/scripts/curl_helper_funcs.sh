@@ -521,7 +521,7 @@ function createAsset
 
 #	----------------------------------------------------------------
 #	Function for creating an asset with metadata
-#		Accepts 6 arguments:
+#		Accepts 8 arguments:
 #			string of UAA URL
 #			string of Client Id
 #			string of Client Id Secret
@@ -534,7 +534,7 @@ function createAsset
 #	----------------------------------------------------------------
 function createAssetWithMetaData
 {
-  __validate_num_arguments 8 $# "\"curl_helper_funcs:createAssetWithMetaData\" expected in order: UAA URI, Client Id, ClientIdSecret, Asset URI, AssetZoneId, AssetPostBody, DataExchangeURI, MetaDataJsonFile, AssetModelJsonFile  " "$logDir"
+  __validate_num_arguments 8 $# "\"curl_helper_funcs:createAssetWithMetaData\" expected in order: UAA URI, Client Id, ClientIdSecret, Asset URI, AssetZoneId, DataExchangeURI, MetaDataJsonFile, AssetModelJsonFile  " "$logDir"
 
   clientToken=$( __getUaaClientToken $1 $2 $3)
   __append_new_line_log "Got UAA Client Token for $2" "$logDir"

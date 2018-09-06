@@ -17,6 +17,7 @@ DATAEXCHANGE_APP_NAME="$INSTANCE_PREPENDER-data-exchange"
 DATA_SIMULATOR_APP_NAME="$INSTANCE_PREPENDER-data-exchange-simulator"
 WEBSOCKET_SERVER_APP_NAME="$INSTANCE_PREPENDER-data-exchange"
 WINDDATA_SERVICE_APP_NAME="$INSTANCE_PREPENDER-winddata-service"
+MICROSERVICE_TEMPLATE_APP_NAME="$INSTANCE_PREPENDER-microservice-template-cf-jsr"
 RMD_DATASOURCE_APP_NAME="$INSTANCE_PREPENDER-rmd-datasource"
 RMD_ORCHESTRATION_APP_NAME="$INSTANCE_PREPENDER-rmd-orchestration"
 RMD_ANALYTICS_APP_NAME="$INSTANCE_PREPENDER-rmd-analytics"
@@ -270,7 +271,7 @@ EM_PACKAGE_MANAGEMENT_URL="https://em-api-apidocs.run.aws-usw02-pr.ice.predix.io
 
 #EM_TENANT_ID=predix-adoption
 #EM_UAA_ZONE_ID=eec17b49-c3e5-4c49-9f97-0a58930931cb
-#EM_USER_ID=predix-adoption-admin
-#EM_USER_SECRET=Pr3d1xAdmin
 #EM_CLIENT_ID=predix-adoption-app-client
 #EM_CLIENT_SECRET=uHcJCrbLwWOvbAH
+#EM_USER_ID=predix-adoption-admin
+#EM_USER_SECRET=Pr3d1xAdmin

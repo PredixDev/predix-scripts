@@ -119,10 +119,11 @@ function processEdgeStarterReadargsSwitch() {
 				SWITCH_ARRAY[SWITCH_INDEX++]="-em-user-password"
 			  PRINT_USAGE=0
 				;;
-			-app-name|--app-name)
-				APP_NAME="$2"
-				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-app-name|--app-name"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-app-name"
+			-edge-app-name|--edge-app-name)
+				EDGE_APP_NAME="$2"
+				echo "1111 : EDGE_APP_NAME : $EDGE_APP_NAME"
+				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-edge-app-name|--edge-app-name"
+				SWITCH_ARRAY[SWITCH_INDEX++]="-edge-app-name"
 				PRINT_USAGE=0
 				;;
 			-em-package-name|--em-package-name)
@@ -143,6 +144,13 @@ function processEdgeStarterReadargsSwitch() {
 				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-em-package-version|--em-package-version"
 				SWITCH_ARRAY[SWITCH_INDEX++]="-em-package-version"
 			  PRINT_USAGE=0
+				;;
+			-em-schedule-package|--em-schedule-package)
+				RUN_SCHEDULE_PACKAGE=1
+				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-em-schedule-package|--em-schedule-package"
+				SWITCH_ARRAY[SWITCH_INDEX++]="-em-schedule-package"
+				PRINT_USAGE=0
+				LOGIN=1
 				;;
 			-?*)
 				doShift=0
@@ -176,14 +184,17 @@ function printEdgeStarterVariables() {
 	echo "    DEVICE_ID                 : $DEVICE_ID"
 	echo "    DEVICE_SECRET             :	$DEVICE_SECRET"
 	echo "  PACKAGE CONFIGURATIONS:"
+	echo "    RUN_SCHEDULE_PACKAGE      : $RUN_SCHEDULE_PACKAGE"
 	echo "    RUN_CREATE_APPLICATION    : $RUN_CREATE_APPLICATION"
 	echo "    RUN_CREATE_CONFIGIURATION : $RUN_CREATE_CONFIGIURATION"
 	echo "    PACKAGE_NAME              : $PACKAGE_NAME"
 	echo "    PACKAGE_DESCRIPTION       : $PACKAGE_DESCRIPTION"
 	echo "    PACKAGE_VERSION           : $PACKAGE_VERSION"
-	echo "	EM ENROLLMENT:"
-	echo "		RUN_START_ENROLLMENT			: $RUN_START_ENROLLMENT"
-	echo "      "
+	echo "  EM ENROLLMENT:"
+	echo "    RUN_START_ENROLLMENT			: $RUN_START_ENROLLMENT"
+	echo "             "
+
+	export EDGE_APP_NAME
 	export EM_TENANT_ID
 	export EM_UAA_ZONE_ID
 	export EM_CLIENT_ID
@@ -197,6 +208,7 @@ function printEdgeStarterVariables() {
 	export PACKAGE_DESCRIPTION
 	export PACKAGE_VERSION
 	export RUN_START_ENROLLMENT
+	export RUN_SCHEDULE_PACKAGE
 }
 
 function __print_out_usage

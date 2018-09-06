@@ -31,6 +31,7 @@ RUN_EDGE_STARTER=0
 SKIP_SERVICES=0
 RUN_CREATE_MACHINE_CONTAINER=0
 USE_WINDDATA_SERVICE=0
+USE_MICROSERVICE_TEMPLATE=0
 USE_DATAEXCHANGE=0
 USE_DATAEXCHANGE_UI=0
 USE_WEBSOCKET_SERVER=0
@@ -58,9 +59,9 @@ function __print_out_usage
   echo "[-acs|     --create-acs]                    => Create the access control service instance"
   echo "[-af|      --create-analytic-framework]     => Create the analytic framework service instance"
   echo "[-asset|   --create-asset]                  => Create the asset service instance"
-	echo "[-bs|      --create-blobstore]              => Create the Blobstore service instance"
+  echo "[-bs|      --create-blobstore]              => Create the Blobstore service instance"
   echo "[-eh|      --create-event-hub]              => Create the Event Hub service instance"
-	echo "[-eh-topics| --event-hub-topics]            => Comma separated names of the topics to be created"
+  echo "[-eh-topics| --event-hub-topics]            => Comma separated names of the topics to be created"
   echo "[-ts|      --create-timeseries]             => Create the time series service instance"
   echo "[-tu|      --training-uaa]                  => Use a Training UAA Instance. Default does not use the Training UAA instance"
   echo "[-uaa|     --create-uaa]                    => Create the uaa service instance"
@@ -69,6 +70,7 @@ function __print_out_usage
   echo "[-amrmd|   --create-asset-model-rmd]       => Create the access model for remote monitoring and diagnostics"
   echo "back-end:"
   echo "[-dx|      --data-exchange]                 => Use data-exchange as backend"
+  echo "[-mst|     --microservice-template]         => Use Microservice Template"
   echo "[-rmd|     --rmd-datasource]                => Use rmd-datasource as backend"
   echo "[-sim|     --data-simulator]                => Use data-exchange-simulator as backend"
   echo "[-wd|      --wind-data]                     => Use winddata-timeseries-service as backend"
@@ -519,13 +521,21 @@ function processBuildBasicAppReadargsSwitch() {
 	      LOGIN=1
 	      ;;
 	    -wd|--wind-data)       # Takes an option argument, ensuring it has been specified.
-	        USE_WINDDATA_SERVICE=1
-	        SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-wd | --wind-data"
-					SWITCH_ARRAY[SWITCH_INDEX++]="-wd"
-	        PRINT_USAGE=0
-	        VERIFY_MVN=1
-	        LOGIN=1
+	      USE_WINDDATA_SERVICE=1
+	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-wd | --wind-data"
+				SWITCH_ARRAY[SWITCH_INDEX++]="-wd"
+	      PRINT_USAGE=0
+	      VERIFY_MVN=1
+	      LOGIN=1
 	      ;;
+      	    -mst|--ms-template)    # Takes an option argument, ensuring it has been specified.
+	      USE_MICROSERVICE_TEMPLATE=1
+	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-mst | --ms-template"
+				SWITCH_ARRAY[SWITCH_INDEX++]="--ms-template"
+	      PRINT_USAGE=0
+	      VERIFY_MVN=1
+	      LOGIN=1
+	     ;;
 	    -dx|--data-exchange)       # Takes an option argument, ensuring it has been specified.
 	        USE_DATAEXCHANGE=1
 	        SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-dx | --data-exchange"
@@ -640,6 +650,7 @@ function printBBAVariables() {
 	  echo "    USE_RMD_DATASOURCE                       : $USE_RMD_DATASOURCE"
 	  echo "    USE_WEBSOCKET_SERVER                     : $USE_WEBSOCKET_SERVER"
 	  echo "    USE_WINDDATA_SERVICE                     : $USE_WINDDATA_SERVICE"
+		echo "    USE_MICROSERVICE_TEMPLATE                : $USE_MICROSERVICE_TEMPLATE"
 	  echo ""
 	  echo "  FRONT-END:"
 	  echo "    USE_DATAEXCHANGE_UI                      : $USE_DATAEXCHANGE_UI"
@@ -699,6 +710,7 @@ function printBBAVariables() {
 	export RUN_EDGE_MANAGER_SETUP
 	export RUN_MACHINE_TRANSFER
 	export USE_WINDDATA_SERVICE
+	export USE_MICROSERVICE_TEMPLATE
 	export USE_DATAEXCHANGE
 	export USE_DATAEXCHANGE_UI
 	export USE_WEBSOCKET_SERVER
@@ -883,6 +895,13 @@ function runFunctionsForBasicApp() {
 							build-basic-app-winddata-main $1
 						fi
 	          break
+						;;
+					-mst|--microservice-template)       # Takes an option argument, ensuring it has been specified.
+						if [[ $USE_MICROSERVICE_TEMPLATE -eq 1 ]]; then
+							source "$rootDir/bash/scripts/build-basic-app-microservice-template.sh"
+							build-basic-app-microservice-template-main $1
+						fi
+						break
 						;;
 	        -wss|--websocket-server)       # Takes an option argument, ensuring it has been specified.
 						if [[ $USE_WEBSOCKET_SERVER -eq 1 ]]; then
