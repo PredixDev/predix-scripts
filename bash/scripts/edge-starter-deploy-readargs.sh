@@ -260,7 +260,7 @@ function checkDockerLogin {
 
 function createPackages {
   echo "1111"
-	#cd $REPO_NAME
+	cd $REPO_NAME
   pwd
   echo "Deploying $APP_NAME"
   APP_NAME_TAR="$APP_NAME.tar.gz"
@@ -339,7 +339,7 @@ function deployToEdge {
     }
     expect \"*\# \"
     send \"su eauser /mnt/data/downloads/edge-starter-deploy-run.sh $APP_NAME\r\"
-    set timeout 20
+    set timeout 60
     expect \"*\# \"
     send \"exit\r\"
     expect eof
