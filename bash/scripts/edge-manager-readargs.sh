@@ -69,6 +69,12 @@ function processEdgeStarterReadargsSwitch() {
         PRINT_USAGE=0
         LOGIN=1
         ;;
+			-cp|--create-packages)
+				RUN_CREATE_PACKAGES=1
+				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-cp|--create-packages"
+				SWITCH_ARRAY[SWITCH_INDEX++]="-cp"
+				PRINT_USAGE=0
+				;;
 			-ca|--create-application)
 				RUN_CREATE_APPLICATION=1
 				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-ca|--create-application"
@@ -90,9 +96,15 @@ function processEdgeStarterReadargsSwitch() {
 			  PRINT_USAGE=0
 				;;
 			-em-uaa-zone-id|--em-uaa-zone-id)
-				EM_UAA_ZONE_ID="$2"
+				UAA_ZONE_ID="$2"
 				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-em-uaa-zone-id|--em-uaa-zone-id"
 				SWITCH_ARRAY[SWITCH_INDEX++]="-em-uaa-zone-id"
+			  PRINT_USAGE=0
+				;;
+			-em-ts-zone-id|--em-ts-zone-id)
+				EM_TIMESERIES_ZONE_ID="$2"
+				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-em-ts-zone-id|--em-ts-zone-id"
+				SWITCH_ARRAY[SWITCH_INDEX++]="-em-ts-zone-id"
 			  PRINT_USAGE=0
 				;;
 			-em-client-id|--em-client-id)

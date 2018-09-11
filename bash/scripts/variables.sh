@@ -266,6 +266,9 @@ EDGE_DEVICE_KIT_USER="gwuser"
 
 PREDIX_KIT_PROPERTY_FILE="/etc/predix/predix.conf"
 
+DEFAULT_TIMESERIES_INGEST_URI="wss://gateway-predix-data-services.run.aws-usw02-pr.ice.predix.io/v1/stream/messages"
+DEFAULT_TIMESERIES_QUERY_URI="https://time-series-store-predix.run.aws-usw02-pr.ice.predix.io/v1/datapoints"
+
 EM_DEVICE_MANAGEMENT_URL="https://em-api-apidocs.run.aws-usw02-pr.ice.predix.io/emapi/beta/device-management/devices"
 EM_PACKAGE_MANAGEMENT_URL="https://em-api-apidocs.run.aws-usw02-pr.ice.predix.io/emapi/beta/package-management/packages"
 

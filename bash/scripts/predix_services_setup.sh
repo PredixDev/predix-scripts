@@ -350,26 +350,32 @@ function __setupServices() {
 		pushAnAppForBinding $1
 	fi
 
-	if [[ $RUN_CREATE_UAA == 1 ]]; then
-		createUaa $1
-		# Create client ID for generic use by applications - including timeseries and asset scope
-		__append_new_head_log "Registering Client on UAA to access the Predix Services" "-" "$logDir"
-		if [[ "$UAA_URL" == "" ]]; then
-			getUaaUrlFromInstance $UAA_INSTANCE_NAME
-		fi
+	echo "UAA_ZONE_ID : $UAA_ZONE_ID"
+	if [[ ($RUN_CREATE_UAA == 1) ]]; then
+		if [[ "$UAA_ZONE_ID" == "" ]]; then
+			createUaa $1
+			# Create client ID for generic use by applications - including timeseries and asset scope
+			__append_new_head_log "Registering Client on UAA to access the Predix Services" "-" "$logDir"
+			if [[ "$UAA_URL" == "" ]]; then
+				getUaaUrlFromInstance $UAA_INSTANCE_NAME
+			fi
 
-		__createUaaLoginClient "$UAA_URL" "$UAA_CLIENTID_LOGIN" "$UAA_CLIENTID_LOGIN_SECRET"
-		if [[ $USE_TRAINING_UAA == 1 ]]; then
-			__createUaaAppClient "$UAA_URL" "$UAA_CLIENTID_GENERIC" "$UAA_CLIENTID_GENERIC_SECRET"
+			__createUaaLoginClient "$UAA_URL" "$UAA_CLIENTID_LOGIN" "$UAA_CLIENTID_LOGIN_SECRET"
+			if [[ $USE_TRAINING_UAA == 1 ]]; then
+				__createUaaAppClient "$UAA_URL" "$UAA_CLIENTID_GENERIC" "$UAA_CLIENTID_GENERIC_SECRET"
+			fi
+			# Create a new user account
+			if [[ $RUN_CREATE_MOBILE != 1 ]]; then
+				# moble service creates user itself
+				__addUaaUser "$UAA_URL"
+			fi
+		else
+			UAA_URL="https://$UAA_ZONE_ID.predix-uaa.run.aws-usw02-pr.ice.predix.io/oauth/token"
+			uaaURL="$UAA_URL"
+			UAA_CLIENTID_LOGIN="$UAA_CLIENT_ID"
+			UAA_CLIENTID_LOGIN_SECRET="$UAA_CLIENT_SECRET"
 		fi
-		# Create a new user account
-		if [[ $RUN_CREATE_MOBILE != 1 ]]; then
-			# moble service creates user itself
-			__addUaaUser "$UAA_URL"
-		fi
-
 	fi
-
 	if [[ ( $RUN_CREATE_ASSET == 1 ) ]]; then
 		createAssetService $1
 		if [[ $USE_TRAINING_UAA == 1 ]]; then
@@ -380,13 +386,15 @@ function __setupServices() {
 	if [[ ( $RUN_CREATE_MOBILE == 1 ) ]]; then
 		createMobileService $1
 	fi
-
-	if [[ ( "$RUN_CREATE_TIMESERIES" == "1" || "$USE_WINDDATA_SERVICE" == "1" ) ]]; then
-		createTimeseries $1
-		if [[ $USE_TRAINING_UAA == 1 ]]; then
-			__addTimeseriesAuthorities $UAA_CLIENTID_GENERIC
+	if [[ "$TIMESERIES_ZONE_ID" == "" ]]; then
+		if [[ ( "$RUN_CREATE_TIMESERIES" == "1" || "$USE_WINDDATA_SERVICE" == "1" ) ]]; then
+			createTimeseries $1
+			if [[ $USE_TRAINING_UAA == 1 ]]; then
+				__addTimeseriesAuthorities $UAA_CLIENTID_GENERIC
+			fi
 		fi
 	fi
+
 	if [[ ( $RUN_CREATE_EVENT_HUB == 1 ) ]]; then
 		createEventHubService $1
 		if [[ $USE_TRAINING_UAA == 1 ]]; then

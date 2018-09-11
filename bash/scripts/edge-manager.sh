@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+set -e
 rootDir=$quickstartRootDir
 logDir="$rootDir/log"
 
@@ -37,22 +37,26 @@ __append_new_head_log "Create/Manage Edge Manager operations" "#" "$logDir"
 function main() {
   #execute the build a basic app and switches
   echo "EDGE_APP_NAME : $EDGE_APP_NAME"
+  echo "EM_TENANT_TOKEN : $EM_TENANT_TOKEN"
   if [[ ! -n $EM_TENANT_TOKEN ]]; then
     getEMUserToken
+    echo "EM_TENANT_TOKEN : $EM_TENANT_TOKEN"
   fi
   if [[ $RUN_CREATE_DEVICE == 1 ]]; then
     echo "Create Device"
     edgeEdgeManagerCreateDevice
   fi
-
+  if [[ $RUN_CREATE_PACKAGES == 1 ]]; then
+    echo "Creating Packages"
+    createPackages $EDGE_APP_NAME
+  fi
   if [[ $RUN_CREATE_CONFIGIURATION == 1 ]]; then
     echo "Upload Configuration package"
-    PACKAGE_NAME="$EDGE_APP_NAME\_Config"
+    PACKAGE_NAME="$EDGE_APP_NAME-config"
     PACKAGE_DESCRIPTION="Package for configuration for $EDGE_APP_NAME"
     PACKAGE_CONTENT_FILE="$REPO_NAME/$EDGE_APP_NAME-config.zip"
     createEMPackage "configuration"
   fi
-
   if [[ $RUN_CREATE_APPLICATION == 1 ]]; then
     echo "Upload Application package"
     PACKAGE_NAME="$EDGE_APP_NAME"
@@ -64,6 +68,9 @@ function main() {
   if [[ $RUN_START_ENROLLMENT == 1 ]]; then
     echo "Starting Enrollment"
     startEnrollement
+  fi
+  if [[ $RUN_SCHEDULE_PACKAGE == 1 ]]; then
+    deployPackageToDevice
   fi
 }
 
@@ -95,6 +102,7 @@ function edgeEdgeManagerCreateDevice() {
 
 function createEMPackage {
   __validate_num_arguments 1 $# "\"createEMPackage()\" expected in order:  Package Type." "$logDir"
+  echo "EM_TENANT_TOKEN : $EM_TENANT_TOKEN"
   if [[ ! -n $EM_TENANT_TOKEN ]]; then
     getEMUserToken
     echo "$EM_TENANT_TOKEN"
@@ -142,7 +150,8 @@ function createEMPackage {
       echo "Failed to create package.. Exiting"
       exit 1
     fi
-
+  else
+    echo "Package $PACKAGE_NAME : $PACKAGE_DESCRIPTION :$PACKAGE_VERSION already exists"
   fi
 
 }
@@ -187,12 +196,12 @@ function getEMUserToken() {
 
   EDGE_MANAGER_URL="https://$EM_TENANT_ID.edgemanager.run.aws-usw02-pr.ice.predix.io"
   export EDGE_MANAGER_URL
-  if [[ ! -n $EM_UAA_ZONE_ID ]]; then
-      read -p "Enter the UAA Zone Id> " EM_UAA_ZONE_ID
-      export EM_UAA_ZONE_ID
+  if [[ ! -n $UAA_ZONE_ID ]]; then
+      read -p "Enter the UAA Zone Id> " UAA_ZONE_ID
+      export UAA_ZONE_ID
   fi
 
-  EDGE_MANAGER_UAA_URL="https://$EM_UAA_ZONE_ID.predix-uaa.run.aws-usw02-pr.ice.predix.io"
+  EDGE_MANAGER_UAA_URL="https://$UAA_ZONE_ID.predix-uaa.run.aws-usw02-pr.ice.predix.io"
   if [[ ! -n $EM_CLIENT_ID ]]; then
     read -p "Enter your UAA Client ID> " EM_CLIENT_ID
     export EM_CLIENT_ID
@@ -234,7 +243,55 @@ function deployPackageToDevice {
     read -p "Enter your Device ID> " DEVICE_ID
     export DEVICE_ID
   fi
+
 }
+
+function createPackages {
+  echo "1111"
+	cd $REPO_NAME
+  pwd
+  echo "Creating Packages for EdgeManager Repository for $EDGE_APP_NAME"
+  APP_NAME_TAR="$EDGE_APP_NAME.tar.gz"
+  if [[ -e config/config-cloud-gateway.json ]]; then
+    if [[ "$TIMESERIES_INGEST_URI" == "" ]]; then
+      TIMESERIES_INGEST_URI="wss://gateway-predix-data-services.run.aws-usw02-pr.ice.predix.io/v1/stream/messages"
+    fi
+    if [[ "$TIMESERIES_QUERY_URI" == "" ]]; then
+      TIMESERIES_QUERY_URI="https://time-series-store-predix.run.aws-usw02-pr.ice.predix.io/v1/datapoints"
+    fi
+    if [[ "$EM_TIMESERIES_ZONE_ID" == "" ]]; then
+      read -p "Enter Timeseries Zone Id>" EM_TIMESERIES_ZONE_ID
+    fi
+    echo "EM_TIMESERIES_ZONE_ID : $EM_TIMESERIES_ZONE_ID"
+    __find_and_replace ".*predix_zone_id\":.*" "          \"predix_zone_id\": \"$EM_TIMESERIES_ZONE_ID\"," "config/config-cloud-gateway.json" "$quickstartLogDir"
+    echo "proxy_url : $http_proxy"
+    __find_and_replace ".*proxy_url\":.*" "          \"proxy_url\": \"$http_proxy\"" "config/config-cloud-gateway.json" "$quickstartLogDir"
+  fi
+  echo "Creating a images.tar with required images"
+  rm -rf images.tar
+  IMAGES_LIST=""
+  for img in $(cat docker-compose.yml | grep image: | awk -F" " '{print $2}' | tr -d "\"");
+  do
+    IMAGES_LIST="$IMAGES_LIST $img"
+  done
+  echo "$IMAGES_LIST"
+  docker save -o images.tar $IMAGES_LIST
+  rm -rf "$APP_NAME_TAR"
+  echo "Creating $APP_NAME_TAR with docker-compose.yml"
+  tar -czvf $APP_NAME_TAR images.tar docker-compose.yml
+
+  APP_NAME_CONFIG="$EDGE_APP_NAME-config.zip"
+
+  if [[ -e config ]]; then
+    rm -rf $APP_NAME_CONFIG
+    echo "Compressing the configurations."
+    cd config
+    zip -X -r ../$APP_NAME_CONFIG *.json
+    cd ../
+  fi
+  ls -lrt
+}
+
 function startEnrollement {
   if [[ ! -n $EM_TENANT_TOKEN ]]; then
     getEMUserToken

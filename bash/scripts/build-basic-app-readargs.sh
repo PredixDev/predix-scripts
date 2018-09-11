@@ -597,6 +597,86 @@ function processBuildBasicAppReadargsSwitch() {
       --)              # End of all options.
 				shift
         ;;
+			-uaa-zone-id|--uaa-zone-id)
+				if [ -n "$2" ]; then
+					UAA_ZONE_ID=$2
+					doShift=1
+					shift
+				else
+					printf 'ERROR: "-uaa-zone-id" requires a non-empty option argument.\n' >&2
+					exit 1
+				fi
+				;;
+			-uaa-client-id|--uaa-client-id)
+				if [ -n "$2" ]; then
+					UAA_CLIENT_ID=$2
+					doShift=1
+					shift
+				else
+					printf 'ERROR: "-uaa-client-id" requires a non-empty option argument.\n' >&2
+					exit 1
+				fi
+				;;
+			-uaa-client-secret|--uaa-client-secret)
+				if [ -n "$2" ]; then
+					UAA_CLIENT_SECRET=$2
+					doShift=1
+					shift
+				else
+					printf 'ERROR: "-uaa-client-secret" requires a non-empty option argument.\n' >&2
+					exit 1
+				fi
+				;;
+			-ts-zone-id|--ts-zone-id)
+				if [ -n "$2" ]; then
+					TIMESERIES_ZONE_ID=$2
+					doShift=1
+					shift
+				else
+					printf 'ERROR: "-ts-zone-id" requires a non-empty option argument.\n' >&2
+					exit 1
+				fi
+				;;
+			-ts-ingest-uri|--ts-ingest-uri)
+				if [ -n "$2" ]; then
+					TIMESERIES_INGEST_URI=$2
+					doShift=1
+					shift
+				else
+					echo "TIMESERIES_INGEST_URI not provided. Using default $DEFAULT_TIMESERIES_INGEST_URI"
+					TIMESERIES_INGEST_URI="$DEFAULT_TIMESERIES_INGEST_URI"
+				fi
+				;;
+			-ts-query-uri|--ts-query-uri)
+				if [ -n "$2" ]; then
+					TIMESERIES_QUERY_URI=$2
+					doShift=1
+					shift
+				else
+					echo "TIMESERIES_INGEST_URI not provided. Using default $DEFAULT_TIMESERIES_QUERY_URI"
+					TIMESERIES_QUERY_URI="$DEFAULT_TIMESERIES_QUERY_URI"
+				fi
+				;;
+			-ts-client-id|--ts-client-id)
+				if [ -n "$2" ]; then
+					TIMESERIES_CLIENT_ID=$2
+					doShift=1
+					shift
+				else
+					printf 'ERROR: "-ts-client-id" requires a non-empty option argument.\n' >&2
+					exit 1
+				fi
+				;;
+			-ts-client-secret|--ts-client-secret)
+				if [ -n "$2" ]; then
+					TIMESERIES_CLIENT_SECRET=$2
+					doShift=1
+					shift
+				else
+					printf 'ERROR: "-ts-client-secret" requires a non-empty option argument.\n' >&2
+					exit 1
+				fi
+				;;
       -?*)
 				doShift=0
 				processSwitchCommon $@
