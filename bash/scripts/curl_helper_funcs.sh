@@ -727,8 +727,10 @@ function getServiceInfoJSON() {
   instanceName=$1
   serviceInfo=$(px si $1)
   serviceInfo=${serviceInfo%Note*}
-  serviceInfo=${serviceInfo##*$1}
-  echo $serviceInfo
+  #serviceInfo=${serviceInfo##*$1}
+  #echo $serviceInfo
+  serviceInfo=${serviceInfo#*"{"}
+  echo "{$serviceInfo"
 }
 
 

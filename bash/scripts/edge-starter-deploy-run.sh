@@ -29,7 +29,7 @@ fi
 
 
 mkdir -p /var/lib/edge-agent/app/$APPLICATION_ID/conf/
-#rm -rf /var/lib/edge-agent/app/$APPLICATION_ID/conf/*
+rm -rf /var/lib/edge-agent/app/$APPLICATION_ID/conf/*
 unzip /mnt/data/downloads/$EDGE_APP_CONFIG -d /var/lib/edge-agent/app/$APPLICATION_ID/conf/
 
 #/opt/edge-agent/app-start --appInstanceId=$APPLICATION_ID

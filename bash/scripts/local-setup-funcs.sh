@@ -158,7 +158,10 @@ function append_new_line_log
 
 function getPredixScripts() {
   if [ ! -d "$PREDIX_SCRIPTS" ]; then
-    echo "Cloning predix script repo ... $PREDIX_SCRIPTS_URL $PREDIX_SCRIPTS_BRANCH"
+    if [[ -n $GITHUB_BUILD_TOKEN && $VERSION_JSON_URL = *"github.build.ge"* ]]; then
+			PREDIX_SCRIPTS_URL=https://$GITHUB_BUILD_TOKEN@$(echo "$PREDIX_SCRIPTS_URL" | awk -F"//" '{print $2}')
+		fi
+		echo "Cloning predix script repo ... $PREDIX_SCRIPTS_URL $PREDIX_SCRIPTS_BRANCH"
     git clone --depth 1 --branch $PREDIX_SCRIPTS_BRANCH $PREDIX_SCRIPTS_URL
   else
     echo "Predix scripts repo found reusing it..."
@@ -228,6 +231,10 @@ function getGitRepo() {
 	if [ ! -n "$branch" ]; then
 		branch="$BRANCH"
 	fi
+	if [[ -n $GITHUB_BUILD_TOKEN && $git_url = *"github.build.ge"* ]]; then
+		git_url=https://$GITHUB_BUILD_TOKEN@$(echo "$git_url" | awk -F"//" '{print $2}')
+	fi
+	echo "Cloning $1 repo ... $git_url $branch"
 	if git clone --depth 1 -b "$branch" "$git_url" "$1"; then
 		append_new_line_log "Successfully cloned \"$git_url\" and checkout the branch \"$branch\"" "$localSetupLogDir"
 	else
