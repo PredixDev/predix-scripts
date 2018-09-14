@@ -2,7 +2,7 @@
 
 function verifymvnproxy() {
   rm -f ~/.m2/repository/com/ge/predix/solsvc/ext-api/2.0.5/ext-api-2.0.5.pom &>/dev/null
-  mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:get -DrepoId=predix.repo -Dartifact=com.ge.predix.solsvc:ext-api:2.0.5:pom -s $1 2>&1 | grep "Could not transfer artifact" &>/dev/null
+  mvn -B org.apache.maven.plugins:maven-dependency-plugin:2.10:get -DrepoId=predix.repo -Dartifact=com.ge.predix.solsvc:ext-api:2.0.5:pom -s $1 2>&1 | grep "Could not transfer artifact" &>/dev/null
   echo $?
 }
 

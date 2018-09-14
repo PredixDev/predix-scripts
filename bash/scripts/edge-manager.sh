@@ -11,7 +11,6 @@ logDir="$rootDir/log"
 #
 
 # Be sure to set all your variables in the variables.sh file before you run quick start!
-source "$rootDir/bash/scripts/variables.sh"
 source "$rootDir/bash/scripts/error_handling_funcs.sh"
 source "$rootDir/bash/scripts/files_helper_funcs.sh"
 source "$rootDir/bash/scripts/curl_helper_funcs.sh"
@@ -196,29 +195,29 @@ function getEMUserToken() {
 
   EDGE_MANAGER_URL="https://$EM_TENANT_ID.edgemanager.run.aws-usw02-pr.ice.predix.io"
   export EDGE_MANAGER_URL
-  if [[ ! -n $UAA_ZONE_ID ]]; then
+  if [[ ! -n $TRUSTED_ISSUER_ID ]]; then
       read -p "Enter the UAA Zone Id> " UAA_ZONE_ID
-      export UAA_ZONE_ID
+      TRUSTED_ISSUER_ID="https://$UAA_ZONE_ID.predix-uaa.run.aws-usw02-pr.ice.predix.io"
+      export TRUSTED_ISSUER_ID
   fi
 
-  EDGE_MANAGER_UAA_URL="https://$UAA_ZONE_ID.predix-uaa.run.aws-usw02-pr.ice.predix.io"
-  if [[ ! -n $EM_CLIENT_ID ]]; then
-    read -p "Enter your UAA Client ID> " EM_CLIENT_ID
-    export EM_CLIENT_ID
+  if [[ ! -n $UAA_CLIENTID_GENERIC ]]; then
+    read -p "Enter your UAA Client ID> " UAA_CLIENTID_GENERIC
+    export UAA_CLIENTID_GENERIC
   fi
-  if [[ ! -n $EM_CLIENT_SECRET ]]; then
-    read -p "Enter your UAA Client Secret> " -s EM_CLIENT_SECRET
-    export EM_CLIENT_SECRET
+  if [[ ! -n $UAA_CLIENTID_GENERIC_SECRET ]]; then
+    read -p "Enter your UAA Client Secret> " -s UAA_CLIENTID_GENERIC_SECRET
+    export UAA_CLIENTID_GENERIC_SECRET
   fi
-  if [[ ! -n $EM_USER_ID ]]; then
-    read -p "Enter your UAA User ID> " EM_USER_ID
-    export EM_USER_ID
+  if [[ ! -n $UAA_USER_GENERIC ]]; then
+    read -p "Enter your UAA User ID> " UAA_USER_GENERIC
+    export UAA_USER_GENERIC
   fi
-  if [[ ! -n $EM_USER_PASSWORD ]]; then
-    read -p "Enter your UAA User Secret> " -s EM_USER_PASSWORD
-    export EM_USER_SECRET
+  if [[ ! -n $UAA_USER_PASSWORD ]]; then
+    read -p "Enter your UAA User Secret> " -s UAA_USER_PASSWORD
+    export UAA_USER_PASSWORD
   fi
-  EM_TENANT_TOKEN=$(__getUaaUserToken $EDGE_MANAGER_UAA_URL $EM_CLIENT_ID $EM_CLIENT_SECRET $EM_USER_ID $EM_USER_PASSWORD)
+  EM_TENANT_TOKEN=$(__getUaaUserToken $TRUSTED_ISSUER_ID $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET $UAA_USER_GENERIC $UAA_USER_PASSWORD)
   export EM_TENANT_TOKEN
 }
 
@@ -259,11 +258,11 @@ function createPackages {
     if [[ "$TIMESERIES_QUERY_URI" == "" ]]; then
       TIMESERIES_QUERY_URI="https://time-series-store-predix.run.aws-usw02-pr.ice.predix.io/v1/datapoints"
     fi
-    if [[ "$EM_TIMESERIES_ZONE_ID" == "" ]]; then
-      read -p "Enter Timeseries Zone Id>" EM_TIMESERIES_ZONE_ID
+    if [[ "$TIMESERIES_ZONE_ID" == "" ]]; then
+      read -p "Enter Timeseries Zone Id>" TIMESERIES_ZONE_ID
     fi
-    echo "EM_TIMESERIES_ZONE_ID : $EM_TIMESERIES_ZONE_ID"
-    __find_and_replace ".*predix_zone_id\":.*" "          \"predix_zone_id\": \"$EM_TIMESERIES_ZONE_ID\"," "config/config-cloud-gateway.json" "$quickstartLogDir"
+    echo "TIMESERIES_ZONE_ID : $TIMESERIES_ZONE_ID"
+    __find_and_replace ".*predix_zone_id\":.*" "          \"predix_zone_id\": \"$TIMESERIES_ZONE_ID\"," "config/config-cloud-gateway.json" "$quickstartLogDir"
     echo "proxy_url : $http_proxy"
     __find_and_replace ".*proxy_url\":.*" "          \"proxy_url\": \"$http_proxy\"" "config/config-cloud-gateway.json" "$quickstartLogDir"
   fi

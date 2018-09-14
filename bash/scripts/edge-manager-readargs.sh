@@ -95,42 +95,6 @@ function processEdgeStarterReadargsSwitch() {
 				SWITCH_ARRAY[SWITCH_INDEX++]="-em-tenant-id"
 			  PRINT_USAGE=0
 				;;
-			-em-uaa-zone-id|--em-uaa-zone-id)
-				UAA_ZONE_ID="$2"
-				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-em-uaa-zone-id|--em-uaa-zone-id"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-em-uaa-zone-id"
-			  PRINT_USAGE=0
-				;;
-			-em-ts-zone-id|--em-ts-zone-id)
-				EM_TIMESERIES_ZONE_ID="$2"
-				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-em-ts-zone-id|--em-ts-zone-id"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-em-ts-zone-id"
-			  PRINT_USAGE=0
-				;;
-			-em-client-id|--em-client-id)
-				EM_CLIENT_ID="$2"
-				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-em-client-id|--em-client-id"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-em-client-id"
-			  PRINT_USAGE=0
-				;;
-			-em-client-secret|--em-client-secret)
-				EM_CLIENT_SECRET="$2"
-				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-em-client-secret|--em-client-secret"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-em-client-secret"
-			  PRINT_USAGE=0
-				;;
-			-em-user-id|--em-user-id)
-				EM_USER_ID="$2"
-				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-em-user-id|--em-user-id"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-em-user-id"
-			  PRINT_USAGE=0
-				;;
-			-em-user-password|--em-user-password)
-				EM_USER_PASSWORD="$2"
-				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-em-user-password|--em-user-password"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-em-user-password"
-			  PRINT_USAGE=0
-				;;
 			-edge-app-name|--edge-app-name)
 				EDGE_APP_NAME="$2"
 				echo "1111 : EDGE_APP_NAME : $EDGE_APP_NAME"

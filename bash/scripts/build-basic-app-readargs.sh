@@ -207,7 +207,7 @@ function processBuildBasicAppReadargsSwitch() {
 	            CUSTOM_TIMESERIES_INSTANCE=$2
 	            SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-custom-timeseries"
 	            PRINT_USAGE=0
-	      doShift=1
+	      			doShift=1
 	            shift
 	        else
 	            printf 'ERROR: "-custom-timeseries" requires a non-empty option argument.\n' >&2
@@ -225,7 +225,19 @@ function processBuildBasicAppReadargsSwitch() {
 						printf 'ERROR: "--custom-client-id" requires a non-empty option argument.\n' >&2
 						exit 1
 					fi
-				;;
+					;;
+				-cui|--custom-user-id)
+					if [ -n "$2" ]; then
+						UAA_USER_GENERIC=$2
+						shift
+						if [[ "$UAA_USER_GENERIC" == "required" ]]; then
+						  read -p $'\nEnter your UAA user ID. (UAA user must have authorities for your time series/edge manager zone/scope(s).) \nHint:  many tutorials use "app_client_id" \nOr: for APM/Edge Manager check your APM welcome email> ' UAA_CLIENTID_GENERIC
+						fi
+					else
+						printf 'ERROR: "--custom-user-id" requires a non-empty option argument.\n' >&2
+						exit 1
+					fi
+					;;
 				-ccs|--custom-client-secret)
 					if [ -n "$2" ]; then
 						UAA_CLIENTID_GENERIC_SECRET=$2
@@ -237,122 +249,133 @@ function processBuildBasicAppReadargsSwitch() {
 						printf 'ERROR: "--custom-client-secret" requires a non-empty option argument.\n' >&2
 						exit 1
 					fi
-				;;
+					;;
+				-cup|--custom-user-password)
+					if [ -n "$2" ]; then
+						UAA_USER_PASSWORD=$2
+						shift
+						if [[ "$UAA_USER_PASSWORD" == "required" ]]; then
+						  read -p $'\nEnter your UAA user ID. (UAA user must have authorities for your time series/edge manager zone/scope(s).) \nHint:  many tutorials use "app_client_id" \nOr: for APM/Edge Manager check your APM welcome email> ' UAA_USER_PASSWORD
+						fi
+					else
+						printf 'ERROR: "-cup|--custom-user-password" requires a non-empty option argument.\n' >&2
+						exit 1
+					fi
+					;;
 				-tiu|--trusted-issuer-url)
 					if [ -n "$2" ]; then
 						TRUSTED_ISSUER_ID=$2
 						shift
 						if [[ "$TRUSTED_ISSUER_ID" == "required" ]]; then
-						  read -p $'\nEnter the UAA instance issuerId URL tied to Time Series (the URL has /oauth/token at the end). \nHint: in another terminal window, type "predix service-info my-uaa-name-here" \nOr: check your APM welcome email\nOr: in APM go to the Menu option: Admin/Setup/Token Request URL> ' TRUSTED_ISSUER_ID
+						  read -p $'\nEnter the UAA instance issuerId URL tied to Time Series (the URL has /oauth/token at the end). \nHint: in another terminal window, type "predix service-info my-uaa-name-here" \nOr: check your APM/Edge Manager welcome email\nOr: in APM go to the Menu option: Admin/Setup/Token Request URL> ' TRUSTED_ISSUER_ID
 						fi
 					else
 						printf 'ERROR: "--trusted-issuer-url" requires a non-empty option argument.\n' >&2
 						exit 1
 					fi
-				;;
+					;;
 				-ctsz|--custom-timeseries-zone)
 					if [ -n "$2" ]; then
 						TIMESERIES_ZONE_ID=$2
 						shift
 						if [[ "$TIMESERIES_ZONE_ID" == "required" ]]; then
-						  read -p $'\n\nEnter your Predix Time Series Zone ID. \nHint:in another terminal window, type "predix service-info my-timeseries-name-here" look for zone-http-header-value \nOr: check your APM welcome email> ' TIMESERIES_ZONE_ID
+						  read -p $'\n\nEnter your Predix Time Series Zone ID. \nHint:in another terminal window, type "predix service-info my-timeseries-name-here" look for zone-http-header-value \nOr: check your APM/Edge Manager welcome email> ' TIMESERIES_ZONE_ID
 						fi
 					else
 						printf 'ERROR: "--custom-timeseries-zone" requires a non-empty option argument.\n' >&2
 						exit 1
 					fi
 					;;
-
-	    -ds|--delete-services)
-	      RUN_DELETE_SERVICES=1
-	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-ds | --delete-services"
-	      PRINT_USAGE=0
-	      ;;
-	    -cs|--create-services) #deprecated
-	      RUN_CREATE_SERVICES=1
-	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-cs | --create-services"
-	      PRINT_USAGE=0
-	      LOGIN=1
-	      ;;
-	    -uaa|--create-uaa)
-	      RUN_CREATE_UAA=1
-	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-uaa | --create-uaa"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-uaa"
-	      PRINT_USAGE=0
-	      LOGIN=1
-	      ;;
-	    -acs|--create-acs)
-	      RUN_CREATE_ACS=1
-	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-acs | --create-acs"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-acs"
-	      PRINT_USAGE=0
-	      LOGIN=1
-	      ;;
-	    -af|--create-analytic-framework)
-	      RUN_CREATE_ANALYTIC_FRAMEWORK=1
-	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-af | --create-analytic-framework"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-af"
-	      PRINT_USAGE=0
-	      LOGIN=1
-	      ;;
-	    -acs|--create-acs)
-	      RUN_CREATE_ACS=1
-				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-acs|--create-acs"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-acs"
-	      PRINT_USAGE=0
-	      LOGIN=1
-	      ;;
-			-asset|--create-asset)
-	      RUN_CREATE_ASSET=1
-	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-asset | --create-asset"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-asset"
-	      PRINT_USAGE=0
-	      LOGIN=1
-	      ;;
-			-eh|--create-event-hub)
-	      RUN_CREATE_EVENT_HUB=1
-	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-eh | --create-event-hub"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-eh"
-	      PRINT_USAGE=0
-	      LOGIN=1
-	      ;;
-			-bs|--create-blobstore)
-				#RUN_CREATE_SERVICES=1
-	      RUN_CREATE_BLOBSTORE=1
-	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-bs | --create-blobstore"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-bs"
-	      PRINT_USAGE=0
-	      LOGIN=1
-	      ;;
-			-cache|--create-predix-cache)
-	      RUN_CREATE_PREDIX_CACHE=1
-	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-cache| --create-predix-cache"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-cache"
-	      PRINT_USAGE=0
-	      LOGIN=1
-	      ;;
-			-mobile|--create-mobile)
-	      RUN_CREATE_MOBILE=1
-	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-mobile | --create-mobile"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-mobile"
-	      PRINT_USAGE=0
-	      LOGIN=1
-	      ;;
-	    -ts|--create-timeseries)
-	      RUN_CREATE_TIMESERIES=1
-	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-ts | --create-timeseries"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-ts"
-	      PRINT_USAGE=0
-	      LOGIN=1
-	      ;;
-	    -amd1|--create-asset-model-device1)
-	      RUN_CREATE_ASSET_MODEL_DEVICE1=1
-	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-amd1 | --create-asset-model-device1"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-amd1"
-	      PRINT_USAGE=0
-	      LOGIN=1
-	      ;;
-	    -amrmd|--create-asset-model-rmd)
+		    -ds|--delete-services)
+		      RUN_DELETE_SERVICES=1
+		      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-ds | --delete-services"
+		      PRINT_USAGE=0
+		      ;;
+		    -cs|--create-services) #deprecated
+		      RUN_CREATE_SERVICES=1
+		      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-cs | --create-services"
+		      PRINT_USAGE=0
+		      LOGIN=1
+		      ;;
+		    -uaa|--create-uaa)
+		      RUN_CREATE_UAA=1
+		      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-uaa | --create-uaa"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-uaa"
+		      PRINT_USAGE=0
+		      LOGIN=1
+		      ;;
+		    -acs|--create-acs)
+		      RUN_CREATE_ACS=1
+		      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-acs | --create-acs"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-acs"
+		      PRINT_USAGE=0
+		      LOGIN=1
+		      ;;
+		    -af|--create-analytic-framework)
+		      RUN_CREATE_ANALYTIC_FRAMEWORK=1
+		      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-af | --create-analytic-framework"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-af"
+		      PRINT_USAGE=0
+		      LOGIN=1
+		      ;;
+		    -acs|--create-acs)
+		      RUN_CREATE_ACS=1
+					SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-acs|--create-acs"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-acs"
+		      PRINT_USAGE=0
+		      LOGIN=1
+		      ;;
+				-asset|--create-asset)
+		      RUN_CREATE_ASSET=1
+		      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-asset | --create-asset"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-asset"
+		      PRINT_USAGE=0
+		      LOGIN=1
+		      ;;
+				-eh|--create-event-hub)
+		      RUN_CREATE_EVENT_HUB=1
+		      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-eh | --create-event-hub"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-eh"
+		      PRINT_USAGE=0
+		      LOGIN=1
+		      ;;
+				-bs|--create-blobstore)
+					#RUN_CREATE_SERVICES=1
+		      RUN_CREATE_BLOBSTORE=1
+		      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-bs | --create-blobstore"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-bs"
+		      PRINT_USAGE=0
+		      LOGIN=1
+		      ;;
+				-cache|--create-predix-cache)
+		      RUN_CREATE_PREDIX_CACHE=1
+		      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-cache| --create-predix-cache"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-cache"
+		      PRINT_USAGE=0
+		      LOGIN=1
+		      ;;
+				-mobile|--create-mobile)
+		      RUN_CREATE_MOBILE=1
+		      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-mobile | --create-mobile"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-mobile"
+		      PRINT_USAGE=0
+		      LOGIN=1
+		      ;;
+		    -ts|--create-timeseries)
+		      RUN_CREATE_TIMESERIES=1
+		      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-ts | --create-timeseries"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-ts"
+		      PRINT_USAGE=0
+		      LOGIN=1
+		      ;;
+		    -amd1|--create-asset-model-device1)
+		      RUN_CREATE_ASSET_MODEL_DEVICE1=1
+		      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-amd1 | --create-asset-model-device1"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-amd1"
+		      PRINT_USAGE=0
+		      LOGIN=1
+		      ;;
+		    -amrmd|--create-asset-model-rmd)
 	        if [ -n "$2" ]; then
 							RUN_CREATE_ASSET_MODEL_RMD=1
 	            RUN_CREATE_ASSET_MODEL_RMD_METADATA_FILE=$2
@@ -372,321 +395,321 @@ function processBuildBasicAppReadargsSwitch() {
 	            exit 1
 	        fi
 					;;
-	    -mc|--machine-config)
-	      RUN_MACHINE_CONFIG=1
-	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-mc | --machine-config"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-mc"
-	      PRINT_USAGE=0
-	      LOGIN=1
-	      ;;
-			-es|--edge-starter)
-				RUN_EDGE_STARTER=1
-				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-es | --edge-starter"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-es"
-	      PRINT_USAGE=0
-	      LOGIN=1
-			  ;;
-	    -cc|--clean-compile)
-	      RUN_COMPILE_REPO=1
-	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-cc | --clean-compile"
-	      PRINT_USAGE=0
-	      VERIFY_MVN=1
-	      ;;
-	    -mt|--machine-transfer)
-	      RUN_MACHINE_TRANSFER=1
-	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-mt | --machine-transfer"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-mt"
-	      PRINT_USAGE=0
-	      LOGIN=1
-	      ;;
-	    -cm|--create-machine)
-	      RUN_CREATE_MACHINE_CONTAINER=1
-	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-cm | --create-machine"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-cm"
-	      PRINT_USAGE=0
-	      VERIFY_MVN=1
-	      LOGIN=0
-	      ;;
-			-dxui|--data-exchange-ui)
-	      USE_DATAEXCHANGE_UI=1
-	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-dxui | --data-exchange-ui"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-dxui"
-	      PRINT_USAGE=0
-	      LOGIN=1
-	      ;;
-	    -machine-container-type)
-	      if [ -n "$2" ]; then
-	        if [[ $2 =~ ^("Agent"|"Agent_Debug"|"Prov"|"Debug"|"Tech"|"Conn"|"Custom"|"AGENT"|"AGENT_DEBUG"|"PROV"|"DEBUG"|"TECH"|"CONN"|"CUSTOM")$ ]]; then
-	          MACHINE_CONTAINER_TYPE=$2
-	        else
-	          printf 'ERROR: "machine-container-type" requires a argument[AGENT|AGENT_DEBUG|PROV|DEBUG|TECH|CONN|CUSTOM].\n' >&2
-	          exit 1
-	        fi
-					doShift=1
-	        shift
-	      else
-	        printf 'ERROR: "machine-container-type" requires a argument[AGENT|AGENT_DEBUG|PROV|DEBUG|TECH|CONN|CUSTOM].\n' >&2
-	        exit 1
-	      fi
-	      ;;
-			-mp|--use-machine-processor)
-				MACHINE_USE_PROCESSOR=1
-			;;
-			-custom-image-name)
-	      if [ -n "$2" ]; then
-	        MACHINE_CUSTOM_IMAGE_NAME=$2
-	        doShift=1
-	        shift
-	      else
-					printf 'ERROR: "custom-image-name" requires a argument when machine-container-type is CUSTOM.\n' >&2
-	        exit 1
-	      fi
-	      ;;
-	    -machine-version)
-	      if [ -n "$2" ]; then
-	        MACHINE_VERSION=$2
-					doShift=1
-	        shift
-	      else
-	        printf 'ERROR: "-release| -machine-version" requires a non-empty option argument.\n' >&2
-	        exit 1
-	      fi
-	      ;;
-	    -em|--edge-manager)
-	      RUN_EDGE_MANAGER_SETUP=1
-	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-em | --edge-manager"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-em"
-	      PRINT_USAGE=0
-	      ;;
-	    -if|--install-frontend) #deprecated
-	      USE_NODEJS_STARTER_W_TIMESERIES=1
-	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-if | --install-frontend"
-	      PRINT_USAGE=0
-	      LOGIN=1
-	      ;;
-			-ns|--nodejs-starter)
-	      USE_NODEJS_STARTER=1
-	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-nodestarter | --nodejs-starter"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-nodestarter"
-	      PRINT_USAGE=0
-	      LOGIN=1
-	      ;;
-			-nsts|--nodejs-starter-w-timeseries)
-	      USE_NODEJS_STARTER_W_TIMESERIES=1
-	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-nsts | --nodejs-starter-w-timeseries"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-nsts"
-	      PRINT_USAGE=0
-	      LOGIN=1
-	      ;;
-			-ms|--mobile-starter)
-	      USE_MOBILE_STARTER=1
-	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-ms | --mobile-starter"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-ms"
-	      PRINT_USAGE=0
-	      LOGIN=1
-	      ;;
-	    -ps|--polymer-seed)
-	      USE_POLYMER_SEED=1
-	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-ps | --polymer-seed"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-ps"
-	      PRINT_USAGE=0
-	      LOGIN=1
-	      ;;
-	    -psuaa|--polymer-seed-uaa)
-	      USE_POLYMER_SEED_UAA=1
-	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-psuaa | --polymer-seed-uaa"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-psuaa"
-	      PRINT_USAGE=0
-	      LOGIN=1
-	      ;;
-	    -psasset|--polymer-seed-asset)
-	      USE_POLYMER_SEED_ASSET=1
-	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-psasset | --polymer-seed-asset"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-paasset"
-	      PRINT_USAGE=0
-	      LOGIN=1
-	      ;;
-	    -psts|--polymer-seed-timeseries)
-	      USE_POLYMER_SEED_TIMESERIES=1
-	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-psts | --polymer-seed-timeseries"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-psts"
-	      PRINT_USAGE=0
-	      LOGIN=1
-	      ;;
-	    -psrmd|--polymer-seed-rmd-refapp)
-	      USE_POLYMER_SEED_RMD=1
-	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-psrmd | --polymer-seed-rmd-refapp"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-psrmd"
-	      PRINT_USAGE=0
-	      LOGIN=1
-	      ;;
-	    -wd|--wind-data)       # Takes an option argument, ensuring it has been specified.
-	      USE_WINDDATA_SERVICE=1
-	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-wd | --wind-data"
-				SWITCH_ARRAY[SWITCH_INDEX++]="-wd"
-	      PRINT_USAGE=0
-	      VERIFY_MVN=1
-	      LOGIN=1
-	      ;;
-      	    -mst|--ms-template)    # Takes an option argument, ensuring it has been specified.
-	      USE_MICROSERVICE_TEMPLATE=1
-	      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-mst | --ms-template"
-				SWITCH_ARRAY[SWITCH_INDEX++]="--ms-template"
-	      PRINT_USAGE=0
-	      VERIFY_MVN=1
-	      LOGIN=1
-	     ;;
-	    -dx|--data-exchange)       # Takes an option argument, ensuring it has been specified.
-	        USE_DATAEXCHANGE=1
-	        SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-dx | --data-exchange"
-					SWITCH_ARRAY[SWITCH_INDEX++]="-dx"
-	        PRINT_USAGE=0
-	        VERIFY_MVN=1
-	        LOGIN=1
-	      ;;
-	    -wss|--websocket-server)       # Takes an option argument, ensuring it has been specified.
-	        USE_WEBSOCKET_SERVER=1
-	        SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-wss | --websocket-server"
-					SWITCH_ARRAY[SWITCH_INDEX++]="-wss"
-	        PRINT_USAGE=0
-	        VERIFY_MVN=1
-	        LOGIN=1
-	      ;;
-			-eh-topics|--eventhub-topics)
-					EVENTHUB_TOPICS="$2"
-					SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-eh | --create-event-hub"
-					SWITCH_ARRAY[SWITCH_INDEX++]="-eh"
-					PRINT_USAGE=0
-					LOGIN=1
+		    -mc|--machine-config)
+		      RUN_MACHINE_CONFIG=1
+		      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-mc | --machine-config"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-mc"
+		      PRINT_USAGE=0
+		      LOGIN=1
+		      ;;
+				-es|--edge-starter)
+					RUN_EDGE_STARTER=1
+					SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-es | --edge-starter"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-es"
+		      PRINT_USAGE=0
+		      LOGIN=1
+				  ;;
+		    -cc|--clean-compile)
+		      RUN_COMPILE_REPO=1
+		      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-cc | --clean-compile"
+		      PRINT_USAGE=0
+		      VERIFY_MVN=1
+		      ;;
+		    -mt|--machine-transfer)
+		      RUN_MACHINE_TRANSFER=1
+		      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-mt | --machine-transfer"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-mt"
+		      PRINT_USAGE=0
+		      LOGIN=1
+		      ;;
+		    -cm|--create-machine)
+		      RUN_CREATE_MACHINE_CONTAINER=1
+		      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-cm | --create-machine"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-cm"
+		      PRINT_USAGE=0
+		      VERIFY_MVN=1
+		      LOGIN=0
+		      ;;
+				-dxui|--data-exchange-ui)
+		      USE_DATAEXCHANGE_UI=1
+		      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-dxui | --data-exchange-ui"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-dxui"
+		      PRINT_USAGE=0
+		      LOGIN=1
+		      ;;
+		    -machine-container-type)
+		      if [ -n "$2" ]; then
+		        if [[ $2 =~ ^("Agent"|"Agent_Debug"|"Prov"|"Debug"|"Tech"|"Conn"|"Custom"|"AGENT"|"AGENT_DEBUG"|"PROV"|"DEBUG"|"TECH"|"CONN"|"CUSTOM")$ ]]; then
+		          MACHINE_CONTAINER_TYPE=$2
+		        else
+		          printf 'ERROR: "machine-container-type" requires a argument[AGENT|AGENT_DEBUG|PROV|DEBUG|TECH|CONN|CUSTOM].\n' >&2
+		          exit 1
+		        fi
+						doShift=1
+		        shift
+		      else
+		        printf 'ERROR: "machine-container-type" requires a argument[AGENT|AGENT_DEBUG|PROV|DEBUG|TECH|CONN|CUSTOM].\n' >&2
+		        exit 1
+		      fi
+		      ;;
+				-mp|--use-machine-processor)
+					MACHINE_USE_PROCESSOR=1
 				;;
-	    -sim|--data-simulator)       # Takes an option argument, ensuring it has been specified.
-	        USE_DATA_SIMULATOR=1
-	        SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-sim | --data-simulator"
-					SWITCH_ARRAY[SWITCH_INDEX++]="-sim"
-	        PRINT_USAGE=0
-	        LOGIN=1
-	      ;;
-			-sim-file)
-	      if [ -n "$2" ]; then
-	        SIMULATION_FILE=$2
-	        doShift=1
-	        shift
-	      else
-					printf 'ERROR: "sim-file" requires an argument\n' >&2
-	        exit 1
-	      fi
-	      ;;
-	    -rmd|--rmd-datasource)       # Takes an option argument, ensuring it has been specified.
-	        USE_RMD_DATASOURCE=1
-	        SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-rmd | --rmd-datasource"
-					SWITCH_ARRAY[SWITCH_INDEX++]="-rmd"
-	        PRINT_USAGE=0
-	        VERIFY_MVN=1
-	        LOGIN=1
-	      ;;
-			-predix-machine-home)
-				if [ -n "$2" ]; then
-					PREDIX_MACHINE_HOME=$2
-					doShift=1
-					shift
-				else
-					printf 'ERROR: "-predix-machine-home" requires a non-empty option argument.\n' >&2
-					exit 1
-				fi
-				;;
-      --)              # End of all options.
-				shift
-        ;;
-			-uaa-zone-id|--uaa-zone-id)
-				if [ -n "$2" ]; then
-					UAA_ZONE_ID=$2
-					doShift=1
-					shift
-				else
-					printf 'ERROR: "-uaa-zone-id" requires a non-empty option argument.\n' >&2
-					exit 1
-				fi
-				;;
-			-uaa-client-id|--uaa-client-id)
-				if [ -n "$2" ]; then
-					UAA_CLIENT_ID=$2
-					doShift=1
-					shift
-				else
-					printf 'ERROR: "-uaa-client-id" requires a non-empty option argument.\n' >&2
-					exit 1
-				fi
-				;;
-			-uaa-client-secret|--uaa-client-secret)
-				if [ -n "$2" ]; then
-					UAA_CLIENT_SECRET=$2
-					doShift=1
-					shift
-				else
-					printf 'ERROR: "-uaa-client-secret" requires a non-empty option argument.\n' >&2
-					exit 1
-				fi
-				;;
-			-ts-zone-id|--ts-zone-id)
-				if [ -n "$2" ]; then
-					TIMESERIES_ZONE_ID=$2
-					doShift=1
-					shift
-				else
-					printf 'ERROR: "-ts-zone-id" requires a non-empty option argument.\n' >&2
-					exit 1
-				fi
-				;;
-			-ts-ingest-uri|--ts-ingest-uri)
-				if [ -n "$2" ]; then
-					TIMESERIES_INGEST_URI=$2
-					doShift=1
-					shift
-				else
-					echo "TIMESERIES_INGEST_URI not provided. Using default $DEFAULT_TIMESERIES_INGEST_URI"
-					TIMESERIES_INGEST_URI="$DEFAULT_TIMESERIES_INGEST_URI"
-				fi
-				;;
-			-ts-query-uri|--ts-query-uri)
-				if [ -n "$2" ]; then
-					TIMESERIES_QUERY_URI=$2
-					doShift=1
-					shift
-				else
-					echo "TIMESERIES_INGEST_URI not provided. Using default $DEFAULT_TIMESERIES_QUERY_URI"
-					TIMESERIES_QUERY_URI="$DEFAULT_TIMESERIES_QUERY_URI"
-				fi
-				;;
-			-ts-client-id|--ts-client-id)
-				if [ -n "$2" ]; then
-					TIMESERIES_CLIENT_ID=$2
-					doShift=1
-					shift
-				else
-					printf 'ERROR: "-ts-client-id" requires a non-empty option argument.\n' >&2
-					exit 1
-				fi
-				;;
-			-ts-client-secret|--ts-client-secret)
-				if [ -n "$2" ]; then
-					TIMESERIES_CLIENT_SECRET=$2
-					doShift=1
-					shift
-				else
-					printf 'ERROR: "-ts-client-secret" requires a non-empty option argument.\n' >&2
-					exit 1
-				fi
-				;;
-      -?*)
-				doShift=0
-				processSwitchCommon $@
-				if [[ $UNKNOWN_SWITCH == 1 ]]; then
-					if [[ $SUPPRESS_PRINT_UNKNOWN == 0 ]]; then
-						echo "unknown BBA switch=$1"
+				-custom-image-name)
+		      if [ -n "$2" ]; then
+		        MACHINE_CUSTOM_IMAGE_NAME=$2
+		        doShift=1
+		        shift
+		      else
+						printf 'ERROR: "custom-image-name" requires a argument when machine-container-type is CUSTOM.\n' >&2
+		        exit 1
+		      fi
+		      ;;
+		    -machine-version)
+		      if [ -n "$2" ]; then
+		        MACHINE_VERSION=$2
+						doShift=1
+		        shift
+		      else
+		        printf 'ERROR: "-release| -machine-version" requires a non-empty option argument.\n' >&2
+		        exit 1
+		      fi
+		      ;;
+		    -em|--edge-manager)
+		      RUN_EDGE_MANAGER_SETUP=1
+		      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-em | --edge-manager"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-em"
+		      PRINT_USAGE=0
+		      ;;
+		    -if|--install-frontend) #deprecated
+		      USE_NODEJS_STARTER_W_TIMESERIES=1
+		      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-if | --install-frontend"
+		      PRINT_USAGE=0
+		      LOGIN=1
+		      ;;
+				-ns|--nodejs-starter)
+		      USE_NODEJS_STARTER=1
+		      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-nodestarter | --nodejs-starter"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-nodestarter"
+		      PRINT_USAGE=0
+		      LOGIN=1
+		      ;;
+				-nsts|--nodejs-starter-w-timeseries)
+		      USE_NODEJS_STARTER_W_TIMESERIES=1
+		      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-nsts | --nodejs-starter-w-timeseries"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-nsts"
+		      PRINT_USAGE=0
+		      LOGIN=1
+		      ;;
+				-ms|--mobile-starter)
+		      USE_MOBILE_STARTER=1
+		      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-ms | --mobile-starter"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-ms"
+		      PRINT_USAGE=0
+		      LOGIN=1
+		      ;;
+		    -ps|--polymer-seed)
+		      USE_POLYMER_SEED=1
+		      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-ps | --polymer-seed"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-ps"
+		      PRINT_USAGE=0
+		      LOGIN=1
+		      ;;
+		    -psuaa|--polymer-seed-uaa)
+		      USE_POLYMER_SEED_UAA=1
+		      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-psuaa | --polymer-seed-uaa"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-psuaa"
+		      PRINT_USAGE=0
+		      LOGIN=1
+		      ;;
+		    -psasset|--polymer-seed-asset)
+		      USE_POLYMER_SEED_ASSET=1
+		      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-psasset | --polymer-seed-asset"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-paasset"
+		      PRINT_USAGE=0
+		      LOGIN=1
+		      ;;
+		    -psts|--polymer-seed-timeseries)
+		      USE_POLYMER_SEED_TIMESERIES=1
+		      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-psts | --polymer-seed-timeseries"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-psts"
+		      PRINT_USAGE=0
+		      LOGIN=1
+		      ;;
+		    -psrmd|--polymer-seed-rmd-refapp)
+		      USE_POLYMER_SEED_RMD=1
+		      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-psrmd | --polymer-seed-rmd-refapp"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-psrmd"
+		      PRINT_USAGE=0
+		      LOGIN=1
+		      ;;
+		    -wd|--wind-data)       # Takes an option argument, ensuring it has been specified.
+		      USE_WINDDATA_SERVICE=1
+		      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-wd | --wind-data"
+					SWITCH_ARRAY[SWITCH_INDEX++]="-wd"
+		      PRINT_USAGE=0
+		      VERIFY_MVN=1
+		      LOGIN=1
+		      ;;
+	      	    -mst|--ms-template)    # Takes an option argument, ensuring it has been specified.
+		      USE_MICROSERVICE_TEMPLATE=1
+		      SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-mst | --ms-template"
+					SWITCH_ARRAY[SWITCH_INDEX++]="--ms-template"
+		      PRINT_USAGE=0
+		      VERIFY_MVN=1
+		      LOGIN=1
+		     ;;
+		    -dx|--data-exchange)       # Takes an option argument, ensuring it has been specified.
+		        USE_DATAEXCHANGE=1
+		        SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-dx | --data-exchange"
+						SWITCH_ARRAY[SWITCH_INDEX++]="-dx"
+		        PRINT_USAGE=0
+		        VERIFY_MVN=1
+		        LOGIN=1
+		      ;;
+		    -wss|--websocket-server)       # Takes an option argument, ensuring it has been specified.
+		        USE_WEBSOCKET_SERVER=1
+		        SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-wss | --websocket-server"
+						SWITCH_ARRAY[SWITCH_INDEX++]="-wss"
+		        PRINT_USAGE=0
+		        VERIFY_MVN=1
+		        LOGIN=1
+		      ;;
+				-eh-topics|--eventhub-topics)
+						EVENTHUB_TOPICS="$2"
+						SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-eh | --create-event-hub"
+						SWITCH_ARRAY[SWITCH_INDEX++]="-eh"
+						PRINT_USAGE=0
+						LOGIN=1
+					;;
+		    -sim|--data-simulator)       # Takes an option argument, ensuring it has been specified.
+		        USE_DATA_SIMULATOR=1
+		        SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-sim | --data-simulator"
+						SWITCH_ARRAY[SWITCH_INDEX++]="-sim"
+		        PRINT_USAGE=0
+		        LOGIN=1
+		      ;;
+				-sim-file)
+		      if [ -n "$2" ]; then
+		        SIMULATION_FILE=$2
+		        doShift=1
+		        shift
+		      else
+						printf 'ERROR: "sim-file" requires an argument\n' >&2
+		        exit 1
+		      fi
+		      ;;
+		    -rmd|--rmd-datasource)       # Takes an option argument, ensuring it has been specified.
+		        USE_RMD_DATASOURCE=1
+		        SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-rmd | --rmd-datasource"
+						SWITCH_ARRAY[SWITCH_INDEX++]="-rmd"
+		        PRINT_USAGE=0
+		        VERIFY_MVN=1
+		        LOGIN=1
+		      ;;
+				-predix-machine-home)
+					if [ -n "$2" ]; then
+						PREDIX_MACHINE_HOME=$2
+						doShift=1
+						shift
+					else
+						printf 'ERROR: "-predix-machine-home" requires a non-empty option argument.\n' >&2
+						exit 1
 					fi
-				fi
-        ;;
-			*)					# Default case: If no more options then break out of the loop.
+					;;
+	      --)              # End of all options.
+					shift
+	        ;;
+				-uaa-zone-id|--uaa-zone-id)
+					if [ -n "$2" ]; then
+						UAA_ZONE_ID=$2
+						doShift=1
+						shift
+					else
+						printf 'ERROR: "-uaa-zone-id" requires a non-empty option argument.\n' >&2
+						exit 1
+					fi
+					;;
+				-uaa-client-id|--uaa-client-id)
+					if [ -n "$2" ]; then
+						UAA_CLIENT_ID=$2
+						doShift=1
+						shift
+					else
+						printf 'ERROR: "-uaa-client-id" requires a non-empty option argument.\n' >&2
+						exit 1
+					fi
+					;;
+				-uaa-client-secret|--uaa-client-secret)
+					if [ -n "$2" ]; then
+						UAA_CLIENT_SECRET=$2
+						doShift=1
+						shift
+					else
+						printf 'ERROR: "-uaa-client-secret" requires a non-empty option argument.\n' >&2
+						exit 1
+					fi
+					;;
+				-ts-zone-id|--ts-zone-id)
+					if [ -n "$2" ]; then
+						TIMESERIES_ZONE_ID=$2
+						doShift=1
+						shift
+					else
+						printf 'ERROR: "-ts-zone-id" requires a non-empty option argument.\n' >&2
+						exit 1
+					fi
+					;;
+				-ts-ingest-uri|--ts-ingest-uri)
+					if [ -n "$2" ]; then
+						TIMESERIES_INGEST_URI=$2
+						doShift=1
+						shift
+					else
+						echo "TIMESERIES_INGEST_URI not provided. Using default $DEFAULT_TIMESERIES_INGEST_URI"
+						TIMESERIES_INGEST_URI="$DEFAULT_TIMESERIES_INGEST_URI"
+					fi
+					;;
+				-ts-query-uri|--ts-query-uri)
+					if [ -n "$2" ]; then
+						TIMESERIES_QUERY_URI=$2
+						doShift=1
+						shift
+					else
+						echo "TIMESERIES_INGEST_URI not provided. Using default $DEFAULT_TIMESERIES_QUERY_URI"
+						TIMESERIES_QUERY_URI="$DEFAULT_TIMESERIES_QUERY_URI"
+					fi
+					;;
+				-ts-client-id|--ts-client-id)
+					if [ -n "$2" ]; then
+						TIMESERIES_CLIENT_ID=$2
+						doShift=1
+						shift
+					else
+						printf 'ERROR: "-ts-client-id" requires a non-empty option argument.\n' >&2
+						exit 1
+					fi
+					;;
+				-ts-client-secret|--ts-client-secret)
+					if [ -n "$2" ]; then
+						TIMESERIES_CLIENT_SECRET=$2
+						doShift=1
+						shift
+					else
+						printf 'ERROR: "-ts-client-secret" requires a non-empty option argument.\n' >&2
+						exit 1
+					fi
+					;;
+	      -?*)
+					doShift=0
+					processSwitchCommon $@
+					if [[ $UNKNOWN_SWITCH == 1 ]]; then
+						if [[ $SUPPRESS_PRINT_UNKNOWN == 0 ]]; then
+							echo "unknown BBA switch=$1"
+						fi
+					fi
+	        ;;
+				*)					# Default case: If no more options then break out of the loop.
 					UNKNOWN_SWITCH=1
 					;;
     esac
