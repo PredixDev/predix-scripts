@@ -212,6 +212,10 @@ function runEdgeStarterLocal() {
       ./scripts/get-access-token.sh $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET $UAA_URL
       cat data/access_token
     fi
+		if [[ -d "data" ]]; then
+			mkdir data/store_forward_queue
+   		chmod 777 data/store_forward_queue
+		fi
     for image in $(grep "image:" docker-compose-local.yml | awk -F" " '{print $2}' | tr -d "\"");
     do
       echo "$image : $APP_NAME"

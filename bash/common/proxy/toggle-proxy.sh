@@ -128,7 +128,11 @@ function enableGnomeProxy() {
 }
 
 function disableMavenProxy() {
-  if [[ -e ~/.m2/settings.xml && -e $ScriptDir/disable-proxy.xsl ]] ; then
+  if [ ! -e $ScriptDir/disable-proxy.xsl ] ; then
+    curl -s -O $DISABLE_XSL_URL
+  fi
+
+  if [ -e ~/.m2/settings.xml ] ; then
     cp ~/.m2/settings.xml ~/.m2/settings.xml.orig
     xsltproc $ScriptDir/disable-proxy.xsl ~/.m2/settings.xml.orig > ~/.m2/settings.xml.new
     mv -f ~/.m2/settings.xml.new ~/.m2/settings.xml
@@ -137,16 +141,16 @@ function disableMavenProxy() {
   else
     echo
     echo "Could not find settings.xml in directory ./m2"
-    echo "OR"
-    echo "Could not find disable-proxy.xsl"
-    echo "Please make sure you are running this script from the /predix-scripts/bash/common/proxy directory"
-    echo "or download the file https://raw.githubusercontent.com/PredixDev/predix-scripts/master/bash/common/proxy/disable-proxy.xsl"
     echo "Failed: Maven Proxies could not be disabled"
   fi
 }
 
 function enableMavenProxy() {
-  if [[ -e ~/.m2/settings.xml && -e $ScriptDir/enable-proxy.xsl ]] ; then
+  if [ ! -e $ScriptDir/enable-proxy.xsl ] ; then
+    curl -s -O $ENABLE_XSL_URL
+  fi
+
+  if [ -e ~/.m2/settings.xml ] ; then
     cp ~/.m2/settings.xml ~/.m2/settings.xml.orig
     xsltproc --stringparam proxy-host $PROXY_HOST \
          --stringparam proxy-port $PROXY_PORT \
@@ -160,10 +164,6 @@ function enableMavenProxy() {
   else
     echo
     echo "Could not find settings.xml in directory ./m2"
-    echo "OR"
-    echo "Could not find enable-proxy.xsl"
-    echo "Please make sure you are running this script from the /predix-scripts/bash/common/proxy directory"
-    echo "or download the file https://raw.githubusercontent.com/PredixDev/predix-scripts/master/bash/common/proxy/enable-proxy.xsl"
     echo "Failed: Maven Proxies could not be set"
   fi
 }
@@ -228,6 +228,9 @@ echo "You may be asked to provide your password during the installation process"
 echo "--------------------------------------------------------------"
 echo ""
 
+IZON_SH="https://raw.githubusercontent.com/PredixDev/izon/1.1.0/izon2.sh"
+ENABLE_XSL_URL="https://raw.githubusercontent.com/PredixDev/predix-scripts/master/bash/common/proxy/enable-proxy.xsl"
+DISABLE_XSL_URL="https://raw.githubusercontent.com/PredixDev/predix-scripts/master/bash/common/proxy/disable-proxy.xsl"
 PROXY_HOST=""
 PROXY_PORT="8080"
 PROXY_HOST_AND_PORT=""
