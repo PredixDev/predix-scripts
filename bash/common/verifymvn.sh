@@ -8,7 +8,7 @@ function verifymvnproxy() {
 
 function verifymvncreds() {
   rm -f ~/.m2/repository/com/ge/predix/solsvc/ext-api/2.0.5/ext-api-2.0.5.pom &>/dev/null
-  mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:get -DrepoId=predix.repo -Dartifact=com.ge.predix.solsvc:ext-api:2.0.5:pom $1 2>&1 | grep "ReasonPhrase:Unauthorized" &>/dev/null
+  mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:get -DrepoId=predix.repo -Dartifact=com.ge.predix.solsvc:ext-api:2.0.5:pom -s $1 2>&1 | grep "ReasonPhrase:Unauthorized" &>/dev/null
   echo $?
 }
 
@@ -33,7 +33,7 @@ function assertmvn() {
 function checkmvnsettings() {
   local mvn_setting_file=$1
 
-  if [ ! -f "$mvn_setting_file" ]; then
+  if [ ! -f $mvn_setting_file ]; then
     echo "Maven setting File missing at $mvn_setting_file location."
     echo "Please configure your maven settings file to continue."
     echo "Detailed instructions are in tutorial at: https://www.predix.io/resources/tutorials/tutorial-details.html?tutorial_id=1560"

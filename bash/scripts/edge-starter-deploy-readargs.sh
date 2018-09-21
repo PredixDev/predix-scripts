@@ -344,26 +344,4 @@ function deployToEdge {
     send \"exit\r\"
     expect eof
   "
-
-  sleep 20
-  # Automagically open the application in browser, based on OS
-  if [[ $SKIP_BROWSER == 0 ]]; then
-		APP_PORT=$(yq r docker-compose.yml services.edge-ref-app.ports[0]| awk -F":" '{print $1}')
-    app_url="http://$IP_ADDRESS:$APP_PORT"
-
-    case "$(uname -s)" in
-       Darwin)
-         # OSX
-         open $app_url
-         ;;
-       Linux)
-         # OSX
-         xdg-open $app_url
-         ;;
-       CYGWIN*|MINGW32*|MINGW64*|MSYS*)
-         # Windows
-         start "" $app_url
-         ;;
-    esac
-  fi
 }

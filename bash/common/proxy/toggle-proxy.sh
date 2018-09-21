@@ -21,8 +21,10 @@ usage() {
   echo "Where : <host> is the hostname of your proxy"
   echo "        <port:8080> is the port on the proxy server, defaults to 8080"
   echo
-  echo "When Enabling proxies, Please select and enter the proxy server name - HOST:PORT"
-  echo "example - PITC-Zscaler-US-SanRamon.proxy.corporate.ge.com:8080"
+  echo "When Enabling proxies ... "
+  echo "Please select and enter the proxy server name - HOST:PORT"
+  echo "Ensure that there is no http or www in the entered proxy host name as that is handled by the script"
+  echo "example - PROXY_NAME:8080"
   echo
   echo "Options:"
   echo "    --help      Display this help message"
@@ -32,12 +34,12 @@ usage() {
   echo
 }
 
-guessProxy() {
+function guessProxy() {
   export GUESSED_PROXY_HOST=`wget -O - http://corp.setpac.ge.com/pac.pac --no-proxy 2>/dev/null | grep -i "^var\w* main_proxy" | sed "s/.*\"PROXY\s* \([^\";]*\)\"*;.*/\1/" | cut -d: -f1`
   export GUESSED_PROXY_PORT=`wget -O - http://corp.setpac.ge.com/pac.pac --no-proxy 2>/dev/null | grep -i "^var\w* main_proxy" | sed "s/.*\"PROXY\s* \([^\";]*\)\"*;.*/\1/" | cut -d: -f2`
 }
 
-commentProxy(){
+function commentProxy() {
   if [ -e ~/.bash_profile ] ; then
     echo "Commenting out old proxies in bash_profile"
     sudo sed -i -e '/export http_proxy=/s/^/#/g' ~/.bash_profile
@@ -55,7 +57,7 @@ commentProxy(){
   fi
 }
 
-cleanupBashrc() {
+function cleanupBashProfile() {
   if [ -e ~/.bash_profile ] ; then
     #echo Cleaning Up bash_profile
     sudo sed -i -e "/export http_proxy=/d" ~/.bash_profile
@@ -73,24 +75,30 @@ cleanupBashrc() {
   fi
 }
 
-disableBashrcProxy() {
+function disableBashProfileProxy() {
   if [ -e ~/.bash_profile ] ; then
     printf "unset http_proxy\nunset https_proxy\nunset HTTP_PROXY\nunset HTTPS_PROXY\nunset no_proxy\n" | sudo tee -a ~/.bash_profile > /dev/null
+    echo
+    echo "Done. Successfully unset environment proxies"
   else
-    echo bash_profile file does not exist. If you want to set environment variables please create a bash_profile file in your root directory.
+    echo "bash_profile file does not exist. If you want to set environment variables please create a bash_profile file in your root directory."
+    echo "Failed: Enviornment Proxies are still set. Proxies could not be unset or disabled"
   fi
 }
 
-enableBashrcProxy() {
+function enableBashProfileProxy() {
   if [ -e ~/.bash_profile ] ; then
     printf "export http_proxy=http://$PROXY_AUTH$PROXY_HOST:$PROXY_PORT/\nexport https_proxy=\$http_proxy\nexport HTTP_PROXY=\$http_proxy\nexport HTTPS_PROXY=\$http_proxy\nexport no_proxy=\"127.0.0.1,localhost,localhost.localdomain,.ge.com,*.ge.com,*ge.com\"\n" | sudo tee -a ~/.bash_profile > /dev/null
     source ~/.bash_profile
+    echo
+    echo "Done. Successfully set environment proxies"
   else
     echo bash_profile file does not exist. If you want to set environment variables please create a bash_profile file in your root directory.
+    echo "Failed: Enviornment Proxies not set. Proxies could not be set or enabled"
   fi
 }
 
-disableGnomeProxy() {
+function disableGnomeProxy() {
   gsettings --version >/dev/null 2>&1
   if [ $? -eq 0 ]; then
     gsettings set org.gnome.system.proxy.http host ''
@@ -104,7 +112,7 @@ disableGnomeProxy() {
   fi
 }
 
-enableGnomeProxy() {
+function enableGnomeProxy() {
   gsettings --version >/dev/null 2>&1
   if [ $? -eq 0 ]; then
     gsettings set org.gnome.system.proxy.http host $PROXY_HOST
@@ -119,18 +127,26 @@ enableGnomeProxy() {
   fi
 }
 
-disableMavenProxy() {
-  if [ -e ~/.m2/settings.xml ] ; then
+function disableMavenProxy() {
+  if [[ -e ~/.m2/settings.xml && -e $ScriptDir/disable-proxy.xsl ]] ; then
     cp ~/.m2/settings.xml ~/.m2/settings.xml.orig
     xsltproc $ScriptDir/disable-proxy.xsl ~/.m2/settings.xml.orig > ~/.m2/settings.xml.new
     mv -f ~/.m2/settings.xml.new ~/.m2/settings.xml
+    echo
+    echo "Done. Successfully unset maven proxies"
   else
-    echo Maven directory not setup. Could not find settings.xml in directory ./m2
+    echo
+    echo "Could not find settings.xml in directory ./m2"
+    echo "OR"
+    echo "Could not find disable-proxy.xsl"
+    echo "Please make sure you are running this script from the /predix-scripts/bash/common/proxy directory"
+    echo "or download the file https://raw.githubusercontent.com/PredixDev/predix-scripts/master/bash/common/proxy/disable-proxy.xsl"
+    echo "Failed: Maven Proxies could not be disabled"
   fi
 }
 
-enableMavenProxy() {
-  if [ -e ~/.m2/settings.xml ] ; then
+function enableMavenProxy() {
+  if [[ -e ~/.m2/settings.xml && -e $ScriptDir/enable-proxy.xsl ]] ; then
     cp ~/.m2/settings.xml ~/.m2/settings.xml.orig
     xsltproc --stringparam proxy-host $PROXY_HOST \
          --stringparam proxy-port $PROXY_PORT \
@@ -139,19 +155,27 @@ enableMavenProxy() {
          --stringparam noproxy-hosts "127.0.0.1,localhost,localhost.localdomain,.ge.com,*.ge.com, *ge.com" \
          $ScriptDir/enable-proxy.xsl ~/.m2/settings.xml.orig > ~/.m2/settings.xml.new
     mv -f ~/.m2/settings.xml.new ~/.m2/settings.xml
+    echo
+    echo "Done. Successfully set maven proxies"
   else
-    echo Maven directory not setup. Could not find settings.xml in directory ./m2
+    echo
+    echo "Could not find settings.xml in directory ./m2"
+    echo "OR"
+    echo "Could not find enable-proxy.xsl"
+    echo "Please make sure you are running this script from the /predix-scripts/bash/common/proxy directory"
+    echo "or download the file https://raw.githubusercontent.com/PredixDev/predix-scripts/master/bash/common/proxy/enable-proxy.xsl"
+    echo "Failed: Maven Proxies could not be set"
   fi
 }
 
-fixMavenSettingsFile() {
+function fixMavenSettingsFile() {
   sudo chmod 666 ~/.m2/settings.xml.orig
   sudo chmod 666 ~/.m2/settings.xml
   sudo chown root ~/.m2/settings.xml.orig
   sudo chown root ~/.m2/settings.xml
 }
 
-enableDockerProxy() {
+function enableDockerProxy() {
   sudo mkdir -p /etc/systemd/system/docker.service.d
   sudo touch /etc/systemd/system/docker.service.d/http-proxy.conf
   sudo chmod 777 /etc/systemd/system/docker.service.d/http-proxy.conf
@@ -169,7 +193,7 @@ EOF
   sudo systemctl restart docker
 }
 
-disableDockerProxy() {
+function disableDockerProxy() {
   sudo rm -rf /etc/systemd/system/docker.service.d/http-proxy.conf
   sudo systemctl daemon-reload
   sudo systemctl restart docker
@@ -198,7 +222,7 @@ for arg in $@ ; do
 done
 
 echo "--------------------------------------------------------------"
-echo "This script will install tools required for Predix development"
+echo "This script will enable/disable proxy variables required for Predix development"
 echo "This script runs commands as sudo. If prompted for password,"
 echo "You may be asked to provide your password during the installation process"
 echo "--------------------------------------------------------------"
@@ -212,21 +236,53 @@ PROXY_PASSWORD="proxypass"
 PROXY_AUTH=""
 
 #Switches
+SETUP=0
 ENABLE=0
 DISABLE=0
 CLEAN=0
 
-# ------------------------ Yash ---------------------------------
 if [ -z "$1" ]; then
   usage
   exit 0
 else
   while [ ! -z "$1" ]; do
+    [ "$1" == "--setup" ] && SETUP=1
     [ "$1" == "--enable" ] && ENABLE=1
     [ "$1" == "--disable" ] && DISABLE=1
     [ "$1" == "--clean" ] && CLEAN=1
     shift
   done
+fi
+
+if [ $SETUP -eq 1 ]; then
+  # Findig the PAC file and printing out the proxy servers for the user
+  echo "Printing configured browser proxies from your pac.pac file"
+  AUTOCONFIG="$(scutil --proxy | grep ProxyAutoConfigURL)"
+  echo $AUTOCONFIG | cut -d' ' -f 3
+  PAC="$(echo $AUTOCONFIG | cut -d' ' -f 3)"
+  echo
+  curl -s $PAC | grep PROXY
+  echo
+  echo "Please choose which proxy you want to use and enter it in the command below"
+  echo "You may select one of the proxy servers mentioned above or may choose a different one if you know it"
+  echo "Please note - Do not enter the initial http prefix for the proxy. The script handles that internally"
+  echo "You can enter - PROXY_HOST_NAME:PORT"
+  echo
+  read -p "Which proxy do you want to use?  " READ_PROXY
+  echo
+  PROXY_HOST="$(echo $READ_PROXY | cut -d':' -f 1)"
+  PROXY_PORT="$(echo $READ_PROXY | cut -d':' -f 2)"
+  echo "Your selected proxy value = http://$PROXY_HOST:$PROXY_PORT"
+
+  # Enabling or Setting the proxies for bash only
+  echo
+  echo "----------------------------------------------------------"
+  echo "Setting proxy environment variables..."
+  commentProxy
+  enableBashProfileProxy
+  echo
+  echo "----------------------------------------------------------"
+  echo "Open a new terminal window for the changes to take effect"
 fi
 
 if [ $ENABLE -eq 1 ]; then
@@ -240,48 +296,56 @@ if [ $ENABLE -eq 1 ]; then
   echo
   echo "Please choose which proxy you want to use and enter it in the command below"
   echo "You may select one of the proxy servers mentioned above or may choose a different one if you know it"
+  echo "Please note - Do not enter the initial http prefix for the proxy. The script handles that internally"
+  echo "You can enter - PROXY_HOST_NAME:PORT"
   echo
   read -p "Which proxy do you want to use?  " READ_PROXY
   echo
   PROXY_HOST="$(echo $READ_PROXY | cut -d':' -f 1)"
   PROXY_PORT="$(echo $READ_PROXY | cut -d':' -f 2)"
-  echo "Your selected proxy value =" $PROXY_HOST:$PROXY_PORT
+  echo "Your selected proxy value = http://$PROXY_HOST:$PROXY_PORT"
 
   # Enabling or Setting the proxies
+  echo
+  echo "----------------------------------------------------------"
   echo "Setting proxy environment variables..."
   commentProxy
-  enableBashrcProxy
-  echo "done."
+  enableBashProfileProxy
   echo
+  echo "----------------------------------------------------------"
   echo "Setting Apache Maven proxy..."
   enableMavenProxy
   fixMavenSettingsFile
-  echo "done."
   echo
+  echo "----------------------------------------------------------"
+  echo "Open a new terminal window for the changes to take effect"
 fi
 
 if [ $DISABLE -eq 1 ]; then
   echo "Unsetting proxy environment variables..."
   #cleanupBashrc
-  disableBashrcProxy
-  echo "done."
+  disableBashProfileProxy
   echo
+  echo "----------------------------------------------------------"
   echo "Unsetting Apache Maven proxy..."
   disableMavenProxy
   fixMavenSettingsFile
-  echo "done."
   echo
+  echo "----------------------------------------------------------"
+  echo "Open a new terminal window for the changes to take effect"
 fi
 
 if [ $CLEAN -eq 1 ]; then
   echo "Deleting proxy settings for bash and Maven"
-  cleanupBashrc
+  cleanupBashProfile
   #disableGnomeProxy
   disableMavenProxy
   fixMavenSettingsFile
   #disableDockerProxy
+  echo
+  echo "----------------------------------------------------------"
+  echo "Open a new terminal window for the changes to take effect"
 fi
 
-echo ""
-echo "Open a new terminal window for the changes to take effect"
+echo
 exit 0

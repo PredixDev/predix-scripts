@@ -350,7 +350,6 @@ function __setupServices() {
 		pushAnAppForBinding $1
 	fi
 
-	echo "UAA_ZONE_ID : $UAA_ZONE_ID"
 	if [[ ($RUN_CREATE_UAA == 1) ]]; then
 		if [[ "$UAA_ZONE_ID" == "" ]]; then
 			createUaa $1

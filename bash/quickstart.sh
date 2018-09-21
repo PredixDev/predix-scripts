@@ -21,6 +21,7 @@ source "$quickstartRootDir/bash/scripts/curl_helper_funcs.sh"
 source "$quickstartRootDir/bash/scripts/predix_funcs.sh"
 source "$quickstartRootDir/bash/common/verifymvn.sh"
 source "$rootDir/bash/scripts/local-setup-funcs.sh"
+#source "$quickstartRootDir/bash/common/proxy/verify-proxy.sh"
 
 if [ "${TERM/term}" = "$TERM" ] ; then
   COLUMNS=50
@@ -145,7 +146,7 @@ if [[ ( $LOGIN == 1 ) ]]; then
   #UNIQUE Prefix
   if [[ "$INSTANCE_PREPENDER" == "" ]]; then
     __get_login
-    echo "Apps and Services in the Predix Cloud need unique names" 
+    echo "Apps and Services in the Predix Cloud need unique names"
     read -p "Enter a unique string to be used as an prefix for service names and app names, e.g. thomas-edison default=[$INSTANCE_PREPENDER]>" INPUT
     INSTANCE_PREPENDER="${INPUT:-$INSTANCE_PREPENDER}"
     INSTANCE_PREPENDER=$(echo $INSTANCE_PREPENDER | tr -dc '[:alnum:]\n\r')
@@ -169,6 +170,8 @@ fi
 if [[ $VERIFY_MVN == 1 ]]; then
   checkmvnsettings $MAVEN_SETTINGS_FILE
   assertmvn $MAVEN_SETTINGS_FILE
+  # Call to new function in verify-proxy.sh - Uncomment the source command at the top of file
+  #verify_maven $MAVEN_SETTINGS_FILE
 fi
 source "$quickstartRootDir/bash/scripts/variables.sh"
 
