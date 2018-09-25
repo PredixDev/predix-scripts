@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #This script verifies all the proxy settings for MAC using the proxies set
 #for the environment variables, Maven and Docker
 set -e

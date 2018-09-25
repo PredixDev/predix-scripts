@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #This script toggles all the proxy settings in a MAC environment
 #The proxy value may be passed in from the command line while execting the scripts
@@ -16,7 +16,7 @@ ScriptDir="$( pwd )"
 usage() {
   echo
   echo Usage:
-  echo $0 [--help] [--enable] [--disable] [--clean]
+  echo $0 [--help] [--setup] [--enable] [--disable] [--clean]
   echo
   echo "Where : <host> is the hostname of your proxy"
   echo "        <port:8080> is the port on the proxy server, defaults to 8080"
@@ -28,8 +28,9 @@ usage() {
   echo
   echo "Options:"
   echo "    --help      Display this help message"
-  echo "    --enable    Set proxy settings"
-  echo "    --disable   Unset proxy settings"
+  echo "    --setup     Set proxy settings for bash environment variables"
+  echo "    --enable    Set proxy settings for bash and maven"
+  echo "    --disable   Unset proxy settings for bash and maven"
   echo "    --clean     Delete proxy settings"
   echo
 }
@@ -42,42 +43,42 @@ function guessProxy() {
 function commentProxy() {
   if [ -e ~/.bash_profile ] ; then
     echo "Commenting out old proxies in bash_profile"
-    sudo sed -i -e '/export http_proxy=/s/^/#/g' ~/.bash_profile
-    sudo sed -i -e '/export https_proxy=/s/^/#/g' ~/.bash_profile
-    sudo sed -i -e '/export HTTP_PROXY=/s/^/#/g' ~/.bash_profile
-    sudo sed -i -e '/export HTTPS_PROXY=/s/^/#/g' ~/.bash_profile
-    sudo sed -i -e '/export no_proxy=/s/^/#/g' ~/.bash_profile
+    sed -i -e '/export http_proxy=/s/^/#/g' ~/.bash_profile
+    sed -i -e '/export https_proxy=/s/^/#/g' ~/.bash_profile
+    sed -i -e '/export HTTP_PROXY=/s/^/#/g' ~/.bash_profile
+    sed -i -e '/export HTTPS_PROXY=/s/^/#/g' ~/.bash_profile
+    sed -i -e '/export no_proxy=/s/^/#/g' ~/.bash_profile
 
     # -----------------------------------------------------
-    sudo sed -i -e "/unset http_proxy/d" ~/.bash_profile
-    sudo sed -i -e "/unset https_proxy/d" ~/.bash_profile
-    sudo sed -i -e "/unset HTTP_PROXY/d" ~/.bash_profile
-    sudo sed -i -e "/unset HTTPS_PROXY/d" ~/.bash_profile
-    sudo sed -i -e "/unset no_proxy/d" ~/.bash_profile
+    sed -i -e "/unset http_proxy/s/^/#/g" ~/.bash_profile
+    sed -i -e "/unset https_proxy/s/^/#/g" ~/.bash_profile
+    sed -i -e "/unset HTTP_PROXY/s/^/#/g" ~/.bash_profile
+    sed -i -e "/unset HTTPS_PROXY/s/^/#/g" ~/.bash_profile
+    sed -i -e "/unset no_proxy/s/^/#/g" ~/.bash_profile
   fi
 }
 
 function cleanupBashProfile() {
   if [ -e ~/.bash_profile ] ; then
     #echo Cleaning Up bash_profile
-    sudo sed -i -e "/export http_proxy=/d" ~/.bash_profile
-    sudo sed -i -e "/export https_proxy=/d" ~/.bash_profile
-    sudo sed -i -e "/export HTTP_PROXY=/d" ~/.bash_profile
-    sudo sed -i -e "/export HTTPS_PROXY=/d" ~/.bash_profile
-    sudo sed -i -e "/export no_proxy=/d" ~/.bash_profile
+    sed -i -e "/export http_proxy=/d" ~/.bash_profile
+    sed -i -e "/export https_proxy=/d" ~/.bash_profile
+    sed -i -e "/export HTTP_PROXY=/d" ~/.bash_profile
+    sed -i -e "/export HTTPS_PROXY=/d" ~/.bash_profile
+    sed -i -e "/export no_proxy=/d" ~/.bash_profile
 
     # ----------------------------------------------------
-    sudo sed -i -e "/unset http_proxy/d" ~/.bash_profile
-    sudo sed -i -e "/unset https_proxy/d" ~/.bash_profile
-    sudo sed -i -e "/unset HTTP_PROXY/d" ~/.bash_profile
-    sudo sed -i -e "/unset HTTPS_PROXY/d" ~/.bash_profile
-    sudo sed -i -e "/unset no_proxy/d" ~/.bash_profile
+    sed -i -e "/unset http_proxy/d" ~/.bash_profile
+    sed -i -e "/unset https_proxy/d" ~/.bash_profile
+    sed -i -e "/unset HTTP_PROXY/d" ~/.bash_profile
+    sed -i -e "/unset HTTPS_PROXY/d" ~/.bash_profile
+    sed -i -e "/unset no_proxy/d" ~/.bash_profile
   fi
 }
 
 function disableBashProfileProxy() {
   if [ -e ~/.bash_profile ] ; then
-    printf "unset http_proxy\nunset https_proxy\nunset HTTP_PROXY\nunset HTTPS_PROXY\nunset no_proxy\n" | sudo tee -a ~/.bash_profile > /dev/null
+    printf "unset http_proxy\nunset https_proxy\nunset HTTP_PROXY\nunset HTTPS_PROXY\nunset no_proxy\n" | tee -a ~/.bash_profile > /dev/null
     echo
     echo "Done. Successfully unset environment proxies"
   else
@@ -88,7 +89,7 @@ function disableBashProfileProxy() {
 
 function enableBashProfileProxy() {
   if [ -e ~/.bash_profile ] ; then
-    printf "export http_proxy=http://$PROXY_AUTH$PROXY_HOST:$PROXY_PORT/\nexport https_proxy=\$http_proxy\nexport HTTP_PROXY=\$http_proxy\nexport HTTPS_PROXY=\$http_proxy\nexport no_proxy=\"127.0.0.1,localhost,localhost.localdomain,.ge.com,*.ge.com,*ge.com\"\n" | sudo tee -a ~/.bash_profile > /dev/null
+    printf "export http_proxy=http://$PROXY_AUTH$PROXY_HOST:$PROXY_PORT/\nexport https_proxy=\$http_proxy\nexport HTTP_PROXY=\$http_proxy\nexport HTTPS_PROXY=\$http_proxy\nexport no_proxy=\"127.0.0.1,localhost,localhost.localdomain,.ge.com,*.ge.com,*ge.com\"\n" | tee -a ~/.bash_profile > /dev/null
     source ~/.bash_profile
     echo
     echo "Done. Successfully set environment proxies"
@@ -169,34 +170,32 @@ function enableMavenProxy() {
 }
 
 function fixMavenSettingsFile() {
-  sudo chmod 666 ~/.m2/settings.xml.orig
-  sudo chmod 666 ~/.m2/settings.xml
-  sudo chown root ~/.m2/settings.xml.orig
-  sudo chown root ~/.m2/settings.xml
+  chmod 666 ~/.m2/settings.xml.orig
+  chmod 666 ~/.m2/settings.xml
+  #chown root ~/.m2/settings.xml.orig
+  #chown root ~/.m2/settings.xml
 }
 
 function enableDockerProxy() {
-  sudo mkdir -p /etc/systemd/system/docker.service.d
-  sudo touch /etc/systemd/system/docker.service.d/http-proxy.conf
-  sudo chmod 777 /etc/systemd/system/docker.service.d/http-proxy.conf
-  sudo cat << EOF > /etc/systemd/system/docker.service.d/http-proxy.conf
+  mkdir -p /etc/systemd/system/docker.service.d
+  touch /etc/systemd/system/docker.service.d/http-proxy.conf
+  chmod 777 /etc/systemd/system/docker.service.d/http-proxy.conf
+  cat << EOF > /etc/systemd/system/docker.service.d/http-proxy.conf
 [Service]
 Environment="HTTP_PROXY=http://$PROXY_AUTH$PROXY_HOST:$PROXY_PORT/"
 Environment="HTTPS_PROXY=http://$PROXY_AUTH$PROXY_HOST:$PROXY_PORT/"
 Environment="NO_PROXY=127.0.0.1,localhost,localhost.localdomain,.ge.com,*.ge.com,*ge.com"
 EOF
 
-  sudo cat /etc/systemd/system/docker.service.d/http-proxy.conf
-
-  sudo systemctl daemon-reload
-
-  sudo systemctl restart docker
+  cat /etc/systemd/system/docker.service.d/http-proxy.conf
+  systemctl daemon-reload
+  systemctl restart docker
 }
 
 function disableDockerProxy() {
-  sudo rm -rf /etc/systemd/system/docker.service.d/http-proxy.conf
-  sudo systemctl daemon-reload
-  sudo systemctl restart docker
+  rm -rf /etc/systemd/system/docker.service.d/http-proxy.conf
+  systemctl daemon-reload
+  systemctl restart docker
 }
 
 function check_internet() {
@@ -221,11 +220,10 @@ for arg in $@ ; do
   fi
 done
 
-echo "--------------------------------------------------------------"
+echo
+echo "--------------------------------------------------------------------------------"
 echo "This script will enable/disable proxy variables required for Predix development"
-echo "This script runs commands as sudo. If prompted for password,"
-echo "You may be asked to provide your password during the installation process"
-echo "--------------------------------------------------------------"
+echo "--------------------------------------------------------------------------------"
 echo ""
 
 IZON_SH="https://raw.githubusercontent.com/PredixDev/izon/1.1.0/izon2.sh"
@@ -279,12 +277,12 @@ if [ $SETUP -eq 1 ]; then
 
   # Enabling or Setting the proxies for bash only
   echo
-  echo "----------------------------------------------------------"
+  echo "--------------------------------------------------------------------------------"
   echo "Setting proxy environment variables..."
   commentProxy
   enableBashProfileProxy
   echo
-  echo "----------------------------------------------------------"
+  echo "--------------------------------------------------------------------------------"
   echo "Open a new terminal window for the changes to take effect"
 fi
 
@@ -310,18 +308,17 @@ if [ $ENABLE -eq 1 ]; then
 
   # Enabling or Setting the proxies
   echo
-  echo "----------------------------------------------------------"
+  echo "--------------------------------------------------------------------------------"
   echo "Setting proxy environment variables..."
   commentProxy
   enableBashProfileProxy
   echo
-  echo "----------------------------------------------------------"
+  echo "--------------------------------------------------------------------------------"
   echo "Setting Apache Maven proxy..."
   enableMavenProxy
   fixMavenSettingsFile
   echo
-  echo "----------------------------------------------------------"
-  echo "Open a new terminal window for the changes to take effect"
+  echo "--------------------------------------------------------------------------------"
 fi
 
 if [ $DISABLE -eq 1 ]; then
@@ -329,13 +326,12 @@ if [ $DISABLE -eq 1 ]; then
   #cleanupBashrc
   disableBashProfileProxy
   echo
-  echo "----------------------------------------------------------"
+  echo "--------------------------------------------------------------------------------"
   echo "Unsetting Apache Maven proxy..."
   disableMavenProxy
   fixMavenSettingsFile
   echo
-  echo "----------------------------------------------------------"
-  echo "Open a new terminal window for the changes to take effect"
+  echo "--------------------------------------------------------------------------------"
 fi
 
 if [ $CLEAN -eq 1 ]; then
@@ -346,9 +342,11 @@ if [ $CLEAN -eq 1 ]; then
   fixMavenSettingsFile
   #disableDockerProxy
   echo
-  echo "----------------------------------------------------------"
-  echo "Open a new terminal window for the changes to take effect"
+  echo "--------------------------------------------------------------------------------"
 fi
 
+echo "Open a new terminal window for the changes to take effect"
+echo "OR"
+echo "Run this command to reload the environment variables : source ~/.bash_profile"
 echo
 exit 0

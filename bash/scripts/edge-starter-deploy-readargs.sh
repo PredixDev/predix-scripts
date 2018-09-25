@@ -219,17 +219,21 @@ function runEdgeStarterLocal() {
     for image in $(grep "image:" docker-compose-local.yml | awk -F" " '{print $2}' | tr -d "\"");
     do
       echo "$image : $APP_NAME"
-      if [[ "$image" != "$APP_NAME:latest" ]]; then
+
         count=$(docker images "$image" -q | wc -l | tr -d " ")
         echo "count $count"
         if [[ $count == 0 ]]; then
-          docker pull $image
+					if [[ $(docker pull $image) ]]; then
+						echo "$image downloaded successfully"
+					else
+						echo "$image not downloaded"
+					fi
         fi
-      fi
+
 
     done
     if [[ -e docker-compose-local.yml ]]; then
-      docker build -t $APP_NAME:latest . --build-arg http_proxy --build-arg https_proxy
+      #docker build -t $APP_NAME:latest . --build-arg http_proxy --build-arg https_proxy
       docker stack deploy --compose-file docker-compose-local.yml $APP_NAME
       if [[  $(docker service ls -f "name=$APP_NAME" | grep 0/1 | wc -l) == "1" ]]; then
         docker service ls
