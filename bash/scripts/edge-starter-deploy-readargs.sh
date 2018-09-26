@@ -173,6 +173,7 @@ function runEdgeStarterLocal() {
     done
     docker service ls -f "name=predix-edge-broker_predix-edge-broker"
     docker stack deploy --with-registry-auth --compose-file docker-compose-edge-broker.yml predix-edge-broker
+		sleep 30
     if [[  $(docker service ls -f "name=predix-edge-broker" | grep 0/1 | wc -l) == "1" ]]; then
       docker service ls
       echo 'Error: One of the predix-edge-broker services did not launch'
@@ -235,18 +236,42 @@ function runEdgeStarterLocal() {
     if [[ -e docker-compose-local.yml ]]; then
       #docker build -t $APP_NAME:latest . --build-arg http_proxy --build-arg https_proxy
       docker stack deploy --compose-file docker-compose-local.yml $APP_NAME
+			sleep 30
       if [[  $(docker service ls -f "name=$APP_NAME" | grep 0/1 | wc -l) == "1" ]]; then
         docker service ls
         echo 'Error: One of the $APP_NAME services did not launch'
         exit 1
       fi
     fi
-    echo "runEdgeStarterLocal 333"
+
     docker images
+
+		echo ""  >> $SUMMARY_TEXTFILE
+	  echo "Deployed Edge Application with dependencies"  >> $SUMMARY_TEXTFILE
+	  echo "--------------------------------------------------"  >> $SUMMARY_TEXTFILE
+		if [[ -e docker-compose-edge-broker.yml ]]; then
+				echo "Downloaded and Deployed the Predix Edge Broker as defined in docker-compose-edge-broker.yml" >> $SUMMARY_TEXTFILE
+				for  image in $(grep "image:" docker-compose-edge-broker.yml | awk -F" " '{print $2}' | tr -d "\"");
+				do
+					 echo "	$image" >> $SUMMARY_TEXTFILE
+				done
+				echo "" >> $SUMMARY_TEXTFILE
+		fi
+		if [[ -e docker-compose-local.yml ]]; then
+				echo "Downloaded and Deployed the Docker images as defined in docker-compose-local.yml" >> $SUMMARY_TEXTFILE
+				for  image in $(grep "image:" docker-compose-local.yml | awk -F" " '{print $2}' | tr -d "\"");
+				do
+					 echo "	$image" >> $SUMMARY_TEXTFILE
+				done
+				echo "" >> $SUMMARY_TEXTFILE
+		fi
+	  echo -e "You can execute 'docker service ls' to view services deployed" >> $SUMMARY_TEXTFILE
+		echo -e "You can docker service logs <service id> to view the logs" >> $SUMMARY_TEXTFILE
   else
     echo "docker-compose-local.yml not found"
   fi
   docker images
+
 }
 
 function checkDockerLogin {
