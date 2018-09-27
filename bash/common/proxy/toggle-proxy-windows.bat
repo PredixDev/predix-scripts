@@ -1,4 +1,6 @@
-# This is a .bat script to enable and disable proxies for a Windows OS
+@ECHO OFF
+
+REM This is a .bat script to enable and disable proxies for a Windows OS
 
 SET IZON_SH="https://raw.githubusercontent.com/PredixDev/izon/1.1.0/izon2.sh"
 SET ENABLE_XSL_URL="https://raw.githubusercontent.com/PredixDev/predix-scripts/master/bash/common/proxy/enable-proxy.xsl"
@@ -17,26 +19,24 @@ GOTO START
   ECHO Usage:
   ECHO $0 [--help] [--setup] [--enable] [--disable] [--clean]
   ECHO
-  ECHO "Where : <host> is the hostname of your proxy"
-  ECHO "        <port:8080> is the port on the proxy server, defaults to 8080"
+  ECHO Where : <host> is the hostname of your proxy
+  ECHO         <port:8080> is the port on the proxy server, defaults to 8080
   ECHO
-  ECHO "When Enabling proxies ... "
-  ECHO "Please select and enter the proxy server name - HOST:PORT"
-  ECHO "Ensure that there is no http or www in the entered proxy host name as that is handled by the script"
-  ECHO "example - PROXY_NAME:8080"
+  ECHO When Enabling proxies ... 
+  ECHO Please select and enter the proxy server name - HOST:PORT
+  ECHO Ensure that there is no http or www in the entered proxy host name as that is handled by the script
+  ECHO example - PROXY_NAME:8080
   ECHO
-  ECHO "Options:"
-  ECHO "    --help      Display this help message"
-  ECHO "    --setup     Set proxy settings for bash environment variables"
-  ECHO "    --enable    Set proxy settings for bash and maven"
-  ECHO "    --disable   Unset proxy settings for bash and maven"
-  ECHO "    --clean     Delete proxy settings"
+  ECHO Options:
+  ECHO     --help      Display this help message
+  ECHO     --setup     Set proxy settings for bash environment variables
+  ECHO     --enable    Set proxy settings for bash and maven
+  ECHO     --disable   Unset proxy settings for bash and maven
+  ECHO     --clean     Delete proxy settings
   ECHO
 GOTO :eof
 
 :SET_PROXIES
-  SET http_proxy=!PROXY!
-  SET https_proxy=!PROXY!
   SET HTTP_PROXY=!PROXY!
   SET HTTPS_PROXY=!PROXY!
 GOTO :eof
@@ -48,60 +48,56 @@ GOTO :eof
   Rem REG delete HKCU\Environment /F /V HTTP_PROXY
   Rem REG delete HKCU\Environment /F /V HTTPS_PROXY
 
-  SET http_proxy=
-  SET https_proxy=
   SET HTTP_PROXY=
   SET HTTPS_PROXY=
 
 GOTO :eof
 
 :CLEAN_PROXIES
-  REG delete HKCU\Environment /F /V http_proxy
-  REG delete HKCU\Environment /F /V https_proxy
-  REG delete HKCU\Environment /F /V HTTP_PROXY
-  REG delete HKCU\Environment /F /V HTTPS_PROXY
+  SET HTTP_PROXY=
+  SET HTTPS_PROXY=
+  REM REG delete HKCU\Environment /F /V HTTP_PROXY
+  REM REG delete HKCU\Environment /F /V HTTPS_PROXY
 GOTO :eof
 
 
 :START
 
   ECHO
-  ECHO "--------------------------------------------------------------------------------"
-  ECHO "This script will enable/disable proxy variables required for Predix development"
-  ECHO "--------------------------------------------------------------------------------"
-  ECHO ""
+  ECHO --------------------------------------------------------------------------------
+  ECHO This script will enable/disable proxy variables required for Predix development
+  ECHO --------------------------------------------------------------------------------
+  ECHO 
 
-  IF %1=="" (
-    GOTO HELP
+  IF [%1]==[] (
+    CALL :USAGE
   )
-
-  IF %1=="--help" (
+  IF [%1]==[--help] (
     CALL :USAGE
   )
 
-  IF %1=="--setup"(
+  IF [%1]==[--setup] (
     CALL :SET_PROXIES
   )
 
-  IF %1=="--enable" (
-    ECHO "Please choose which proxy you want to use and enter it in the command below"
-    ECHO "You may select one of the proxy servers mentioned above or may choose a different one if you know it"
-    ECHO "Please note - Do not enter the initial http prefix for the proxy. The script handles that internally"
-    ECHO "You can enter - PROXY_HOST_NAME:PORT"
+  IF [%1]==[--enable] (
+    ECHO Please choose which proxy you want to use and enter it in the command below
+    ECHO You may select one of the proxy servers mentioned above or may choose a different one if you know it
+    ECHO You can enter - http://PROXY_HOST_NAME:PORT"
     ECHO
-    SET /p READ_PROXY="Which proxy do you want to use?  "
-    SET PROXY=!READ_PROXY!
+    SET /p PROXY=Which proxy do you want to use?  
+    ECHO Your selected proxy value = !PROXY!
     CALL :SET_PROXIES
   )
 
-  IF %1=="--disable" (
+  IF [%1]==[--disable] (
     CALL :UNSET_PROXIES
   )
 
-  IF %1=="--clean" (
+  IF [%1]==[--clean] (
     CALL :UNSET_PROXIES
   )
 
   :DONE
-    ECHO "Open a new terminal window for the changes to take effect"
+    ECHO Open a new terminal window for the changes to take effect
     ECHO
