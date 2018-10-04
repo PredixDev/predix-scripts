@@ -34,7 +34,7 @@ FRONT_END_KIT_APP_NAME="$INSTANCE_PREPENDER-kit-app"
 # Name for your Mobile Application
 MOBILE_STARTER_APP_NAME="$INSTANCE_PREPENDER-predix-mobile-starter"
 SPRING_PROFILES_ACTIVE="SPRING_PROFILES_ACTIVE"
-SPRING_PROFILES_ACTIVE_VALUE="cloud,asset,timeseries,dxwebsocket,rabbitmq"
+SPRING_PROFILES_ACTIVE_VALUE="cloud,asset,timeseries,dxwebsocket,rabbitmq,asset-file"
 
 ############### UAA Configurations ###############
 

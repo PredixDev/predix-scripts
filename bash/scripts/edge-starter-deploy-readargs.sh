@@ -202,19 +202,20 @@ function runEdgeStarterLocal() {
       if [[ "$TIMESERIES_ZONE_ID" == "" ]]; then
         getTimeseriesZoneIdFromInstance $TIMESERIES_INSTANCE_NAME
       fi
-      if [[ "$UAA_URL" == "" ]]; then
+			if [[ "$TRUSTED_ISSUER_ID" == "" ]]; then
         getTrustedIssuerIdFromInstance $UAA_INSTANCE_NAME
       fi
       echo "TIMESERIES_ZONE_ID : $TIMESERIES_ZONE_ID"
+			echo "TRUSTED_ISSUER_ID : $TRUSTED_ISSUER_ID"
       __find_and_replace ".*predix_zone_id\":.*" "          \"predix_zone_id\": \"$TIMESERIES_ZONE_ID\"," "config/config-cloud-gateway.json" "$quickstartLogDir"
       echo "proxy_url : $http_proxy"
       __find_and_replace ".*proxy_url\":.*" "          \"proxy_url\": \"$http_proxy\"" "config/config-cloud-gateway.json" "$quickstartLogDir"
 
-      ./scripts/get-access-token.sh $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET $UAA_URL
+      ./scripts/get-access-token.sh $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET $TRUSTED_ISSUER_ID
       cat data/access_token
     fi
-		if [[ -d "data" ]]; then
-			mkdir data/store_forward_queue
+		if [[ -d "data/store_forward_queue" ]]; then
+			mkdir -p data/store_forward_queue
    		chmod 777 data/store_forward_queue
 		fi
     for image in $(grep "image:" docker-compose-local.yml | awk -F" " '{print $2}' | tr -d "\"");
