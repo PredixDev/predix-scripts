@@ -138,6 +138,10 @@ function runFunctionsForEdgeStarter() {
 						;;
 					-run-edge-app|--run-edge-app)
 	          checkDockerLogin $DTR_NAME
+						if [[ $DOCKER_LOGGED_IN == 0 ]]; then
+							dockerLogin $DTR_NAME
+						fi
+						checkDockerLogin $DTR_NAME
 	          if [[ $DOCKER_LOGGED_IN == 1 ]]; then
 	            echo "runEdgeStarterLocal"
 	            runEdgeStarterLocal
@@ -267,7 +271,7 @@ function runEdgeStarterLocal() {
 				echo "" >> $SUMMARY_TEXTFILE
 		fi
 	  echo -e "You can execute 'docker service ls' to view services deployed" >> $SUMMARY_TEXTFILE
-		echo -e "You can docker service logs <service id> to view the logs" >> $SUMMARY_TEXTFILE
+	  echo -e "You can execute 'docker service logs <service id>' to view the logs" >> $SUMMARY_TEXTFILE
   else
     echo "docker-compose-local.yml not found"
   fi
@@ -277,19 +281,42 @@ function runEdgeStarterLocal() {
 
 function checkDockerLogin {
   DOCKER_CONFIG="~/.docker/config.json"
-  DTR_NAME="$1"
-  #echo "DTR_NAME : $DTR_NAME"
-  loggedIn=$(jq -r ".auths | .[\"$DTR_NAME\"]?" ~/.docker/config.json)
-  #echo "Logged in? $loggedIn"
-  if [[ -z $loggedIn ]]; then
-    echo "Not Logged in"
-  else
-    echo "Docker logged in"
-  fi
-  DOCKER_LOGGED_IN=1
-  if [[ ! $(docker swarm init) ]]; then
-    echo "Already in swarm node. Ignore the above error message"
-  fi
+	DTR_NAME="$1"
+	if [[ -e $DOCKER_CONFIG ]]; then
+	  #echo "DTR_NAME : $DTR_NAME"
+	  loggedIn=$(jq -r ".auths | .[\"$DTR_NAME\"]?" ~/.docker/config.json)
+	  #echo "Logged in? $loggedIn"
+	  if [[ -z $loggedIn ]]; then
+	    echo "Not Logged in"
+	  else
+	    echo "Docker logged in"
+	  fi
+	  DOCKER_LOGGED_IN=1
+	  if [[ ! $(docker swarm init) ]]; then
+	    echo "Already in swarm node. Ignore the above error message"
+	  fi
+	else
+		DOCKER_LOGGED_IN=0
+		echo "Not Logged in"
+	fi
+}
+
+function dockerLogin {
+	DTR_NAME="$1"
+
+	read -p "Enter the username for dtr $DTR_NAME> " DTR_LOGIN_USER
+	export LOGIN_USER
+
+	read -p "Enter your user password> " -s DTR_LOGIN_PASSWORD
+	export LOGIN_PASSWORD
+
+	if [[ $(docker login $DTR_NAME -u $DTR_LOGIN_USER -p $DTR_LOGIN_PASSWORD) ]]; then
+		echo "Docker login successful"
+	else
+		echo "Docker login failed"
+		exit 1
+	fi
+
 }
 
 function createPackages {
