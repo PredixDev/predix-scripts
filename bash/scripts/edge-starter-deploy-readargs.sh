@@ -170,6 +170,9 @@ function runEdgeStarterLocal() {
   #Start local service
   cd `pwd`/$REPO_NAME
   pwd
+  echo ""  >> $SUMMARY_TEXTFILE
+  echo "Deployed Edge Application with dependencies"  >> $SUMMARY_TEXTFILE
+
   if [[ -e docker-compose-edge-broker.yml ]]; then
     for image in $(grep "image:" docker-compose-edge-broker.yml | awk -F" " '{print $2}' | tr -d "\"");
     do
@@ -177,17 +180,22 @@ function runEdgeStarterLocal() {
     done
     docker service ls -f "name=predix-edge-broker_predix-edge-broker"
     docker stack deploy --with-registry-auth --compose-file docker-compose-edge-broker.yml predix-edge-broker
-		sleep 30
+    echo "sleep for 30 seconds"
+    sleep 30
     if [[  $(docker service ls -f "name=predix-edge-broker" | grep 0/1 | wc -l) == "1" ]]; then
       docker service ls
       echo 'Error: One of the predix-edge-broker services did not launch'
       exit 1
     else
       echo "Deployed following images as docker services"
+      echo "Deployed following images as docker services"  >> $SUMMARY_TEXTFILE
       for image in $(grep "image:" docker-compose-edge-broker.yml | awk -F" " '{print $2}' | tr -d "\"");
       do
         echo "  $image"
+        echo "  $image" >> $SUMMARY_TEXTFILE
       done
+      echo "Launched with"  >> $SUMMARY_TEXTFILE
+      echo "docker stack deploy --with-registry-auth --compose-file docker-compose-edge-broker.yml predix-edge-broker"  >> $SUMMARY_TEXTFILE
     fi
   else
     echo "docker-compose-edge-broker.yml not found"
@@ -218,10 +226,12 @@ function runEdgeStarterLocal() {
       ./scripts/get-access-token.sh $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET $TRUSTED_ISSUER_ID
       cat data/access_token
     fi
-		if [[ -d "data/store_forward_queue" ]]; then
-			mkdir -p data/store_forward_queue
-		fi
-		chmod -R 777 data
+    
+    if [[ -d "data/store_forward_queue" ]]; then
+    	mkdir -p data/store_forward_queue
+    fi
+    chmod -R 777 data
+    
     for image in $(grep "image:" docker-compose-local.yml | awk -F" " '{print $2}' | tr -d "\"");
     do
       echo "$image : $APP_NAME"
@@ -229,49 +239,54 @@ function runEdgeStarterLocal() {
         count=$(docker images "$image" -q | wc -l | tr -d " ")
         echo "count $count"
         if [[ $count == 0 ]]; then
-					if [[ $(docker pull $image) ]]; then
-						echo "$image downloaded successfully"
-					else
-						echo "$image not downloaded"
-					fi
-        fi
-
-
+		if [[ $(docker pull $image) ]]; then
+			echo "$image downloaded successfully"
+			echo "$image downloaded successfully" >> $SUMMARY_TEXTFILE
+		else
+			echo "$image not downloaded"
+		fi
+	fi
     done
     if [[ -e docker-compose-local.yml ]]; then
+      echo "proxy_url : $http_proxy"
+      __find_and_replace ".*http_proxy:.*" "      http_proxy: \"$http_proxy\"" "docker-compose-local.yml" "$quickstartLogDir"
+
       #docker build -t $APP_NAME:latest . --build-arg http_proxy --build-arg https_proxy
       docker stack deploy --compose-file docker-compose-local.yml $APP_NAME
-			sleep 30
+      echo "sleep for 60 seconds"
+      sleep 60
       if [[  $(docker service ls -f "name=$APP_NAME" | grep 0/1 | wc -l) == "1" ]]; then
         docker service ls
-        echo 'Error: One of the $APP_NAME services did not launch'
+        echo 'Error: One of the $APP_NAME services did not launch.  Try re-running again, maybe we did not give it enough time to come up.  See the image github README for troubleshooting details.'
         exit 1
+      else
+      	echo "Launched with"  >> $SUMMARY_TEXTFILE
+      	echo "docker stack deploy --compose-file docker-compose-local.yml $APP_NAME"  >> $SUMMARY_TEXTFILE
       fi
     fi
 
     docker images
-
-		echo ""  >> $SUMMARY_TEXTFILE
-	  echo "Deployed Edge Application with dependencies"  >> $SUMMARY_TEXTFILE
-	  echo "--------------------------------------------------"  >> $SUMMARY_TEXTFILE
-		if [[ -e docker-compose-edge-broker.yml ]]; then
-				echo "Downloaded and Deployed the Predix Edge Broker as defined in docker-compose-edge-broker.yml" >> $SUMMARY_TEXTFILE
-				for  image in $(grep "image:" docker-compose-edge-broker.yml | awk -F" " '{print $2}' | tr -d "\"");
-				do
-					 echo "	$image" >> $SUMMARY_TEXTFILE
-				done
-				echo "" >> $SUMMARY_TEXTFILE
-		fi
-		if [[ -e docker-compose-local.yml ]]; then
-				echo "Downloaded and Deployed the Docker images as defined in docker-compose-local.yml" >> $SUMMARY_TEXTFILE
-				for  image in $(grep "image:" docker-compose-local.yml | awk -F" " '{print $2}' | tr -d "\"");
-				do
-					 echo "	$image" >> $SUMMARY_TEXTFILE
-				done
-				echo "" >> $SUMMARY_TEXTFILE
-		fi
-	  echo -e "You can execute 'docker service ls' to view services deployed" >> $SUMMARY_TEXTFILE
-	  echo -e "You can execute 'docker service logs <service id>' to view the logs" >> $SUMMARY_TEXTFILE
+    
+    echo "--------------------------------------------------"  >> $SUMMARY_TEXTFILE
+    if [[ -e docker-compose-edge-broker.yml ]]; then
+    	echo "Downloaded and Deployed the Predix Edge Broker as defined in docker-compose-edge-broker.yml" >> $SUMMARY_TEXTFILE
+	for  image in $(grep "image:" docker-compose-edge-broker.yml | awk -F" " '{print $2}' | tr -d "\"");
+	do
+		echo "	$image" >> $SUMMARY_TEXTFILE
+	done
+	echo "" >> $SUMMARY_TEXTFILE
+	fi
+	if [[ -e docker-compose-local.yml ]]; then
+		echo "Downloaded and Deployed the Docker images as defined in docker-compose-local.yml" >> $SUMMARY_TEXTFILE
+		for  image in $(grep "image:" docker-compose-local.yml | awk -F" " '{print $2}' | tr -d "\"");
+		do
+			 echo "	$image" >> $SUMMARY_TEXTFILE
+		done
+		echo "" >> $SUMMARY_TEXTFILE
+	fi
+	echo -e "You can execute 'docker service ls' to view services deployed" >> $SUMMARY_TEXTFILE
+	echo -e "You can execute 'docker service logs <service id>' to view the logs" >> $SUMMARY_TEXTFILE
+	echo -e "Edge Reference App UI available at http://127.0.0.1:5000" >> $SUMMARY_TEXTFILE
   else
     echo "docker-compose-local.yml not found"
   fi
