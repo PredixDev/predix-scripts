@@ -149,7 +149,7 @@ function runFunctionsForDigitalTwin() {
             ;;
 					-bindrmq|--bind-rabbitmq)
             bindRabbitMQInstance $DATAEXCHANGE_APP_NAME
-	    setEnv $DATAEXCHANGE_APP_NAME $SPRING_PROFILES_ACTIVE $SPRING_PROFILES_ACTIVE_VALUE
+	    setEnv $DATAEXCHANGE_APP_NAME $SPRING_PROFILES_ACTIVE $SPRING_PROFILES_ACTIVE_DT_REF_APP_VALUE
 	    restageApp $DATAEXCHANGE_APP_NAME
 	    getUrlForAppName $DATAEXCHANGE_APP_NAME APP_URL "https"
 	    setEnv $FRONT_END_POLYMER_SEED_APP_NAME "dataExchangeURL" $APP_URL

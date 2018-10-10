@@ -61,6 +61,8 @@ function build-basic-app-dataexchange-main() {
 
     #    c) Set the clientid and base64ClientCredentials
     UAA_HOSTNAME=$(echo $uaaURL | awk -F"/" '{print $3}')
+    DX_SPRING_PROFILE="cloud,timeseries,asset,asset-file"
+    __find_and_replace "SPRING_PROFILES_ACTIVE : .*" "SPRING_PROFILES_ACTIVE: $DX_SPRING_PROFILE" "manifest.yml" "$logDir"
     __find_and_replace "predix_uaa_name: .*" "predix_uaa_name: $UAA_INSTANCE_NAME" "manifest.yml" "$logDir"
     __find_and_replace "{uaaService}" "$UAA_INSTANCE_NAME" "manifest.yml" "$logDir"
     __find_and_replace "predix_timeseries_name : .*" "predix_timeseries_name: $TIMESERIES_INSTANCE_NAME" "manifest.yml" "$logDir"
