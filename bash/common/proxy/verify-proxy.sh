@@ -175,7 +175,7 @@ function check_internet() {
   set -e
 }
 
-function run_everything() {
+function run_default() {
   echo
   echo "--------------------------------------------------------"
   check_internet
@@ -188,10 +188,10 @@ function run_everything() {
   echo "Verifying Maven"
   verify_maven ~/.m2/settings.xml
   echo
-  echo "--------------------------------------------------------"
-  echo "Verifying Docker"
-  verify_docker
-  echo
+  #echo "--------------------------------------------------------"
+  #echo "Verifying Docker"
+  #verify_docker
+  #echo
 }
 
 for arg in $@ ; do
@@ -207,7 +207,7 @@ MAVEN=0
 DOCKER=0
 
 if [ -z "$1" ]; then
-  run_everything
+  run_default
 else
   while [ ! -z "$1" ]; do
     [ "$1" == "--bash" ] && BASH=1

@@ -1,10 +1,10 @@
 #!/bin/bash
-set -e
 arguments="$*"
 #echo "arguments : $arguments"
 
 #source "$rootDir/bash/scripts/predix_services_setup.sh"
 
+set -e
 
 # Reset all variables that might be set
 RUN_EDGE_APP_LOCAL=0
@@ -143,7 +143,6 @@ function runFunctionsForEdgeStarter() {
 						fi
 						checkDockerLogin $DTR_NAME
 	          if [[ $DOCKER_LOGGED_IN == 1 ]]; then
-	            echo "runEdgeStarterLocal"
 	            runEdgeStarterLocal
 	          fi
 	          break
@@ -167,6 +166,8 @@ function runFunctionsForEdgeStarter() {
 }
 
 function runEdgeStarterLocal() {
+	echo "runEdgeStarterLocal"
+
   #Start local service
   cd `pwd`/$REPO_NAME
   pwd
@@ -201,37 +202,39 @@ function runEdgeStarterLocal() {
     echo "docker-compose-edge-broker.yml not found"
   fi
   sleep 5
-  echo "runEdgeStarterLocal 111"
   docker images
   if [[ -e docker-compose-local.yml ]]; then
     if [[ -e config/config-cloud-gateway.json ]]; then
-      if [[ "$TIMESERIES_INGEST_URI" == "" ]]; then
-        getTimeseriesIngestUriFromInstance $TIMESERIES_INSTANCE_NAME
-      fi
-      if [[ "$TIMESERIES_QUERY_URI" == "" ]]; then
-        getTimeseriesQueryUriFromInstance $TIMESERIES_INSTANCE_NAME
-      fi
-      if [[ "$TIMESERIES_ZONE_ID" == "" ]]; then
-        getTimeseriesZoneIdFromInstance $TIMESERIES_INSTANCE_NAME
-      fi
-			if [[ "$TRUSTED_ISSUER_ID" == "" ]]; then
-        getTrustedIssuerIdFromInstance $UAA_INSTANCE_NAME
-      fi
-      echo "TIMESERIES_ZONE_ID : $TIMESERIES_ZONE_ID"
-			echo "TRUSTED_ISSUER_ID : $TRUSTED_ISSUER_ID"
-      __find_and_replace ".*predix_zone_id\":.*" "          \"predix_zone_id\": \"$TIMESERIES_ZONE_ID\"," "config/config-cloud-gateway.json" "$quickstartLogDir"
-      echo "proxy_url : $http_proxy"
-      __find_and_replace ".*proxy_url\":.*" "          \"proxy_url\": \"$http_proxy\"" "config/config-cloud-gateway.json" "$quickstartLogDir"
+			if [[ "$SKIP_PREDIX_SERVICES" == "false" ]]; then
 
-      ./scripts/get-access-token.sh $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET $TRUSTED_ISSUER_ID
-      cat data/access_token
+	      if [[ "$TIMESERIES_INGEST_URI" == "" ]]; then
+	        getTimeseriesIngestUriFromInstance $TIMESERIES_INSTANCE_NAME
+	      fi
+	      if [[ "$TIMESERIES_QUERY_URI" == "" ]]; then
+	        getTimeseriesQueryUriFromInstance $TIMESERIES_INSTANCE_NAME
+	      fi
+	      if [[ "$TIMESERIES_ZONE_ID" == "" ]]; then
+	        getTimeseriesZoneIdFromInstance $TIMESERIES_INSTANCE_NAME
+	      fi
+				if [[ "$TRUSTED_ISSUER_ID" == "" ]]; then
+	        getTrustedIssuerIdFromInstance $UAA_INSTANCE_NAME
+	      fi
+	      echo "TIMESERIES_ZONE_ID : $TIMESERIES_ZONE_ID"
+				echo "TRUSTED_ISSUER_ID : $TRUSTED_ISSUER_ID"
+	      __find_and_replace ".*predix_zone_id\":.*" "          \"predix_zone_id\": \"$TIMESERIES_ZONE_ID\"," "config/config-cloud-gateway.json" "$quickstartLogDir"
+	      echo "proxy_url : $http_proxy"
+	      __find_and_replace ".*proxy_url\":.*" "          \"proxy_url\": \"$http_proxy\"" "config/config-cloud-gateway.json" "$quickstartLogDir"
+
+	      ./scripts/get-access-token.sh $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET $TRUSTED_ISSUER_ID
+	      cat data/access_token
+		  fi
     fi
-    
+
     if [[ -d "data/store_forward_queue" ]]; then
     	mkdir -p data/store_forward_queue
     fi
     chmod -R 777 data
-    
+
     for image in $(grep "image:" docker-compose-local.yml | awk -F" " '{print $2}' | tr -d "\"");
     do
       echo "$image : $APP_NAME"
@@ -266,7 +269,7 @@ function runEdgeStarterLocal() {
     fi
 
     docker images
-    
+
     echo "--------------------------------------------------"  >> $SUMMARY_TEXTFILE
     if [[ -e docker-compose-edge-broker.yml ]]; then
     	echo "Downloaded and Deployed the Predix Edge Broker as defined in docker-compose-edge-broker.yml" >> $SUMMARY_TEXTFILE
@@ -337,9 +340,7 @@ function dockerLogin {
 }
 
 function createPackages {
-  echo "1111"
-	cd $REPO_NAME
-  pwd
+  cd $REPO_NAME
   echo "Deploying $APP_NAME"
   APP_NAME_TAR="$APP_NAME.tar.gz"
   echo "RECREATE_TAR : $RECREATE_TAR"

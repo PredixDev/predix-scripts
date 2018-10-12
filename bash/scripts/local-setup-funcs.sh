@@ -12,26 +12,31 @@ function run_mac_setup() {
 	#get the url and branch of the requested repo from the version.json
 	__readDependency "local-setup" LOCAL_SETUP_URL LOCAL_SETUP_BRANCH
 
-  echo "Let's start by verifying that you have the required tools installed."
-  read -p "Should we install the required tools if not already installed? ($TOOLS) > " -t 300 answer
-  if [[ -z $answer ]]; then
-      echo -n "Specify (yes/no)> "
-      read answer
-  fi
-  if [[ ${answer:0:1} == "y" ]] || [[ ${answer:0:1} == "Y" ]]; then
-    if [[ $LOCAL_SETUP_URL == *"github.com"* ]]; then
-      LOCAL_SETUP_URL="${LOCAL_SETUP_URL/github.com/raw.githubusercontent.com}"
-      echo "LOCAL_SETUP_URL=$LOCAL_SETUP_URL"
-    else
-      if [[ $LOCAL_SETUP_URL == *"github.build"* ]]; then
-        raw="raw/adoption"
-        LOCAL_SETUP_URL="${LOCAL_SETUP_URL/adoption/$raw}"
-	echo "LOCAL_SETUP_URL=$LOCAL_SETUP_URL"
-      fi
-    fi
-    SETUP_MAC="$LOCAL_SETUP_URL/$LOCAL_SETUP_BRANCH/setup-mac.sh"
-    echo "SETUP_MAC=$SETUP_MAC"
-    bash <(curl -s -L $SETUP_MAC) $TOOLS_SWITCHES
+  if [[ "$TOOLS" != "" ]]; then
+	  echo "Let's start by verifying that you have the required tools installed."
+	  read -p "Should we install the required tools if not already installed? ($TOOLS) > " -t 300 answer
+	  if [[ -z $answer ]]; then
+	      echo -n "Specify (yes/no)> "
+	      read answer
+	  fi
+	  if [[ ${answer:0:1} == "y" ]] || [[ ${answer:0:1} == "Y" ]]; then
+	    if [[ $LOCAL_SETUP_URL == *"github.com"* ]]; then
+	      LOCAL_SETUP_URL="${LOCAL_SETUP_URL/github.com/raw.githubusercontent.com}"
+	      echo "LOCAL_SETUP_URL=$LOCAL_SETUP_URL"
+	    else
+	      if [[ $LOCAL_SETUP_URL == *"github.build"* ]]; then
+		raw="raw/adoption"
+		LOCAL_SETUP_URL="${LOCAL_SETUP_URL/adoption/$raw}"
+		echo "LOCAL_SETUP_URL=$LOCAL_SETUP_URL"
+	      fi
+	    fi
+	    SETUP_MAC="$LOCAL_SETUP_URL/$LOCAL_SETUP_BRANCH/setup-mac.sh"
+	    echo "SETUP_MAC=$SETUP_MAC"
+	    getUsingCurl $SETUP_MAC
+	    chmod +x setup-mac.sh
+	    ./setup-mac.sh $TOOLS_SWITCHES
+	    #bash <(curl -s -L $SETUP_MAC) $TOOLS_SWITCHES
+	  fi
   fi
 }
 

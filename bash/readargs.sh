@@ -183,7 +183,7 @@ function processSwitchCommon() {
 			;;
 		-p|--print-vcaps)
 			RUN_PRINT_VARIABLES=1
-			LOGIN=1
+			#LOGIN=1
 			;;
     -pxclimin|--predix-cli-min)
   			if [ -n "$2" ]; then

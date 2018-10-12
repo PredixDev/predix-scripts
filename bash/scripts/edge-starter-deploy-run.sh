@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -x
-
 trap "trap_ctrlc" 2
 
 APPLICATION_ID="$1"
@@ -31,12 +29,12 @@ fi
 mkdir -p /var/lib/edge-agent/app/$APPLICATION_ID/conf/
 rm -rf /var/lib/edge-agent/app/$APPLICATION_ID/conf/*
 unzip /mnt/data/downloads/$EDGE_APP_CONFIG -d /var/lib/edge-agent/app/$APPLICATION_ID/conf/
-
+echo "unzip complete"
 #/opt/edge-agent/app-start --appInstanceId=$APPLICATION_ID
 
 #if [[ $(curl http://localhost/api/v1/applications --unix-socket /var/run/edge-core/edge-core.sock -X POST -F "file=@/mnt/data/downloads/$EDGE_APP" -H "app_name: $APPLICATION_ID") ]]; then
 /opt/edge-agent/app-deploy --enable-core-api $APPLICATION_ID /mnt/data/downloads/$EDGE_APP
-
+echo "deploy complete"
 if [[ $(docker service ls -f "name=$APP_SERVICE_NAME" -q | wc -l) > 0 ]]; then
   echo "$APPLICATION_ID service started"
   docker service logs $(docker service ls -f "name=$APP_SERVICE_NAME" -q)
