@@ -233,7 +233,9 @@ function runEdgeStarterLocal() {
     if [[ -d "data/store_forward_queue" ]]; then
     	mkdir -p data/store_forward_queue
     fi
-    chmod -R 777 data
+		if [[ -e "data" ]]; then
+    	chmod -R 777 data
+		fi
 
     for image in $(grep "image:" docker-compose-local.yml | awk -F" " '{print $2}' | tr -d "\"");
     do
