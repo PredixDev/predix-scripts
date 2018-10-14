@@ -301,26 +301,26 @@ function runEdgeStarterLocal() {
 
 function checkDockerLogin {
   DOCKER_CONFIG="$HOME/.docker/config.json"
-	DTR_NAME="$1"
-	#cat $DOCKER_CONFIG
-	if [[ -e $DOCKER_CONFIG ]]; then
-	  #echo "DTR_NAME : $DTR_NAME"
-	  loggedIn=$(jq -r ".auths | .[\"$DTR_NAME\"]?" ~/.docker/config.json)
-	  echo "Logged in? $loggedIn"
-	  if [[ $(jq -r ".auths | .[\"$DTR_NAME\"]?" ~/.docker/config.json) != null ]]; then
-	    echo "Docker logged in"
-			DOCKER_LOGGED_IN=1
-		  if [[ ! $(docker swarm init) ]]; then
-		    echo "Already in swarm node. Ignore the above error message"
-		  fi
-		else
-			DOCKER_LOGGED_IN=0
-			echo "Not Logged in"
-	  fi
-	else
-		DOCKER_LOGGED_IN=0
-		echo "Not Logged in"
-	fi
+  echo "DOCKER_CONFIG=$DOCKER_CONFIG"
+  DTR_NAME="$1"
+  if [[ -e $DOCKER_CONFIG ]]; then
+    #echo "DTR_NAME : $DTR_NAME"
+    loggedIn=$(jq -r ".auths | .[\"$DTR_NAME\"]?" ~/.docker/config.json)
+    echo "Logged in? $loggedIn"
+    if [[ $(jq -r ".auths | .[\"$DTR_NAME\"]?" ~/.docker/config.json) != null ]]; then
+      echo "Docker logged in"
+      DOCKER_LOGGED_IN=1
+      if [[ ! $(docker swarm init) ]]; then
+        echo "Already in swarm node. Ignore the above error message"
+      fi 
+   else
+     DOCKER_LOGGED_IN=0
+     echo "Not Logged in"
+   fi
+  else
+	DOCKER_LOGGED_IN=0
+	echo "Not Logged in"
+  fi
 }
 
 function dockerLogin {
