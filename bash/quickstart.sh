@@ -119,6 +119,7 @@ fi
 if [[ ( $LOGIN == 1 ) ]]; then
     #Check px login and target Space
     if [[ $(px target | grep FAILED | wc -l) -eq "1" ]]; then
+      px target
       echo "Please login to cloud using 'px login' or 'cf login'.  GE emails will use 'px login --sso' or 'cf login --sso' "
       exit 1
     fi
