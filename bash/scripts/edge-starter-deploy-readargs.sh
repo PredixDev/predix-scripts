@@ -173,7 +173,7 @@ function runEdgeStarterLocal() {
   pwd
   echo ""  >> $SUMMARY_TEXTFILE
   echo "Deployed Edge Application with dependencies"  >> $SUMMARY_TEXTFILE
-
+	updateConfigAndToken
   if [[ -e docker-compose-edge-broker.yml ]]; then
     for image in $(grep "image:" docker-compose-edge-broker.yml | awk -F" " '{print $2}' | tr -d "\"");
     do
@@ -204,32 +204,6 @@ function runEdgeStarterLocal() {
   sleep 5
   docker images
   if [[ -e docker-compose-local.yml ]]; then
-    if [[ -e config/config-cloud-gateway.json ]]; then
-			if [[ "$SKIP_PREDIX_SERVICES" == "false" ]]; then
-
-	      if [[ "$TIMESERIES_INGEST_URI" == "" ]]; then
-	        getTimeseriesIngestUriFromInstance $TIMESERIES_INSTANCE_NAME
-	      fi
-	      if [[ "$TIMESERIES_QUERY_URI" == "" ]]; then
-	        getTimeseriesQueryUriFromInstance $TIMESERIES_INSTANCE_NAME
-	      fi
-	      if [[ "$TIMESERIES_ZONE_ID" == "" ]]; then
-	        getTimeseriesZoneIdFromInstance $TIMESERIES_INSTANCE_NAME
-	      fi
-				if [[ "$TRUSTED_ISSUER_ID" == "" ]]; then
-	        getTrustedIssuerIdFromInstance $UAA_INSTANCE_NAME
-	      fi
-	      echo "TIMESERIES_ZONE_ID : $TIMESERIES_ZONE_ID"
-				echo "TRUSTED_ISSUER_ID : $TRUSTED_ISSUER_ID"
-	      __find_and_replace ".*predix_zone_id\":.*" "          \"predix_zone_id\": \"$TIMESERIES_ZONE_ID\"," "config/config-cloud-gateway.json" "$quickstartLogDir"
-	      echo "proxy_url : $http_proxy"
-	      __find_and_replace ".*proxy_url\":.*" "          \"proxy_url\": \"$http_proxy\"" "config/config-cloud-gateway.json" "$quickstartLogDir"
-
-	      ./scripts/get-access-token.sh $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET $TRUSTED_ISSUER_ID
-	      cat data/access_token
-		  fi
-    fi
-
     if [[ -d "data/store_forward_queue" ]]; then
     	mkdir -p data/store_forward_queue
     fi
@@ -298,7 +272,29 @@ function runEdgeStarterLocal() {
   docker images
 
 }
+function updateConfigAndToken {
+	if [[ -e config/config-cloud-gateway.json ]]; then
+		if [[ "$SKIP_PREDIX_SERVICES" == "false" ]]; then
+			if [[ "$TIMESERIES_QUERY_URI" == "" ]]; then
+				getTimeseriesQueryUriFromInstance $TIMESERIES_INSTANCE_NAME
+			fi
+			if [[ "$TIMESERIES_ZONE_ID" == "" ]]; then
+				getTimeseriesZoneIdFromInstance $TIMESERIES_INSTANCE_NAME
+			fi
+			if [[ "$TRUSTED_ISSUER_ID" == "" ]]; then
+				getTrustedIssuerIdFromInstance $UAA_INSTANCE_NAME
+			fi
+			echo "TIMESERIES_ZONE_ID : $TIMESERIES_ZONE_ID"
+			echo "TRUSTED_ISSUER_ID : $TRUSTED_ISSUER_ID"
+			__find_and_replace ".*predix_zone_id\":.*" "          \"predix_zone_id\": \"$TIMESERIES_ZONE_ID\"," "config/config-cloud-gateway.json" "$quickstartLogDir"
+			echo "proxy_url : $http_proxy"
+			__find_and_replace ".*proxy_url\":.*" "          \"proxy_url\": \"$http_proxy\"" "config/config-cloud-gateway.json" "$quickstartLogDir"
 
+			./scripts/get-access-token.sh $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET $TRUSTED_ISSUER_ID
+			cat data/access_token
+		fi
+	fi
+}
 function checkDockerLogin {
   DOCKER_CONFIG="$HOME/.docker/config.json"
   echo "DOCKER_CONFIG=$DOCKER_CONFIG"
@@ -312,7 +308,7 @@ function checkDockerLogin {
       DOCKER_LOGGED_IN=1
       if [[ ! $(docker swarm init) ]]; then
         echo "Already in swarm node. Ignore the above error message"
-      fi 
+      fi
    else
      DOCKER_LOGGED_IN=0
      echo "Not Logged in"
@@ -344,6 +340,7 @@ function dockerLogin {
 function createPackages {
   cd $REPO_NAME
   echo "Deploying $APP_NAME"
+	updateConfigAndToken
   APP_NAME_TAR="$APP_NAME.tar.gz"
   echo "RECREATE_TAR : $RECREATE_TAR"
   ls
@@ -375,8 +372,8 @@ function createPackages {
       cd ../
     fi
   fi
-  ls -lrt
 }
+
 function deployToEdge {
   if [[ ! -n $IP_ADDRESS ]]; then
     read -p "Enter the IP Address of Edge OS> " IP_ADDRESS
@@ -399,7 +396,7 @@ function deployToEdge {
       \"Are you sure you want to continue connecting\" {
         send \"yes\r\"
         expect \"assword:\"
-        send "$LOGIN_PASSWORD\r"
+        send \"$LOGIN_PASSWORD\r\"
       }
       \"assword:\" {
         send \"$LOGIN_PASSWORD\r\"
@@ -419,10 +416,23 @@ function deployToEdge {
       }
     }
     expect \"*\# \"
-    send \"su eauser /mnt/data/downloads/edge-starter-deploy-run.sh $APP_NAME\r\"
-    set timeout 60
+    set timeout 45
+    send \"ls\r\"
     expect \"*\# \"
-    send \"exit\r\"
+    send \"echo \$?\r\"
+    expect \"*\# \"
+    send \"ls xxx\r\"
+    expect \"*\# \"
+    send \"echo \$?\r\"
+    expect \"*\# \"
+    
+    send \"su eauser /mnt/data/downloads/edge-starter-deploy-run.sh $APP_NAME\r\"
+    expect {
+    	\"*\# \" { send \"echo 222 $?\r\"; puts \"edge-starter-deploy-runn $? complete\"; }
+	timeout { puts \"timed out during edge-starter-deploy-run.sh\"; exit 1 }
+    }
+    expect \"*\# \"
     expect eof
   "
+  echo "deployToEdge function complete"
 }
