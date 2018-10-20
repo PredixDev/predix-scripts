@@ -115,8 +115,15 @@ function checkmvnsettings() {
 }
 
 function verify_maven() {
-  checkmvnsettings $1
-  assertmvn $1
+  echo "Checking if project contains a pom.xml file"
+  if [ -e "pom.xml" ]; then
+    checkmvnsettings $1
+    assertmvn $1
+  else
+    echo
+    echo "Maven verification not needed as there is no pom.xml file"
+    echo "Done"
+  fi 
 }
 
 function verify_docker() {

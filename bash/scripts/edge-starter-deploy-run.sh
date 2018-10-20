@@ -9,8 +9,6 @@ EDGE_APP_CONFIG="$APPLICATION_ID-config.zip"
 
 ROOT_DIR=$(pwd)
 echo $APP_SERVICE_NAME
-echo "exiting with 1"
-exit 1
 
 count=$(docker service ls --filter name=\'$APPLICATION_ID\' -q | wc -l)
 if [[ $count == 0 ]]; then
@@ -34,9 +32,11 @@ unzip /mnt/data/downloads/$EDGE_APP_CONFIG -d /var/lib/edge-agent/app/$APPLICATI
 echo "unzip complete"
 #/opt/edge-agent/app-start --appInstanceId=$APPLICATION_ID
 
+cp /mnt/data/downloads/access_token /var/run/edge-agent/access-token
+
 #if [[ $(curl http://localhost/api/v1/applications --unix-socket /var/run/edge-core/edge-core.sock -X POST -F "file=@/mnt/data/downloads/$EDGE_APP" -H "app_name: $APPLICATION_ID") ]]; then
 echo "/opt/edge-agent/app-deploy --enable-core-api $APPLICATION_ID /mnt/data/downloads/$EDGE_APP"
-/opt/edge-agent/app-deploy --enable-core-api $APPLICATION_ID /mnt/data/downloads/$EDGE_APP
+bash -x /opt/edge-agent/app-deploy --enable-core-api $APPLICATION_ID /mnt/data/downloads/$EDGE_APP
 echo "app-deploy complete"
 if [[ $(docker service ls -f "name=$APP_SERVICE_NAME" -q | wc -l) > 0 ]]; then
   echo "$APPLICATION_ID service started"

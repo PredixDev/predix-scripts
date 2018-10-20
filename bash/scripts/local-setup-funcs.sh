@@ -247,72 +247,131 @@ function getGitRepo() {
 	fi
 }
 
-# method to fetch API KEY for artifactory
+# method to fetch API Key for artifactory
 function fetchArtifactoryKey(){
-	validate_num_arguments 0 $# "\"local-setup-funcs:getArtifactoryKey\" calls the artifactory with user credentails to get apikey" "$localSetupLogDir"
+	validate_num_arguments 0 $# "\"local-setup-funcs:getArtifactoryKey\" calls Artifactory with user credentails to get API Key" "$localSetupLogDir"
 	echo "Apps and Services in the Predix Cloud need unique artifactory information"
-	read -p "Enter your predix.io artifactory username >" INPUT
+	read -p "Enter your predix.io username (e.g. thomas.edison@ge.com)>" INPUT
 	export ARTIFACTORY_USERNAME="${INPUT:-$ARTIFACTORY_USERNAME}"
 
-	#echo "******************************"
-	#echo "In the next step please enter the Apikey for the artifactory.To create a new apikey follow these steps"
-	#echo "Login to artifactory, click on the left side Welcome <username>."
-	#echo "This is open a User Profile page."
-	#echo "Enter your current Password and click UnLock."
-	#echo "The Api Key box will be popluated with the APIKey,then use clipboard icon to copy this apikey."
-	#echo "******************************"
-	#read -p "Enter your predix.io artifactory apikey >" INPUT
-	#export ARTIFACTORY_APIKEY="${INPUT:-$ARTIFACTORY_APIKEY}"
-
-	read -p "Enter your predix.io artifactory password >" -s INPUT
-	ARTIFACTORY_PASSWORD="${INPUT:-$ARTIFACTORY_PASSWORD}"
-	artifactoryKey=$( getArtifactoryKey "$ARTIFACTORY_USERNAME" "$ARTIFACTORY_PASSWORD" )
-  #echo " fetching ARTIFACTORY KEY in first attempt"  $artifactoryKey
-	if [[ -z "${artifactoryKey// }" ]]; then
-		#echo "ARTIFACTORY KEY empty, attempting to create..."
-		echo ""
-		echo "artifactory apikey not found, will try to create one"
-		artifactoryKey=$( postArtifactoryKey "$ARTIFACTORY_USERNAME" "$ARTIFACTORY_PASSWORD" )
+	if [[ $ARTIFACTORY_USERNAME = *"ge.com"* ]]; then
+		echo "************************************************************************************************************************"
+		echo "In the next step please enter the API Key for Artifactory. To retrieve your API Key follow these steps"
+		echo "Login to artifactory.  (if you are a @ge.com user, please click on the SAML SSO link)"
+		echo "Click on your User Profile <username>."
+		echo "Enter your current Password and click UnLock."
+		echo "The API Key box will be popluated, then use clipboard icon to copy this API Key."
+		echo "************************************************************************************************************************"
+		read -p "Enter your predix artifactory username (e.g. your SSO)>" INPUT
+		export ARTIFACTORY_USERNAME="${INPUT:-$ARTIFACTORY_USERNAME}"
+		read -p "Enter your predix.io artifactory API Key>" -s INPUT
+		export ARTIFACTORY_APIKEY="${INPUT:-$ARTIFACTORY_APIKEY}"
+	else
+		read -p "Enter your predix.io artifactory password >" -s INPUT
+		ARTIFACTORY_PASSWORD="${INPUT:-$ARTIFACTORY_PASSWORD}"
+		artifactoryKey=$( getArtifactoryKey "$ARTIFACTORY_USERNAME" "$ARTIFACTORY_PASSWORD" )
+	  #echo " fetching ARTIFACTORY KEY in first attempt"  $artifactoryKey
 		if [[ -z "${artifactoryKey// }" ]]; then
+			#echo "ARTIFACTORY KEY empty, attempting to create..."
 			echo ""
-			echo "Artifactory apikey not created, perhaps you already have one. Please try your predix.io username and password again, maybe you mistyped it earlier."
-			read -p "Enter your predix.io artifactory username >" INPUT
-	    export ARTIFACTORY_USERNAME="${INPUT:-$ARTIFACTORY_USERNAME}"
-			read -p "Enter your predix.io artifactory password >" -s INPUT
-			ARTIFACTORY_PASSWORD="${INPUT:-$ARTIFACTORY_PASSWORD}"
-			artifactoryKey=$( getArtifactoryKey "$ARTIFACTORY_USERNAME" "$ARTIFACTORY_PASSWORD" )
+			echo "artifactory API Key not found, will try to create one"
+			artifactoryKey=$( postArtifactoryKey "$ARTIFACTORY_USERNAME" "$ARTIFACTORY_PASSWORD" )
+			if [[ -z "${artifactoryKey// }" ]]; then
+				echo ""
+				echo "Artifactory API Key not created, perhaps you already have one. Please try your predix.io username and password again, maybe you mistyped it earlier."
+				read -p "Enter your predix.io artifactory username >" INPUT
+		    export ARTIFACTORY_USERNAME="${INPUT:-$ARTIFACTORY_USERNAME}"
+				read -p "Enter your predix.io artifactory password >" -s INPUT
+				ARTIFACTORY_PASSWORD="${INPUT:-$ARTIFACTORY_PASSWORD}"
+				artifactoryKey=$( getArtifactoryKey "$ARTIFACTORY_USERNAME" "$ARTIFACTORY_PASSWORD" )
+			fi
 		fi
+
+		## 2 attempt report error
+		if [[ -z "${artifactoryKey// }" ]]; then
+			artifactoryKey="unknown"
+			echo ""
+			echo "ARTIFACTORY API Key is not set. Predix RPM package updates will not be fetched, but critical Dev Kit functionality will still work.  To try again later, re-run this script."
+		fi
+		export ARTIFACTORY_APIKEY=$artifactoryKey
 	fi
 
-	## 2 attempt report error
-	if [[ -z "${artifactoryKey// }" ]]; then
-		artifactoryKey="unknown"
-		echo ""
-		echo "ARTIFACTORY APIKEY is not set. Predix RPM package updates will not be fetched, but critical Dev Kit functionality will still work.  To try again later, re-run this script."
-	fi
 	echo ""
-	echo "Artifactory Key is $artifactoryKey"
-	export ARTIFACTORY_APIKEY=$artifactoryKey
-	echo "Artifactory information username $ARTIFACTORY_USERNAME with ApiKey $ARTIFACTORY_APIKEY" >> $SUMMARY_TEXTFILE
+	#echo "Artifactory API Key is $ARTIFACTORY_APIKEY"
+	export ARTIFACTORY_ID="artifactory.external"
+	echo "Artifactory username $ARTIFACTORY_USERNAME with API Key $ARTIFACTORY_APIKEY"
+	echo
+	echo "Artifactory username $ARTIFACTORY_USERNAME with API Key $ARTIFACTORY_APIKEY" >> summary.txt
 }
 
 function postArtifactoryKey() {
 	#this function cannot echo things otherwise it will get assigned to the calling variable
 	validate_num_arguments 2 $# "\"local-setup-funcs:getArtifactoryKey\" calls the artifactory with user credentails to get apikey" "$localSetupLogDir"
-	source bash/scripts/curl_helper_funcs.sh
+	#source bash/scripts/curl_helper_funcs.sh
 	ARTIFACTORY_BASIC_AUTH=$(echo -ne $1:$2 | base64)
 	responseCurl=`curl -X POST --silent "https://artifactory.predix.io/artifactory/api/security/apiKey" -H "Authorization: Basic $ARTIFACTORY_BASIC_AUTH" -H "Content-Type: application/x-www-form-urlencoded"`
-  apiKey=$( __jsonval "$responseCurl" "apiKey" )
-	# if api key not found create one .
-	echo "$apiKey"
+  	apiKey=$( getjson "$responseCurl" "apiKey" )
+	# if API Key not found create one .
+	echo $apiKey
 }
 
 function getArtifactoryKey() {
 	#this function cannot echo things otherwise it will get assigned to the calling variable
-	validate_num_arguments 2 $# "\"local-setup-funcs:getArtifactoryKey\" calls the artifactory with user credentails to get apikey" "$localSetupLogDir"
-	source bash/scripts/curl_helper_funcs.sh
+	validate_num_arguments 2 $# "\"local-setup-funcs:getArtifactoryKey\" calls the artifactory with user credentials to get API Key" "$localSetupLogDir"
+	#source bash/scripts/curl_helper_funcs.sh
 	ARTIFACTORY_BASIC_AUTH=$(echo -ne $1:$2 | base64)
-	responseCurl=`curl --silent "https://artifactory.predix.io/artifactory/api/security/apiKey" -H "Authorization: Basic $ARTIFACTORY_BASIC_AUTH" -H "Content-Type: application/x-www-form-urlencoded"`
-  apiKey=$( __jsonval "$responseCurl" "apiKey" )
-	echo "$apiKey"
+ 	responseCurl=`curl --silent "https://artifactory.predix.io/artifactory/api/security/apiKey" -H "Authorization: Basic $ARTIFACTORY_BASIC_AUTH" -H "Content-Type: application/x-www-form-urlencoded"`
+  	apiKey=$( getjson "$responseCurl" "apiKey" )
+  	echo $apiKey
+}
+
+function getjson {
+    	validate_num_arguments 2 $# "\"curl_helper_funcs:__jsonval\" expected in order: String of JSON, String of property to look for" "$logDir"
+    	temp=`echo $1 | sed 's/\\\\\//\//g' | sed 's/[{}]//g' | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}' | sed 's/\"\:\"/\|/g' | sed 's/[\,]/ /g' | sed 's/\"//g' | grep -w $2`
+    	echo ${temp##*|}
+}
+
+function addApiKeytoMaven() {
+
+  echo "ID = $ARTIFACTORY_ID"
+  echo "Username = $ARTIFACTORY_USERNAME"
+  echo "Password = $ARTIFACTORY_APIKEY"
+
+  if [[ -e settings.xml && -e setServerInMaven.xsl ]] ; then
+    cp ~/.m2/settings.xml ~/.m2/settings.xml.orig
+    xsltproc --stringparam server-id $ARTIFACTORY_ID \
+         --stringparam server-username $ARTIFACTORY_USERNAME \
+         --stringparam server-password $ARTIFACTORY_APIKEY \
+         setServerInMaven.xsl ~/.m2/settings.xml.orig > ~/.m2/settings.xml.new
+    #mv -f settings.xml.new settings.xml
+    echo
+    echo "Done. Successfully set maven proxies"
+  else
+    echo
+    echo "Could not find settings.xml in directory ./m2"
+    echo "OR"
+    echo "Could not find enable-proxy.xsl"
+    echo "Please make sure you are running this script from the /predix-scripts/bash/common/proxy directory"
+    echo "Failed: Maven Proxies not set"
+  fi
+}
+
+function getCurlArtifactory() {
+	validate_num_arguments 1 $# "\"local-setup-funcs:getCurlArtifactory\" calls the artifactory with ARTIFACT_URL, USERNAME and API_KEY to curl the artifact" "$localSetupLogDir"
+	#fetchArtifactoryKey
+	ARTIFACT_URL=$1
+	#USERNAME=$2
+	#API_KEY=$3
+	
+	if [[ -z $ARTIFACTORY_USERNAME && -z $ARTIFACTORY_APIKEY ]]; then
+		echo "Artifactory Credentials not set in environment variables"
+		echo "Calling fetchApiKey"
+		fetchArtifactoryKey
+	fi
+	
+	RESULT=$(curl -u $ARTIFACTORY_USERNAME:$ARTIFACTORY_APIKEY $ARTIFACT_URL -O)
+	if [[ -n $RESULT ]]; then
+		echo "Curl to artifact URL failed"
+		echo "Please check the ARTIFACT_URL, ARTIFACTORY_USERNAME, AND ARTIFACTORY_APIKEY"
+	fi
 }
