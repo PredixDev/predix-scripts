@@ -37,8 +37,8 @@ GOTO START
 GOTO :eof
 
 :SET_PROXIES
-  SET HTTP_PROXY=!PROXY!
-  SET HTTPS_PROXY=!PROXY!
+  SET HTTP_PROXY=%PROXY%
+  SET HTTPS_PROXY=%PROXY%
 GOTO :eof
 
 :UNSET_PROXIES
@@ -86,7 +86,7 @@ GOTO :eof
     ECHO You can enter - http://PROXY_HOST_NAME:PORT"
     ECHO
     SET /p PROXY=Which proxy do you want to use?  
-    ECHO Your selected proxy value = !PROXY!
+    ECHO Your selected proxy value = %PROXY%
     CALL :SET_PROXIES
   )
 
@@ -95,7 +95,7 @@ GOTO :eof
   )
 
   IF [%1]==[--clean] (
-    CALL :UNSET_PROXIES
+    CALL :CLEAN_PROXIES
   )
 
   :DONE

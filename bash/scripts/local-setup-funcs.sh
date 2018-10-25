@@ -345,13 +345,13 @@ function addApiKeytoMaven() {
          setServerInMaven.xsl ~/.m2/settings.xml.orig > ~/.m2/settings.xml.new
     #mv -f settings.xml.new settings.xml
     echo
-    echo "Done. Successfully set maven proxies"
+    echo "Done. Successfully set artifactory credentials in settings.xml file"
   else
     echo
     echo "Could not find settings.xml in directory ./m2"
     echo "OR"
-    echo "Could not find enable-proxy.xsl"
-    echo "Please make sure you are running this script from the /predix-scripts/bash/common/proxy directory"
+    echo "Could not find setServerInMaven.xsl"
+    echo "Please make sure you are running this script from the /predix-scripts/bash/scripts directory"
     echo "Failed: Maven Proxies not set"
   fi
 }
@@ -367,6 +367,8 @@ function getCurlArtifactory() {
 		echo "Artifactory Credentials not set in environment variables"
 		echo "Calling fetchApiKey"
 		fetchArtifactoryKey
+		#echo "Adding fetched Artifactory Username and API key to maven settings.xml file"
+		#addApiKeytoMaven
 	fi
 	
 	RESULT=$(curl -u $ARTIFACTORY_USERNAME:$ARTIFACTORY_APIKEY $ARTIFACT_URL -O)
@@ -374,4 +376,17 @@ function getCurlArtifactory() {
 		echo "Curl to artifact URL failed"
 		echo "Please check the ARTIFACT_URL, ARTIFACTORY_USERNAME, AND ARTIFACTORY_APIKEY"
 	fi
+}
+
+function getArtifactoryFromMaven(){
+	MAVEN_SETTINGS_FILE=$1
+	sed -n '/<server/,/<\/server/p' $MAVEN_SETTINGS_FILE > tmp.txt
+	ID=$(sed  -n 's/.*<id>\(.*\)<\/id>/\1/p' tmp.txt)
+	USERNAME=$(sed  -n 's/.*<username>\(.*\)<\/username>/\1/p' tmp.txt)
+	PASSWORD=$(sed  -n 's/.*<password>\(.*\)<\/password>/\1/p' tmp.txt)
+
+	echo "Id = $ID"
+	echo "User = $USERNAME"
+	echo "Password = $PASSWORD"
+	rm -rf tmp.txt
 }

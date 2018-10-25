@@ -178,15 +178,7 @@ function runEdgeStarterLocal() {
   fi
   if [[ -e docker-compose-edge-broker.yml ]]; then
       __append_new_head_log "Edge Starter Local - Launch Predix Edge Data Broker" "-" "$quickstartLogDir"
-    for image in $(grep "image:" docker-compose-edge-broker.yml | awk -F" " '{print $2}' | tr -d "\"");
-    do
-      echo "image=$image"
-      if [[ $image == dtr.predix.io* ]]; then
-      	pullDockerImageFromArtifactory "predix-edge-broker"
-      else
-        docker pull $image
-      fi
-    done
+    processDockerCompose "docker-compose-edge-broker.yml"
     docker service ls -f "name=predix-edge-broker_predix-edge-broker"
     echo "docker stack deploy --with-registry-auth --compose-file docker-compose-edge-broker.yml predix-edge-broker"
     docker stack deploy --with-registry-auth --compose-file docker-compose-edge-broker.yml predix-edge-broker
@@ -221,34 +213,7 @@ function runEdgeStarterLocal() {
     	chmod -R 777 data
     fi
 
-    i=0
-    for service in $(yq r -j docker-compose-local.yml | jq .services | jq 'keys' | jq '.[]' | tr -d "\"");
-    do
-      echo "$service";
-      ((i++))
-      if [[ $service == dtr.predix.io* ]]; then
-        pullDockerImageFromArtifactory "$service"
-      else
-      	j=0
-        for image in $(grep "image:" docker-compose-local.yml | awk -F" " '{print $2}' | tr -d "\"");
-      	do
-	  ((j++))
-	  if [[ $j -eq $i ]]; then
-	    count=$(docker images "$image" -q | wc -l | tr -d " ")
-            echo "count $count"
-            if [[ $count == 0 ]]; then
-	      echo "docker pull $image"
-	      if [[ $(docker pull $image) ]]; then
-	        echo "$image downloaded successfully"
-	        echo "$image downloaded successfully" >> $SUMMARY_TEXTFILE
-	      else
-	        echo "$image not downloaded"
-	      fi
-	    fi
-	  fi
-	done
-      fi
-   done
+    processDockerCompose "docker-compose-local.yml"
 
     echo "docker stack deploy --compose-file docker-compose-local.yml $APP_NAME"
     docker stack deploy --compose-file docker-compose-local.yml $APP_NAME
@@ -294,28 +259,28 @@ function updateConfigAndToken {
   cd $REPO_NAME
   if [[ -e config/config-cloud-gateway.json ]]; then
     if [[ "$SKIP_PREDIX_SERVICES" == "false" ]]; then
-	if [[ "$TIMESERIES_QUERY_URI" == "" ]]; then
-		getTimeseriesQueryUriFromInstance $TIMESERIES_INSTANCE_NAME
-	fi
-	if [[ "$TIMESERIES_ZONE_ID" == "" ]]; then
-		getTimeseriesZoneIdFromInstance $TIMESERIES_INSTANCE_NAME
-	fi
-	if [[ "$TRUSTED_ISSUER_ID" == "" ]]; then
-		getTrustedIssuerIdFromInstance $UAA_INSTANCE_NAME
-	fi
-	echo "TIMESERIES_ZONE_ID : $TIMESERIES_ZONE_ID"
-	echo "TRUSTED_ISSUER_ID : $TRUSTED_ISSUER_ID"
-	if [[ -e config/config-cloud-gateway.json ]]; then
-	  __find_and_replace ".*predix_zone_id\":.*" "          \"predix_zone_id\": \"$TIMESERIES_ZONE_ID\"," "config/config-cloud-gateway.json" "$quickstartLogDir"
-	  echo "proxy_url : $http_proxy"
-	  __find_and_replace ".*proxy_url\":.*" "          \"proxy_url\": \"$http_proxy\"" "config/config-cloud-gateway.json" "$quickstartLogDir"
-	fi
-	if [[ -e docker-compose-local.yml ]]; then
-      	  echo "proxy_url : $http_proxy"
-      	  __find_and_replace ".*http_proxy:.*" "      http_proxy: \"$http_proxy\"" "docker-compose-local.yml" "$quickstartLogDir"
-	fi
-	./scripts/get-access-token.sh $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET $TRUSTED_ISSUER_ID
-	cat data/access_token
+			if [[ "$TIMESERIES_QUERY_URI" == "" ]]; then
+				getTimeseriesQueryUriFromInstance $TIMESERIES_INSTANCE_NAME
+			fi
+			if [[ "$TIMESERIES_ZONE_ID" == "" ]]; then
+				getTimeseriesZoneIdFromInstance $TIMESERIES_INSTANCE_NAME
+			fi
+			if [[ "$TRUSTED_ISSUER_ID" == "" ]]; then
+				getTrustedIssuerIdFromInstance $UAA_INSTANCE_NAME
+			fi
+			echo "TIMESERIES_ZONE_ID : $TIMESERIES_ZONE_ID"
+			echo "TRUSTED_ISSUER_ID : $TRUSTED_ISSUER_ID"
+			if [[ -e config/config-cloud-gateway.json ]]; then
+			  __find_and_replace ".*predix_zone_id\":.*" "          \"predix_zone_id\": \"$TIMESERIES_ZONE_ID\"," "config/config-cloud-gateway.json" "$quickstartLogDir"
+			  echo "proxy_url : $http_proxy"
+			  __find_and_replace ".*proxy_url\":.*" "          \"proxy_url\": \"$http_proxy\"" "config/config-cloud-gateway.json" "$quickstartLogDir"
+			fi
+			if [[ -e docker-compose-local.yml ]]; then
+		      	  echo "proxy_url : $http_proxy"
+		      	  __find_and_replace ".*http_proxy:.*" "      http_proxy: \"$http_proxy\"" "docker-compose-local.yml" "$quickstartLogDir"
+			fi
+			./scripts/get-access-token.sh $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET $TRUSTED_ISSUER_ID
+			cat data/access_token
     else
     	echo "SKIP_PREDIX_SERVICES=$SKIP_PREDIX_SERVICES so will not update proxy and cloud config file variables"
     fi
@@ -480,7 +445,7 @@ function deployToEdge {
 
 function pullDockerImageFromArtifactory() {
 	dockerImageKey="$1"
-  getRepoURL $dockerImageKey dockerImageURL version.json
+  dockerImageURL="$2"
 
   echo "dockerImageKey : $dockerImageKey"
   echo "dockerImageURL : $dockerImageURL"
@@ -497,5 +462,40 @@ function pullDockerImageFromArtifactory() {
     cd ..
     rm -rf temp
   fi
+}
 
+function processDockerCompose() {
+  dockerComposeFile="$1"
+  yq --version
+  if [ "$(uname)" == "Linux" ]; then
+    services=$(yq . $dockerComposeFile | jq ."services" | jq 'keys' | jq '.[]' | tr -d "\"")
+  elif [ "$(uname)" == "Darwin" ]; then 
+    services=$(yq r -j $dockerComposeFile | jq ."services" | jq 'keys' | jq '.[]' | tr -d "\"")
+  else
+    echo "unsupported OS $(uname)"
+    exit 1
+  fi
+  for service in $services;
+  do
+    echo "service $service"
+    search=$(echo ".services[\"$service\"].image")
+    if [ "$(uname)" == "Linux" ]; then
+      image=$(yq . $dockerComposeFile | jq -r $(echo $search))
+    elif [ "$(uname)" == "Darwin" ]; then 
+      image=$(yq r -j $dockerComposeFile | jq -r $(echo $search))
+    fi
+    echo "image : $image"
+    count=$(docker images "$image" -q | wc -l | tr -d " ")
+    echo "Count : $count"
+    if [[ $count == 0 ]]; then
+	echo "Image not present. downloading"
+	getRepoURL $service dockerImageURL version.json
+	if [[ -z $dockerImageURL || $dockerImageURL == null ]]; then
+	  docker pull $image
+	else
+	  echo "Pulling from artifactory"
+	  pullDockerImageFromArtifactory $service $dockerImageURL
+	fi
+    fi
+  done
 }
