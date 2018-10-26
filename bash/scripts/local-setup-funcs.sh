@@ -247,11 +247,11 @@ function getGitRepo() {
 	fi
 }
 
-# method to fetch API Key for artifactory
+# method to fetch API KEY for artifactory
 function fetchArtifactoryKey(){
-	validate_num_arguments 0 $# "\"local-setup-funcs:getArtifactoryKey\" calls Artifactory with user credentails to get API Key" "$localSetupLogDir"
+	validate_num_arguments 0 $# "\"local-setup-funcs:getArtifactoryKey\" calls artifactory with user credentails to get API Key" "$localSetupLogDir"
 	echo "Apps and Services in the Predix Cloud need unique artifactory information"
-	read -p "Enter your predix.io username (e.g. thomas.edison@ge.com)>" INPUT
+	read -p "Enter your predix.io artifactory username >" INPUT
 	export ARTIFACTORY_USERNAME="${INPUT:-$ARTIFACTORY_USERNAME}"
 
 	if [[ $ARTIFACTORY_USERNAME = *"ge.com"* ]]; then
@@ -284,6 +284,7 @@ function fetchArtifactoryKey(){
 				read -p "Enter your predix.io artifactory password >" -s INPUT
 				ARTIFACTORY_PASSWORD="${INPUT:-$ARTIFACTORY_PASSWORD}"
 				artifactoryKey=$( getArtifactoryKey "$ARTIFACTORY_USERNAME" "$ARTIFACTORY_PASSWORD" )
+				export ARTIFACTORY_ID="artifactory.external"
 			fi
 		fi
 
@@ -291,33 +292,33 @@ function fetchArtifactoryKey(){
 		if [[ -z "${artifactoryKey// }" ]]; then
 			artifactoryKey="unknown"
 			echo ""
-			echo "ARTIFACTORY API Key is not set. Predix RPM package updates will not be fetched, but critical Dev Kit functionality will still work.  To try again later, re-run this script."
+			echo "ARTIFACTORY APIKEY is not set. Predix RPM package updates will not be fetched, but critical Dev Kit functionality will still work.  To try again later, re-run this script."
 		fi
+		export ARTIFACTORY_ID="artifactory.external"
 		export ARTIFACTORY_APIKEY=$artifactoryKey
 	fi
 
-	echo ""
-	#echo "Artifactory API Key is $ARTIFACTORY_APIKEY"
-	export ARTIFACTORY_ID="artifactory.external"
-	echo "Artifactory username $ARTIFACTORY_USERNAME with API Key $ARTIFACTORY_APIKEY"
+	echo
+	echo "Artifactory username is set to - $ARTIFACTORY_USERNAME"
+	echo "Artifactory API key is set to - $ARTIFACTORY_APIKEY"
 	echo
 	echo "Artifactory username $ARTIFACTORY_USERNAME with API Key $ARTIFACTORY_APIKEY" >> summary.txt
 }
 
 function postArtifactoryKey() {
 	#this function cannot echo things otherwise it will get assigned to the calling variable
-	validate_num_arguments 2 $# "\"local-setup-funcs:getArtifactoryKey\" calls the artifactory with user credentails to get apikey" "$localSetupLogDir"
+	validate_num_arguments 2 $# "\"local-setup-funcs:getArtifactoryKey\" calls the artifactory with user credentails to get API Key" "$localSetupLogDir"
 	#source bash/scripts/curl_helper_funcs.sh
 	ARTIFACTORY_BASIC_AUTH=$(echo -ne $1:$2 | base64)
 	responseCurl=`curl -X POST --silent "https://artifactory.predix.io/artifactory/api/security/apiKey" -H "Authorization: Basic $ARTIFACTORY_BASIC_AUTH" -H "Content-Type: application/x-www-form-urlencoded"`
   	apiKey=$( getjson "$responseCurl" "apiKey" )
-	# if API Key not found create one .
+	# if api key not found create one .
 	echo $apiKey
 }
 
 function getArtifactoryKey() {
 	#this function cannot echo things otherwise it will get assigned to the calling variable
-	validate_num_arguments 2 $# "\"local-setup-funcs:getArtifactoryKey\" calls the artifactory with user credentials to get API Key" "$localSetupLogDir"
+	validate_num_arguments 2 $# "\"local-setup-funcs:getArtifactoryKey\" calls the artifactory with user credentails to get API Key" "$localSetupLogDir"
 	#source bash/scripts/curl_helper_funcs.sh
 	ARTIFACTORY_BASIC_AUTH=$(echo -ne $1:$2 | base64)
  	responseCurl=`curl --silent "https://artifactory.predix.io/artifactory/api/security/apiKey" -H "Authorization: Basic $ARTIFACTORY_BASIC_AUTH" -H "Content-Type: application/x-www-form-urlencoded"`
@@ -333,27 +334,27 @@ function getjson {
 
 function addApiKeytoMaven() {
 
-  echo "ID = $ARTIFACTORY_ID"
-  echo "Username = $ARTIFACTORY_USERNAME"
-  echo "Password = $ARTIFACTORY_APIKEY"
+  	echo "ID = $ARTIFACTORY_ID"
+	echo "Username = $ARTIFACTORY_USERNAME"
+	echo "Password = $ARTIFACTORY_APIKEY"
 
-  if [[ -e settings.xml && -e setServerInMaven.xsl ]] ; then
-    cp ~/.m2/settings.xml ~/.m2/settings.xml.orig
-    xsltproc --stringparam server-id $ARTIFACTORY_ID \
-         --stringparam server-username $ARTIFACTORY_USERNAME \
-         --stringparam server-password $ARTIFACTORY_APIKEY \
-         setServerInMaven.xsl ~/.m2/settings.xml.orig > ~/.m2/settings.xml.new
-    #mv -f settings.xml.new settings.xml
-    echo
-    echo "Done. Successfully set artifactory credentials in settings.xml file"
-  else
-    echo
-    echo "Could not find settings.xml in directory ./m2"
-    echo "OR"
-    echo "Could not find setServerInMaven.xsl"
-    echo "Please make sure you are running this script from the /predix-scripts/bash/scripts directory"
-    echo "Failed: Maven Proxies not set"
-  fi
+  	if [[ -e settings.xml && -e setServerInMaven.xsl ]] ; then
+    		cp ~/.m2/settings.xml ~/.m2/settings.xml.orig
+    		xsltproc --stringparam server-id $ARTIFACTORY_ID \
+         	--stringparam server-username $ARTIFACTORY_USERNAME \
+         	--stringparam server-password $ARTIFACTORY_APIKEY \
+         	setServerInMaven.xsl ~/.m2/settings.xml.orig > ~/.m2/settings.xml.new
+    		#mv -f settings.xml.new settings.xml
+    	echo	
+    	echo "Done. Successfully set maven proxies"
+  	else
+    		echo
+    		echo "Could not find settings.xml in directory ./m2"
+    		echo "OR"
+    		echo "Could not find enable-proxy.xsl"
+    		echo "Please make sure you are running this script from the /predix-scripts/bash/common/proxy directory"
+    		echo "Failed: Maven Proxies not set"
+  	fi
 }
 
 function getCurlArtifactory() {
@@ -362,15 +363,13 @@ function getCurlArtifactory() {
 	ARTIFACT_URL=$1
 	#USERNAME=$2
 	#API_KEY=$3
-	
+
 	if [[ -z $ARTIFACTORY_USERNAME && -z $ARTIFACTORY_APIKEY ]]; then
 		echo "Artifactory Credentials not set in environment variables"
 		echo "Calling fetchApiKey"
 		fetchArtifactoryKey
-		#echo "Adding fetched Artifactory Username and API key to maven settings.xml file"
-		#addApiKeytoMaven
+		#getArtifactoryFromMaven ~/.m2/settings.xml
 	fi
-	
 	RESULT=$(curl -u $ARTIFACTORY_USERNAME:$ARTIFACTORY_APIKEY $ARTIFACT_URL -O)
 	if [[ -n $RESULT ]]; then
 		echo "Curl to artifact URL failed"
@@ -385,8 +384,24 @@ function getArtifactoryFromMaven(){
 	USERNAME=$(sed  -n 's/.*<username>\(.*\)<\/username>/\1/p' tmp.txt)
 	PASSWORD=$(sed  -n 's/.*<password>\(.*\)<\/password>/\1/p' tmp.txt)
 
+	echo "Extracting Artifactory credentials from file $MAVEN_SETTINGS_FILE "
+	echo
 	echo "Id = $ID"
 	echo "User = $USERNAME"
 	echo "Password = $PASSWORD"
+	echo
+
+	echo -n "Please approve to use these Artifactory credentials (y/n) > "
+	read answer
+	echo
+	if [[ ${answer:0:1} == "y" ]] || [[ ${answer:0:1} == "Y" ]]; then
+		export ARTIFACTORY_USERNAME=$USERNAME
+		export ARTIFACTORY_APIKEY=$PASSWORD
+		echo "Artifactory username is set to - $ARTIFACTORY_USERNAME"
+		echo "Artifactory API Key is set to - $ARTIFACTORY_APIKEY"
+		echo
+	else
+		fetchArtifactoryKey
+	fi
 	rm -rf tmp.txt
 }

@@ -1,5 +1,5 @@
 # Predix Application Quickstart
-Quickstart to set up a Predix Application, including Predix Servies, and configure Predix Machine to have an edge device stream data to the Predix Cloud
+Quickstart to set up a Predix Application, including Predix Servies, and configure Predix Machine to have an edge device stream data to the Predix Cloud.
 
 ## Intro
 Welcome Predix Developers! This product is a reference application for Predix that exposes various micro services for demo, quick setup, and configuration purposes. It has several use cases. One primary one is to push time series data from an edge device, either your local machine or any device such as Raspberry PI/Intel Edison,  to Predix Time Series Service and be viewable via the front-end which uses the Predix WebApp Starter. Run the `quickstart` script to setup a instance of time series, UAA, Asset and push a Front-End demo application to Cloud Foundry. This gives a basic idea of how various Predix micro services can be hooked together and configured quickly and easily.
