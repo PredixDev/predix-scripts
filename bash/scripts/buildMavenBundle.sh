@@ -35,12 +35,14 @@ echo "Copied custom $MACHINE_BUNDLE to $MACHINE_HOME/machine/bundles" >> "$SUMMA
 
 echo "Deploying predix-machine-template-processor"
 rm -rf predix-machine-template-processor
-getRepoURL "predix-machine-template-processor" git_url version.json
-echo "git url : $git_url"
-getRepoVersion "predix-machine-template-processor" branch version.json
-echo "git repo version : $branch"
+#getRepoURL "predix-machine-template-processor" git_url version.json
+#echo "git url : $git_url"
+#getRepoVersion "predix-machine-template-processor" branch version.json
+#echo "git repo version : $branch"
 
-__echo_run git clone $git_url -b $branch
+cd ..
+__echo_run getGitRepo "predix-machine-template-processor"
+
 cd predix-machine-template-processor
 echo "CURRENT_DIR $(pwd)"
 if [[ $RUN_COMPILE_REPO -eq 1 ]]; then

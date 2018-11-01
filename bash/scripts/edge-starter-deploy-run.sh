@@ -32,7 +32,6 @@ unzip /mnt/data/downloads/$EDGE_APP_CONFIG -d /var/lib/edge-agent/app/$APPLICATI
 echo "unzip complete"
 #/opt/edge-agent/app-start --appInstanceId=$APPLICATION_ID
 
-cp /mnt/data/downloads/access_token /var/run/edge-agent/access-token
 
 #if [[ $(curl http://localhost/api/v1/applications --unix-socket /var/run/edge-core/edge-core.sock -X POST -F "file=@/mnt/data/downloads/$EDGE_APP" -H "app_name: $APPLICATION_ID") ]]; then
 echo "/opt/edge-agent/app-deploy --enable-core-api $APPLICATION_ID /mnt/data/downloads/$EDGE_APP"

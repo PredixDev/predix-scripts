@@ -393,8 +393,18 @@ function deployToEdge {
     export LOGIN_PASSWORD
     echo Login=$LOGIN_PASSWORD
   fi
+  if [[ "$SKIP_PREDIX_SERVICES" == "false" ]]; then
+    pwd
+    cd $REPO_NAME
+    if [[ "$TRUSTED_ISSUER_ID" == "" ]]; then
+      getTrustedIssuerIdFromInstance $UAA_INSTANCE_NAME
+    fi
+    ./scripts/get-access-token.sh $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET $TRUSTED_ISSUER_ID
+    cat data/access_token
+    cd ..
+  fi
   expect -c "
-    spawn scp -o \"StrictHostKeyChecking=no\" $APP_NAME_TAR $APP_NAME_CONFIG predix-services.tar.gz  $rootDir/bash/scripts/edge-starter-deploy-run.sh $REPO_NAME/data/access_token $LOGIN_USER@$IP_ADDRESS:/mnt/data/downloads
+    spawn scp -o \"StrictHostKeyChecking=no\" $APP_NAME_TAR $APP_NAME_CONFIG $rootDir/bash/scripts/edge-starter-deploy-run.sh $REPO_NAME/data/access_token $LOGIN_USER@$IP_ADDRESS:/mnt/data/downloads
     set timeout 50
     expect {
       \"Are you sure you want to continue connecting\" {
@@ -420,6 +430,8 @@ function deployToEdge {
       }
     }
     set timeout 60
+    expect \"*# \"
+    send \"cp /mnt/data/downloads/access_token /var/run/edge-agent/access-token \r\"
     expect \"*# \"
     send \"su eauser /mnt/data/downloads/edge-starter-deploy-run.sh $APP_NAME \r\"
     expect {

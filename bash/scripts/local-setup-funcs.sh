@@ -270,7 +270,7 @@ function fetchArtifactoryKey(){
 		read -p "Enter your predix.io artifactory password >" -s INPUT
 		ARTIFACTORY_PASSWORD="${INPUT:-$ARTIFACTORY_PASSWORD}"
 		artifactoryKey=$( getArtifactoryKey "$ARTIFACTORY_USERNAME" "$ARTIFACTORY_PASSWORD" )
-	  #echo " fetching ARTIFACTORY KEY in first attempt"  $artifactoryKey
+	  	#echo " fetching ARTIFACTORY KEY in first attempt"  $artifactoryKey
 		if [[ -z "${artifactoryKey// }" ]]; then
 			#echo "ARTIFACTORY KEY empty, attempting to create..."
 			echo ""
@@ -297,12 +297,15 @@ function fetchArtifactoryKey(){
 		export ARTIFACTORY_ID="artifactory.external"
 		export ARTIFACTORY_APIKEY=$artifactoryKey
 	fi
-
+	
 	echo
 	echo "Artifactory username is set to - $ARTIFACTORY_USERNAME"
 	echo "Artifactory API key is set to - $ARTIFACTORY_APIKEY"
 	echo
 	echo "Artifactory username $ARTIFACTORY_USERNAME with API Key $ARTIFACTORY_APIKEY" >> summary.txt
+	echo
+	echo "Setting the following Artifactory credentials in the maven settings.xml file"
+	addApiKeytoMaven
 }
 
 function postArtifactoryKey() {
@@ -333,27 +336,25 @@ function getjson {
 }
 
 function addApiKeytoMaven() {
-
   	echo "ID = $ARTIFACTORY_ID"
 	echo "Username = $ARTIFACTORY_USERNAME"
 	echo "Password = $ARTIFACTORY_APIKEY"
 
-  	if [[ -e settings.xml && -e setServerInMaven.xsl ]] ; then
+  	if [[ -e ~/.m2/settings.xml && -e setServerInMaven.xsl ]] ; then
     		cp ~/.m2/settings.xml ~/.m2/settings.xml.orig
     		xsltproc --stringparam server-id $ARTIFACTORY_ID \
          	--stringparam server-username $ARTIFACTORY_USERNAME \
          	--stringparam server-password $ARTIFACTORY_APIKEY \
          	setServerInMaven.xsl ~/.m2/settings.xml.orig > ~/.m2/settings.xml.new
-    		#mv -f settings.xml.new settings.xml
-    	echo	
-    	echo "Done. Successfully set maven proxies"
+    		mv -f ~/.m2/settings.xml.new ~/.m2/settings.xml
+    	echo
+    	echo "Done. Successfully set artifactory credentials in maven settings.xml file"
   	else
     		echo
     		echo "Could not find settings.xml in directory ./m2"
     		echo "OR"
-    		echo "Could not find enable-proxy.xsl"
-    		echo "Please make sure you are running this script from the /predix-scripts/bash/common/proxy directory"
-    		echo "Failed: Maven Proxies not set"
+    		echo "Could not find setServerInMaven.xsl"
+    		echo "Failed: Artifactory credentials not set"
   	fi
 }
 
@@ -379,29 +380,49 @@ function getCurlArtifactory() {
 
 function getArtifactoryFromMaven(){
 	MAVEN_SETTINGS_FILE=$1
-	sed -n '/<server/,/<\/server/p' $MAVEN_SETTINGS_FILE > tmp.txt
-	ID=$(sed  -n 's/.*<id>\(.*\)<\/id>/\1/p' tmp.txt)
-	USERNAME=$(sed  -n 's/.*<username>\(.*\)<\/username>/\1/p' tmp.txt)
-	PASSWORD=$(sed  -n 's/.*<password>\(.*\)<\/password>/\1/p' tmp.txt)
+	FETCH_FLAG=0;
 
-	echo "Extracting Artifactory credentials from file $MAVEN_SETTINGS_FILE "
-	echo
-	echo "Id = $ID"
-	echo "User = $USERNAME"
-	echo "Password = $PASSWORD"
-	echo
+	if [[ -e $MAVEN_SETTINGS_FILE ]]; then
+		command=$(sed -n '/<server/,/<\/server/p' $MAVEN_SETTINGS_FILE)
+		if [[ -n $command ]]; then
+			sed -n '/<server/,/<\/server/p' $MAVEN_SETTINGS_FILE > tmp.xml
+			ID=$(sed  -n 's/.*<id>\(.*\)<\/id>/\1/p' tmp.xml)
+			USERNAME=$(sed  -n 's/.*<username>\(.*\)<\/username>/\1/p' tmp.xml)
+			PASSWORD=$(sed  -n 's/.*<password>\(.*\)<\/password>/\1/p' tmp.xml)
 
-	echo -n "Please approve to use these Artifactory credentials (y/n) > "
-	read answer
-	echo
-	if [[ ${answer:0:1} == "y" ]] || [[ ${answer:0:1} == "Y" ]]; then
-		export ARTIFACTORY_USERNAME=$USERNAME
-		export ARTIFACTORY_APIKEY=$PASSWORD
-		echo "Artifactory username is set to - $ARTIFACTORY_USERNAME"
-		echo "Artifactory API Key is set to - $ARTIFACTORY_APIKEY"
-		echo
+			echo
+			echo "Id = $ID"
+			echo "User = $USERNAME"
+			echo "Password/API Key = $PASSWORD"
+			echo
+
+			echo "Please choose Yes to use these credentials"
+			echo "Please choose No to fetch new API Key for your predix account"
+			echo -n "Please approve to use these Artifactory credentials (y/n) > "
+			read answer
+			echo
+			if [[ ${answer:0:1} == "y" ]] || [[ ${answer:0:1} == "Y" ]]; then
+				export ARTIFACTORY_USERNAME=$USERNAME
+				export ARTIFACTORY_APIKEY=$PASSWORD
+				echo "Artifactory username is set to - $ARTIFACTORY_USERNAME"
+				echo "Artifactory API Key is set to - $ARTIFACTORY_APIKEY"
+				echo
+			else
+				FETCH_FLAG=1
+			fi
+			rm -rf tmp.txt
+		else
+			echo "Could not find server section in the maven settings file $MAVEN_SETTINGS_FILE"
+			FETCH_FLAG=1
+		fi
 	else
+		echo "Maven settings file $MAVEN_SETTINGS_FILE could not be found"
+		FETCH_FLAG=1
+	fi
+
+	if [[ 1 -eq $FETCH_FLAG ]]; then
+		echo "Fetching Artifactory API key"
 		fetchArtifactoryKey
 	fi
-	rm -rf tmp.txt
 }
+
