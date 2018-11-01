@@ -439,9 +439,12 @@ function deployToEdge {
     	\"*# \" { send \"exit\r\" }
 	timeout { puts \"timed out during edge-starter-deploy-run.sh\"; exit 1 }
     }
-    expect eof
+    expect eof {
+      catch wait result
+    }
+    exit [lindex $result 3]
+    
     puts \$expect_out(buffer)
-
     lassign [wait] pid spawnid os_error_flag value
     if {\$os_error_flag == 0} {
       puts \"exit status: $value\"
@@ -449,6 +452,7 @@ function deployToEdge {
       puts \"errno: $value\"
     }
   "
+  echo "exit code=$?"
   echo "Copied files to $LOGIN_USER@$IP_ADDRESS:/mnt/data/downloads"  >> $SUMMARY_TEXTFILE
   echo "Ran /mnt/data/downloads/edge-starter-deploy-run.sh"  >> $SUMMARY_TEXTFILE
   echo "Launched $REPO_NAME"  >> $SUMMARY_TEXTFILE
