@@ -404,8 +404,9 @@ function deployToEdge {
     cd ..
   fi
   expect -c "
+		set timeout 60
     spawn scp -o \"StrictHostKeyChecking=no\" $APP_NAME_TAR $APP_NAME_CONFIG $rootDir/bash/scripts/edge-starter-deploy-run.sh $REPO_NAME/data/access_token $LOGIN_USER@$IP_ADDRESS:/mnt/data/downloads
-    set timeout 50
+    set timeout 60
     expect {
       \"Are you sure you want to continue connecting\" {
         send \"yes\r\"
@@ -481,7 +482,7 @@ function processDockerCompose() {
   yq --version
   if [ "$(uname)" == "Linux" ]; then
     services=$(yq . $dockerComposeFile | jq ."services" | jq 'keys' | jq '.[]' | tr -d "\"")
-  elif [ "$(uname)" == "Darwin" ]; then 
+  elif [ "$(uname)" == "Darwin" ]; then
     services=$(yq r -j $dockerComposeFile | jq ."services" | jq 'keys' | jq '.[]' | tr -d "\"")
   else
     echo "unsupported OS $(uname)"
@@ -493,7 +494,7 @@ function processDockerCompose() {
     search=$(echo ".services[\"$service\"].image")
     if [ "$(uname)" == "Linux" ]; then
       image=$(yq . $dockerComposeFile | jq -r $(echo $search))
-    elif [ "$(uname)" == "Darwin" ]; then 
+    elif [ "$(uname)" == "Darwin" ]; then
       image=$(yq r -j $dockerComposeFile | jq -r $(echo $search))
     fi
     echo "image : $image"
