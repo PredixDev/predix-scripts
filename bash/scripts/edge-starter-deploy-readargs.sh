@@ -218,7 +218,7 @@ function runEdgeStarterLocal() {
     echo "docker stack deploy --compose-file docker-compose-local.yml $APP_NAME"
     docker stack deploy --compose-file docker-compose-local.yml $APP_NAME
     echo "sleep for 60 seconds"
-    sleep 60
+    sleep 90
     if [[  $(docker service ls -f "name=$APP_NAME" | grep 0/1 | wc -l) == "1" ]]; then
       docker service ls
       echo 'Error: One of the $APP_NAME services did not launch.  Try re-running again, maybe we did not give it enough time to come up.  See the image github README for troubleshooting details.'
@@ -403,10 +403,12 @@ function deployToEdge {
     cat data/access_token
     cd ..
   fi
+	if [[ $(ssh-keygen -F 192.168.0.98 | wc -l | tr -d " ") != 0 ]]; then
+		ssh-keygen -R $IP_ADDRESS
+	fi
   expect -c "
-		set timeout 60
-    spawn scp -o \"StrictHostKeyChecking=no\" $APP_NAME_TAR $APP_NAME_CONFIG $rootDir/bash/scripts/edge-starter-deploy-run.sh $REPO_NAME/data/access_token $LOGIN_USER@$IP_ADDRESS:/mnt/data/downloads
-    set timeout 60
+    set timeout -1
+		spawn scp -o \"StrictHostKeyChecking=no\" $APP_NAME_TAR $APP_NAME_CONFIG $rootDir/bash/scripts/edge-starter-deploy-run.sh $REPO_NAME/data/access_token $LOGIN_USER@$IP_ADDRESS:/mnt/data/downloads
     expect {
       \"Are you sure you want to continue connecting\" {
         send \"yes\r\"
@@ -417,9 +419,10 @@ function deployToEdge {
         send \"$LOGIN_PASSWORD\r\"
       }
     }
+		set timeout -1
     expect \"*# \"
     spawn ssh -o \"StrictHostKeyChecking=no\" $LOGIN_USER@$IP_ADDRESS
-    set timeout 5
+    set timeout -1
     expect {
       \"Are you sure you want to continue connecting\" {
         send \"yes\r\"
@@ -430,20 +433,23 @@ function deployToEdge {
         send \"$LOGIN_PASSWORD\r\"
       }
     }
-    set timeout 60
+    set timeout -1
     expect \"*# \"
     send \"cp /mnt/data/downloads/access_token /var/run/edge-agent/access-token \r\"
     expect \"*# \"
     send \"su eauser /mnt/data/downloads/edge-starter-deploy-run.sh $APP_NAME \r\"
-    expect {
+		set timeout -1
+		expect {
     	\"*# \" { send \"exit\r\" }
 	timeout { puts \"timed out during edge-starter-deploy-run.sh\"; exit 1 }
     }
-    expect eof {
-      catch wait result
-    }
-    exit [lindex $result 3]
-    
+    expect eof
+    puts \"after eof\r\"
+    set waitval [wait -i $spawn_id]
+    set exval [lindex $waitval 3]
+    puts \"exval=$exval\"
+    exit $exval
+
     puts \$expect_out(buffer)
     lassign [wait] pid spawnid os_error_flag value
     if {\$os_error_flag == 0} {

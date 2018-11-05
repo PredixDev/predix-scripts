@@ -39,7 +39,7 @@ bash -x /opt/edge-agent/app-deploy --enable-core-api $APPLICATION_ID /mnt/data/d
 echo "app-deploy complete"
 if [[ $(docker service ls -f "name=$APP_SERVICE_NAME" -q | wc -l) > 0 ]]; then
   echo "$APPLICATION_ID service started"
-  docker service logs $(docker service ls -f "name=$APP_SERVICE_NAME" -q)
+  #docker service logs $(docker service ls -f "name=$APP_SERVICE_NAME" -q)
 else
   echo "$APPLICATION_ID not service started"
 fi

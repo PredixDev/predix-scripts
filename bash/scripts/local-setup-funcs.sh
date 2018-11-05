@@ -250,8 +250,7 @@ function getGitRepo() {
 # method to fetch API KEY for artifactory
 function fetchArtifactoryKey(){
 	validate_num_arguments 0 $# "\"local-setup-funcs:getArtifactoryKey\" calls artifactory with user credentails to get API Key" "$localSetupLogDir"
-	echo "Apps and Services in the Predix Cloud need unique artifactory information"
-	read -p "Enter your predix.io artifactory username >" INPUT
+	read -p "Enter your predix.io cloud username (usually your email address) >" INPUT
 	export ARTIFACTORY_USERNAME="${INPUT:-$ARTIFACTORY_USERNAME}"
 
 	if [[ $ARTIFACTORY_USERNAME = *"ge.com"* ]]; then
@@ -260,12 +259,13 @@ function fetchArtifactoryKey(){
 		echo "Login to artifactory.  (if you are a @ge.com user, please click on the SAML SSO link)"
 		echo "Click on your User Profile <username>."
 		echo "Enter your current Password and click UnLock."
-		echo "The API Key box will be popluated, then use clipboard icon to copy this API Key."
+		echo "The API Key box will be populated, then use clipboard icon to copy this API Key."
 		echo "************************************************************************************************************************"
 		read -p "Enter your predix artifactory username (e.g. your SSO)>" INPUT
 		export ARTIFACTORY_USERNAME="${INPUT:-$ARTIFACTORY_USERNAME}"
 		read -p "Enter your predix.io artifactory API Key>" -s INPUT
 		export ARTIFACTORY_APIKEY="${INPUT:-$ARTIFACTORY_APIKEY}"
+		export ARTIFACTORY_ID="predix.repo"
 	else
 		read -p "Enter your predix.io artifactory password >" -s INPUT
 		ARTIFACTORY_PASSWORD="${INPUT:-$ARTIFACTORY_PASSWORD}"
@@ -284,7 +284,7 @@ function fetchArtifactoryKey(){
 				read -p "Enter your predix.io artifactory password >" -s INPUT
 				ARTIFACTORY_PASSWORD="${INPUT:-$ARTIFACTORY_PASSWORD}"
 				artifactoryKey=$( getArtifactoryKey "$ARTIFACTORY_USERNAME" "$ARTIFACTORY_PASSWORD" )
-				export ARTIFACTORY_ID="artifactory.external"
+				export ARTIFACTORY_ID="predix.repo"
 			fi
 		fi
 
@@ -294,18 +294,28 @@ function fetchArtifactoryKey(){
 			echo ""
 			echo "ARTIFACTORY APIKEY is not set. Predix RPM package updates will not be fetched, but critical Dev Kit functionality will still work.  To try again later, re-run this script."
 		fi
-		export ARTIFACTORY_ID="artifactory.external"
+
 		export ARTIFACTORY_APIKEY=$artifactoryKey
 	fi
-	
+
 	echo
+	echo
+	echo "Artifactory ID is set to - $ARTIFACTORY_ID"
 	echo "Artifactory username is set to - $ARTIFACTORY_USERNAME"
 	echo "Artifactory API key is set to - $ARTIFACTORY_APIKEY"
 	echo
 	echo "Artifactory username $ARTIFACTORY_USERNAME with API Key $ARTIFACTORY_APIKEY" >> summary.txt
+
+	echo -n "Do you want to add these credentials to your maven settings file (y/n) > "
+	read answer
 	echo
-	echo "Setting the following Artifactory credentials in the maven settings.xml file"
-	addApiKeytoMaven
+	if [[ ${answer:0:1} == "y" ]] || [[ ${answer:0:1} == "Y" ]]; then
+		echo "Setting the Artifactory credentials in the maven settings.xml file"
+		addApiKeytoMaven
+	else
+		echo "Maven settings file (~/.m2/settings.xml) not updated"
+		echo
+	fi
 }
 
 function postArtifactoryKey() {
@@ -336,19 +346,24 @@ function getjson {
 }
 
 function addApiKeytoMaven() {
-  	echo "ID = $ARTIFACTORY_ID"
+  echo "ID = $ARTIFACTORY_ID"
 	echo "Username = $ARTIFACTORY_USERNAME"
 	echo "Password = $ARTIFACTORY_APIKEY"
 
-  	if [[ -e ~/.m2/settings.xml && -e setServerInMaven.xsl ]] ; then
+	XSL_URL="https://raw.githubusercontent.com/PredixDev/predix-scripts/master/bash/scripts/setServerInMaven.xsl"
+	curl -s -O $XSL_URL
+	if [[ -e ~/.m2/settings.xml && -e setServerInMaven.xsl ]] ; then
     		cp ~/.m2/settings.xml ~/.m2/settings.xml.orig
     		xsltproc --stringparam server-id $ARTIFACTORY_ID \
          	--stringparam server-username $ARTIFACTORY_USERNAME \
          	--stringparam server-password $ARTIFACTORY_APIKEY \
          	setServerInMaven.xsl ~/.m2/settings.xml.orig > ~/.m2/settings.xml.new
+
     		mv -f ~/.m2/settings.xml.new ~/.m2/settings.xml
     	echo
-    	echo "Done. Successfully set artifactory credentials in maven settings.xml file"
+    	echo "Done."
+	echo "Successfully set artifactory credentials in maven settings.xml file"
+	echo
   	else
     		echo
     		echo "Could not find settings.xml in directory ./m2"
@@ -360,16 +375,21 @@ function addApiKeytoMaven() {
 
 function getCurlArtifactory() {
 	validate_num_arguments 1 $# "\"local-setup-funcs:getCurlArtifactory\" calls the artifactory with ARTIFACT_URL, USERNAME and API_KEY to curl the artifact" "$localSetupLogDir"
-	#fetchArtifactoryKey
 	ARTIFACT_URL=$1
-	#USERNAME=$2
-	#API_KEY=$3
 
 	if [[ -z $ARTIFACTORY_USERNAME && -z $ARTIFACTORY_APIKEY ]]; then
+		echo
 		echo "Artifactory Credentials not set in environment variables"
-		echo "Calling fetchApiKey"
-		fetchArtifactoryKey
-		#getArtifactoryFromMaven ~/.m2/settings.xml
+		echo -n "Would you like to extract artifactory credentials from maven settings file (~/.m2/settings.xml) (y/n) > "
+		read answer
+		echo
+		if [[ ${answer:0:1} == "y" ]] || [[ ${answer:0:1} == "Y" ]]; then
+			echo "Reading ~/.m2/settings.xml"
+			getArtifactoryFromMaven ~/.m2/settings.xml
+		else
+			echo "Calling fetchApiKey"
+			fetchArtifactoryKey
+		fi
 	fi
 	RESULT=$(curl -u $ARTIFACTORY_USERNAME:$ARTIFACTORY_APIKEY $ARTIFACT_URL -O)
 	if [[ -n $RESULT ]]; then
@@ -389,6 +409,11 @@ function getArtifactoryFromMaven(){
 			ID=$(sed  -n 's/.*<id>\(.*\)<\/id>/\1/p' tmp.xml)
 			USERNAME=$(sed  -n 's/.*<username>\(.*\)<\/username>/\1/p' tmp.xml)
 			PASSWORD=$(sed  -n 's/.*<password>\(.*\)<\/password>/\1/p' tmp.xml)
+
+
+			sed -n '/<repository/,/<\/repository/p' settings.xml > repos.xml
+			a=$(cat repos.xml | grep PREDIX-EXT)
+
 
 			echo
 			echo "Id = $ID"
@@ -425,4 +450,3 @@ function getArtifactoryFromMaven(){
 		fetchArtifactoryKey
 	fi
 }
-
