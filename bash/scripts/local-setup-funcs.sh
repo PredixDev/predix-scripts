@@ -284,7 +284,6 @@ function fetchArtifactoryKey(){
 				read -p "Enter your predix.io artifactory password >" -s INPUT
 				ARTIFACTORY_PASSWORD="${INPUT:-$ARTIFACTORY_PASSWORD}"
 				artifactoryKey=$( getArtifactoryKey "$ARTIFACTORY_USERNAME" "$ARTIFACTORY_PASSWORD" )
-				export ARTIFACTORY_ID="predix.repo"
 			fi
 		fi
 
@@ -294,7 +293,7 @@ function fetchArtifactoryKey(){
 			echo ""
 			echo "ARTIFACTORY APIKEY is not set. Predix RPM package updates will not be fetched, but critical Dev Kit functionality will still work.  To try again later, re-run this script."
 		fi
-
+		export ARTIFACTORY_ID="predix.repo"
 		export ARTIFACTORY_APIKEY=$artifactoryKey
 	fi
 
@@ -410,32 +409,39 @@ function getArtifactoryFromMaven(){
 			USERNAME=$(sed  -n 's/.*<username>\(.*\)<\/username>/\1/p' tmp.xml)
 			PASSWORD=$(sed  -n 's/.*<password>\(.*\)<\/password>/\1/p' tmp.xml)
 
-
-			sed -n '/<repository/,/<\/repository/p' settings.xml > repos.xml
-			a=$(cat repos.xml | grep PREDIX-EXT)
-
-
-			echo
-			echo "Id = $ID"
-			echo "User = $USERNAME"
-			echo "Password/API Key = $PASSWORD"
-			echo
-
-			echo "Please choose Yes to use these credentials"
-			echo "Please choose No to fetch new API Key for your predix account"
-			echo -n "Please approve to use these Artifactory credentials (y/n) > "
-			read answer
-			echo
-			if [[ ${answer:0:1} == "y" ]] || [[ ${answer:0:1} == "Y" ]]; then
-				export ARTIFACTORY_USERNAME=$USERNAME
-				export ARTIFACTORY_APIKEY=$PASSWORD
-				echo "Artifactory username is set to - $ARTIFACTORY_USERNAME"
-				echo "Artifactory API Key is set to - $ARTIFACTORY_APIKEY"
+			sed -n '/<repository/,/<\/repository/p' $MAVEN_SETTINGS_FILE > repos.xml
+			var=$(cat repos.xml | grep https://artifactory.predix.io/artifactory/PREDIX-EXT)
+			if [[ $var = *"https://artifactory.predix.io/artifactory/PREDIX-EXT"* ]]; then
 				echo
+				echo "Id = $ID"
+				echo "User = $USERNAME"
+				echo "Password/API Key = $PASSWORD"
+				echo
+				echo "Please choose Yes to use these credentials"
+				echo "Please choose No to fetch new API Key for your predix account"
+				echo -n "Please approve to use these Artifactory credentials (y/n) > "
+				read answer
+				echo
+				if [[ ${answer:0:1} == "y" ]] || [[ ${answer:0:1} == "Y" ]]; then
+					export ARTIFACTORY_USERNAME=$USERNAME
+					export ARTIFACTORY_APIKEY=$PASSWORD
+					echo "Artifactory username is set to - $ARTIFACTORY_USERNAME"
+					echo "Artifactory API Key is set to - $ARTIFACTORY_APIKEY"
+					echo
+				else
+					FETCH_FLAG=1
+				fi
+				rm -rf repos.xml
+				rm -rf tmp.txt
 			else
+				echo
+				echo "Repository settings not set in Maven settings file $MAVEN_SETTINGS_FILE"
+				echo "The script is looking for the following in the $MAVEN_SETTINGS_FILE"
+				echo "<id>predix.repo</id>"
+				echo "<url>https://artifactory.predix.io/artifactory/PREDIX-EXT</url>"
+				echo
 				FETCH_FLAG=1
 			fi
-			rm -rf tmp.txt
 		else
 			echo "Could not find server section in the maven settings file $MAVEN_SETTINGS_FILE"
 			FETCH_FLAG=1
