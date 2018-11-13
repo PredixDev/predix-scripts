@@ -81,12 +81,12 @@ GOTO :eof
   )
 
   IF [%1]==[--enable] (
-    ECHO Please choose which proxy you want to use and enter it in the command below
-    ECHO You may select one of the proxy servers mentioned above or may choose a different one if you know it
+    ECHO Please refer to the proxy tutorial to retrieve your proxy name/port- https://www.predix.io/resources/tutorials/tutorial-details.html?tutorial_id=1565
+    ECHO
+    ECHO Once you have found your proxy server name and port please enter it in the format shown below
     ECHO You can enter - http://PROXY_HOST_NAME:PORT"
     ECHO
     SET /p PROXY=Which proxy do you want to use?  
-    ECHO Your selected proxy value = %PROXY%
     CALL :SET_PROXIES
   )
 
@@ -99,5 +99,6 @@ GOTO :eof
   )
 
   :DONE
+	ECHO Your selected proxy value = %HTTP_PROXY%
     ECHO Open a new terminal window for the changes to take effect
     ECHO

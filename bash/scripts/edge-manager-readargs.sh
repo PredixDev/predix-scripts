@@ -95,6 +95,36 @@ function processEdgeStarterReadargsSwitch() {
 				SWITCH_ARRAY[SWITCH_INDEX++]="-em-tenant-id"
 			  PRINT_USAGE=0
 				;;
+			-em-uaa-zone-id|--em-uaa-zone-id)
+				EM_UAA_ZONE_ID="$2"
+				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-em-uaa-zone-id|--em-uaa-zone-id"
+				SWITCH_ARRAY[SWITCH_INDEX++]="-em-uaa-zone-id"
+			  PRINT_USAGE=0
+				;;
+			-em-tenant-admin-user|--em-tenant-admin-user)
+				EM_USER_ID="$2"
+				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-em-tenant-admin-user|--em-tenant-admin-user"
+				SWITCH_ARRAY[SWITCH_INDEX++]="-em-tenant-admin-user"
+			  PRINT_USAGE=0
+				;;
+			-em-tenant-admin-password|--em-tenant-admin-password)
+				EM_USER_PASSWORD="$2"
+				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-em-tenant-admin-password|--em-tenant-admin-password"
+				SWITCH_ARRAY[SWITCH_INDEX++]="-em-tenant-admin-password"
+			  PRINT_USAGE=0
+				;;
+			-em-tenant-client-id|--em-tenant-client-id)
+				EM_CLIENT_ID="$2"
+				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-em-tenant-client-id|--em-tenant-client-id"
+				SWITCH_ARRAY[SWITCH_INDEX++]="-em-tenant-client-id"
+			  PRINT_USAGE=0
+				;;
+			-em-tenant-client-secret|--em-tenant-client-secret)
+				EM_CLIENT_SECRET="$2"
+				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-em-tenant-client-secret|--em-tenant-client-secret"
+				SWITCH_ARRAY[SWITCH_INDEX++]="-em-tenant-client-secret"
+			  PRINT_USAGE=0
+				;;
 			-edge-app-name|--edge-app-name)
 				EDGE_APP_NAME="$2"
 				echo "1111 : EDGE_APP_NAME : $EDGE_APP_NAME"
@@ -167,8 +197,8 @@ function printEdgeStarterVariables() {
 	echo "    PACKAGE_DESCRIPTION       : $PACKAGE_DESCRIPTION"
 	echo "    PACKAGE_VERSION           : $PACKAGE_VERSION"
 	echo "  EM ENROLLMENT:"
-	echo "    RUN_START_ENROLLMENT			: $RUN_START_ENROLLMENT"
-	echo "             "
+	echo "    RUN_START_ENROLLMENT      : $RUN_START_ENROLLMENT"
+	echo " "
 
 	export EDGE_APP_NAME
 	export EM_TENANT_ID

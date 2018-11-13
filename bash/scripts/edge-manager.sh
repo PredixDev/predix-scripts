@@ -53,14 +53,14 @@ function main() {
     echo "Upload Configuration package"
     PACKAGE_NAME="$EDGE_APP_NAME-config"
     PACKAGE_DESCRIPTION="Package for configuration for $EDGE_APP_NAME"
-    PACKAGE_CONTENT_FILE="$REPO_NAME/$EDGE_APP_NAME-config.zip"
+    PACKAGE_CONTENT_FILE="$EDGE_APP_NAME-config.zip"
     createEMPackage "configuration"
   fi
   if [[ $RUN_CREATE_APPLICATION == 1 ]]; then
     echo "Upload Application package"
     PACKAGE_NAME="$EDGE_APP_NAME"
     PACKAGE_DESCRIPTION="Package for Application $EDGE_APP_NAME"
-    PACKAGE_CONTENT_FILE="$REPO_NAME/$EDGE_APP_NAME.tar.gz"
+    PACKAGE_CONTENT_FILE="$EDGE_APP_NAME.tar.gz"
     createEMPackage "multi-container-app"
   fi
 
@@ -78,12 +78,14 @@ function edgeEdgeManagerCreateDevice() {
     getEMUserToken
     echo "$EM_TENANT_TOKEN"
   fi
+  echo "$EM_TENANT_TOKEN"
   if [[ ! -n $DEVICE_ID ]]; then
     read -p "Enter your Device ID> " DEVICE_ID
   fi
   device_model_response=$(curl -X POST "https://em-api-apidocs.run.aws-usw02-pr.ice.predix.io/emapi/beta/device-management/models" -H "accept: application/json" -H "Authorization: Bearer $EM_TENANT_TOKEN" -H "Predix-Zone-Id: predix-adoption" -H "Content-Type: application/json" -d "{ \"description\": \"Predix Edge Model\", \"memoryGB\": 1, \"modelId\": \"PredixEdge\", \"os\": \"Yocto Linux\", \"coreNum\": 1, \"processor\": \"Core\", \"storageGB\": 5}")
-  echo "$device_model_response"
+  echo "device_model_response : $device_model_response"
   DEVICE_REQUEST_STATUS=$(curl --write-out %{http_code} --silent --output /dev/null -X GET "https://em-api-apidocs.run.aws-usw02-pr.ice.predix.io/emapi/beta/device-management/devices/$DEVICE_ID" -H "Accept: application/json" -H "Authorization: Bearer $EM_TENANT_TOKEN" -H "Predix-Zone-Id: predix-adoption")
+  echo "DEVICE_REQUEST_STATUS : $DEVICE_REQUEST_STATUS"
   if [[ $DEVICE_REQUEST_STATUS == 404 ]]; then
     __append_new_line_log "Device $DEVICE_ID not found. Creating the device now..." "$logDir"
     echo "Device $DEVICE_ID not found. Creating the device now..." >> $SUMMARY_TEXTFILE
@@ -188,6 +190,7 @@ function uploadPackageContent {
 }
 
 function getEMUserToken() {
+  echo "EM_TENANT_ID : $EM_TENANT_ID"
   if [[ ! -n $EM_TENANT_ID ]]; then
     read -p "Enter the Edge Manager Tenant Id> " EM_TENANT_ID
     export EM_TENANT_ID
@@ -195,29 +198,28 @@ function getEMUserToken() {
 
   EDGE_MANAGER_URL="https://$EM_TENANT_ID.edgemanager.run.aws-usw02-pr.ice.predix.io"
   export EDGE_MANAGER_URL
-  if [[ ! -n $TRUSTED_ISSUER_ID ]]; then
-      read -p "Enter the UAA Zone Id> " UAA_ZONE_ID
-      TRUSTED_ISSUER_ID="https://$UAA_ZONE_ID.predix-uaa.run.aws-usw02-pr.ice.predix.io"
-      export TRUSTED_ISSUER_ID
+  if [[ ! -n $EM_UAA_ZONE_ID ]]; then
+      read -p "Enter the UAA Zone Id> " EM_UAA_ZONE_ID
   fi
-
-  if [[ ! -n $UAA_CLIENTID_GENERIC ]]; then
-    read -p "Enter your UAA Client ID> " UAA_CLIENTID_GENERIC
-    export UAA_CLIENTID_GENERIC
+  EM_TRUSTED_ISSUER_ID="https://$EM_UAA_ZONE_ID.predix-uaa.run.aws-usw02-pr.ice.predix.io"
+  export EM_TRUSTED_ISSUER_ID
+  if [[ ! -n $EM_CLIENT_ID ]]; then
+    read -p "Enter your UAA Client ID> " EM_CLIENT_ID
+    export EM_CLIENT_ID
   fi
-  if [[ ! -n $UAA_CLIENTID_GENERIC_SECRET ]]; then
-    read -p "Enter your UAA Client Secret> " -s UAA_CLIENTID_GENERIC_SECRET
-    export UAA_CLIENTID_GENERIC_SECRET
+  if [[ ! -n $EM_CLIENT_SECRET ]]; then
+    read -p "Enter your UAA Client Secret> " -s EM_CLIENT_SECRET
+    export EM_CLIENT_SECRET
   fi
-  if [[ ! -n $UAA_USER_GENERIC ]]; then
-    read -p "Enter your UAA User ID> " UAA_USER_GENERIC
-    export UAA_USER_GENERIC
+  if [[ ! -n $EM_USER_ID ]]; then
+    read -p "Enter your UAA User ID> " EM_USER_ID
+    export EM_USER_ID
   fi
-  if [[ ! -n $UAA_USER_PASSWORD ]]; then
-    read -p "Enter your UAA User Secret> " -s UAA_USER_PASSWORD
-    export UAA_USER_PASSWORD
+  if [[ ! -n $EM_USER_PASSWORD ]]; then
+    read -p "Enter your UAA User Secret> " -s EM_USER_PASSWORD
+    export EM_USER_PASSWORD
   fi
-  EM_TENANT_TOKEN=$(__getUaaUserToken $TRUSTED_ISSUER_ID $UAA_CLIENTID_GENERIC $UAA_CLIENTID_GENERIC_SECRET $UAA_USER_GENERIC $UAA_USER_PASSWORD)
+  EM_TENANT_TOKEN=$(__getUaaUserToken $EM_TRUSTED_ISSUER_ID $EM_CLIENT_ID $EM_CLIENT_SECRET $EM_USER_ID $EM_USER_PASSWORD)
   export EM_TENANT_TOKEN
 }
 
@@ -247,7 +249,8 @@ function deployPackageToDevice {
 
 function createPackages {
   echo "1111"
-	cd $REPO_NAME
+  pwd
+  cd $REPO_NAME
   pwd
   echo "Creating Packages for EdgeManager Repository for $EDGE_APP_NAME"
   APP_NAME_TAR="$EDGE_APP_NAME.tar.gz"

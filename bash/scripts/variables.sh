@@ -273,11 +273,3 @@ DEFAULT_TIMESERIES_QUERY_URI="https://time-series-store-predix.run.aws-usw02-pr.
 
 EM_DEVICE_MANAGEMENT_URL="https://em-api-apidocs.run.aws-usw02-pr.ice.predix.io/emapi/beta/device-management/devices"
 EM_PACKAGE_MANAGEMENT_URL="https://em-api-apidocs.run.aws-usw02-pr.ice.predix.io/emapi/beta/package-management/packages"
-
-#EM_TENANT_ID=predix-adoption
-#EM_UAA_ZONE_ID=eec17b49-c3e5-4c49-9f97-0a58930931cb
-#TIMESERIES_INSTANCE_ID=81631fa9-04e1-422b-8617-f24bafd4109e
-#EM_CLIENT_ID=predix-adoption-app-client
-#EM_CLIENT_SECRET=uHcJCrbLwWOvbAH
-#EM_USER_ID=predix-adoption-admin
-#EM_USER_SECRET=Pr3d1xAdmin
