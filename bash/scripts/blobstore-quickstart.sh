@@ -48,7 +48,7 @@ TOOLS="Cloud Foundry CLI, Git, Maven, Node.js, Predix CLI"
 TOOLS_SWITCHES="--cf --git --maven --nodejs --predixcli"
 
 local_read_args $@
-IZON_SH="https://raw.githubusercontent.com/PredixDev/izon/$BRANCH/izon.sh"
+IZON_SH="https://raw.githubusercontent.com/PredixDev/izon/1.2.0/izon2.sh"
 
 function check_internet() {
   set +e

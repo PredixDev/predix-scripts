@@ -181,5 +181,5 @@ BUILD-BASIC-APP:
     MACHINE_CUSTOM_IMAGE_NAME                : PredixMachineDebug
  ```
     
- [![Analytics](https://ga-beacon.appspot.com/UA-82773213-1/predix-scripts/readme?pixel)](https://github.com/PredixDev)
+ [![Analytics](https://predix-beacon.appspot.com/UA-82773213-1/predix-scripts/readme?pixel)](https://github.com/PredixDev)
 

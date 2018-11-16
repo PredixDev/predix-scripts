@@ -403,7 +403,7 @@ function deployToEdge {
     cat data/access_token
     cd ..
   fi
-	if [[ $(ssh-keygen -F 192.168.0.98 | wc -l | tr -d " ") != 0 ]]; then
+	if [[ $(ssh-keygen -F $IP_ADDRESS | wc -l | tr -d " ") != 0 ]]; then
 		ssh-keygen -R $IP_ADDRESS
 	fi
   expect -c "

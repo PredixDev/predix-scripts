@@ -49,13 +49,6 @@ function main() {
     echo "Creating Packages"
     createPackages $EDGE_APP_NAME
   fi
-  if [[ $RUN_CREATE_CONFIGIURATION == 1 ]]; then
-    echo "Upload Configuration package"
-    PACKAGE_NAME="$EDGE_APP_NAME-config"
-    PACKAGE_DESCRIPTION="Package for configuration for $EDGE_APP_NAME"
-    PACKAGE_CONTENT_FILE="$EDGE_APP_NAME-config.zip"
-    createEMPackage "configuration"
-  fi
   if [[ $RUN_CREATE_APPLICATION == 1 ]]; then
     echo "Upload Application package"
     PACKAGE_NAME="$EDGE_APP_NAME"
@@ -63,16 +56,43 @@ function main() {
     PACKAGE_CONTENT_FILE="$EDGE_APP_NAME.tar.gz"
     createEMPackage "multi-container-app"
   fi
-
+  if [[ $RUN_CREATE_CONFIGIURATION == 1 ]]; then
+    echo "Upload Configuration package"
+    PACKAGE_NAME="$EDGE_APP_NAME-config"
+    PACKAGE_DESCRIPTION="Package for configuration for $EDGE_APP_NAME"
+    PACKAGE_CONTENT_FILE="$EDGE_APP_NAME-config.zip"
+    createEMPackage "configuration"
+  fi
   if [[ $RUN_START_ENROLLMENT == 1 ]]; then
     echo "Starting Enrollment"
     startEnrollement
   fi
   if [[ $RUN_SCHEDULE_PACKAGE == 1 ]]; then
-    deployPackageToDevice
+    # Deploy Application first
+    PACKAGE_NAME="$EDGE_APP_NAME"
+    echo "Deploying the Application $PACKAGE_NAME $PACKAGE_VERSION"
+    deployPackageToDevice "multi-container-app" $EDGE_APP_NAME $PACKAGE_VERSION
+
+    #Deploy Configuration
+    PACKAGE_NAME="$EDGE_APP_NAME-config"
+    echo "Deploying the Application $PACKAGE_NAME $PACKAGE_VERSION"
+    deployPackageToDevice "configuration" $EDGE_APP_NAME $PACKAGE_VERSION
   fi
 }
 
+function deployPackageToDevice {
+  if [[ ! -n $EM_TENANT_TOKEN ]]; then
+    getEMUserToken
+    echo "$EM_TENANT_TOKEN"
+  fi
+  if [[ ! -n $DEVICE_ID ]]; then
+    read -p "Enter your Device ID> " DEVICE_ID
+    export DEVICE_ID
+  fi
+  set -x
+  curl -X POST "$EM_PACKAGE_MANAGEMENT_URL/deploy" -H "accept: application/json" -H "Authorization: Bearer $EM_TENANT_TOKEN" -H "Predix-Zone-Id: $EM_TENANT_ID" -H "Content-Type: application/json" -d "{ \"deviceFilter\": \"deviceId eq \\\"$DEVICE_ID\\\"\", \"name\": \"$PACKAGE_NAME\", \"appInstanceId\": \"$2-1\", \"timeout\": 0, \"type\": \"$1\", \"version\": \"$3\"}"
+  set -e
+}
 function edgeEdgeManagerCreateDevice() {
   if [[ ! -n $EM_TENANT_TOKEN ]]; then
     getEMUserToken
@@ -82,9 +102,9 @@ function edgeEdgeManagerCreateDevice() {
   if [[ ! -n $DEVICE_ID ]]; then
     read -p "Enter your Device ID> " DEVICE_ID
   fi
-  device_model_response=$(curl -X POST "https://em-api-apidocs.run.aws-usw02-pr.ice.predix.io/emapi/beta/device-management/models" -H "accept: application/json" -H "Authorization: Bearer $EM_TENANT_TOKEN" -H "Predix-Zone-Id: predix-adoption" -H "Content-Type: application/json" -d "{ \"description\": \"Predix Edge Model\", \"memoryGB\": 1, \"modelId\": \"PredixEdge\", \"os\": \"Yocto Linux\", \"coreNum\": 1, \"processor\": \"Core\", \"storageGB\": 5}")
+  device_model_response=$(curl -X POST "https://em-api-apidocs.run.aws-usw02-pr.ice.predix.io/emapi/beta/device-management/models" -H "accept: application/json" -H "Authorization: Bearer $EM_TENANT_TOKEN" -H "Predix-Zone-Id: $EM_TENANT_ID" -H "Content-Type: application/json" -d "{ \"description\": \"Predix Edge Model\", \"memoryGB\": 1, \"modelId\": \"PredixEdge\", \"os\": \"Yocto Linux\", \"coreNum\": 1, \"processor\": \"Core\", \"storageGB\": 5}")
   echo "device_model_response : $device_model_response"
-  DEVICE_REQUEST_STATUS=$(curl --write-out %{http_code} --silent --output /dev/null -X GET "https://em-api-apidocs.run.aws-usw02-pr.ice.predix.io/emapi/beta/device-management/devices/$DEVICE_ID" -H "Accept: application/json" -H "Authorization: Bearer $EM_TENANT_TOKEN" -H "Predix-Zone-Id: predix-adoption")
+  DEVICE_REQUEST_STATUS=$(curl --write-out %{http_code} --silent --output /dev/null -X GET "https://em-api-apidocs.run.aws-usw02-pr.ice.predix.io/emapi/beta/device-management/devices/$DEVICE_ID" -H "Accept: application/json" -H "Authorization: Bearer $EM_TENANT_TOKEN" -H "Predix-Zone-Id: $EM_TENANT_ID")
   echo "DEVICE_REQUEST_STATUS : $DEVICE_REQUEST_STATUS"
   if [[ $DEVICE_REQUEST_STATUS == 404 ]]; then
     __append_new_line_log "Device $DEVICE_ID not found. Creating the device now..." "$logDir"
@@ -126,12 +146,12 @@ function createEMPackage {
     export PACKAGE_VERSION
   fi
   echo "EM_PACKAGE_MANAGEMENT_URL : $EM_PACKAGE_MANAGEMENT_URL"
-  responseCurl=$(curl -X GET "$EM_PACKAGE_MANAGEMENT_URL/$PACKAGE_TYPE/$PACKAGE_NAME/$PACKAGE_VERSION" -H "Accept: application/json" -H "Authorization: Bearer $EM_TENANT_TOKEN" -H "Predix-Zone-Id: predix-adoption")
+  responseCurl=$(curl -X GET "$EM_PACKAGE_MANAGEMENT_URL/$PACKAGE_TYPE/$PACKAGE_NAME/$PACKAGE_VERSION" -H "Accept: application/json" -H "Authorization: Bearer $EM_TENANT_TOKEN" -H "Predix-Zone-Id: $EM_TENANT_ID")
   echo "query package response : $responseCurl"
   ERROR_CODE=$( echo "$responseCurl" | jq -r .code)
   if [[ $ERROR_CODE == 404 ]]; then
     echo "$PACKAGE_TYPE"
-    responseCurl=$(curl -X POST "$EM_PACKAGE_MANAGEMENT_URL" -H "accept: application/json" -H "Authorization: Bearer $EM_TENANT_TOKEN" -H "Predix-Zone-Id: predix-adoption" -H "Content-Type: application/json" -d "{ \"agentType\": \"EdgeAgent\", \"description\": \"$PACKAGE_DESCRIPTION\", \"name\": \"$PACKAGE_NAME\", \"totalBytes\": 0, \"type\": \"$PACKAGE_TYPE\", \"vendor\": \"predix-adoption\", \"version\": \"$PACKAGE_VERSION\"}");
+    responseCurl=$(curl -X POST "$EM_PACKAGE_MANAGEMENT_URL" -H "accept: application/json" -H "Authorization: Bearer $EM_TENANT_TOKEN" -H "Predix-Zone-Id: $EM_TENANT_ID" -H "Content-Type: application/json" -d "{ \"agentType\": \"EdgeAgent\", \"description\": \"$PACKAGE_DESCRIPTION\", \"name\": \"$PACKAGE_NAME\", \"totalBytes\": 0, \"type\": \"$PACKAGE_TYPE\", \"vendor\": \"$EM_TENANT_ID\", \"version\": \"$PACKAGE_VERSION\"}");
     echo "create package response : $responseCurl"
     ERROR_CODE=$( echo "$responseCurl" | jq -r .code)
     while [ $ERROR_CODE == 409 ]; do
@@ -139,7 +159,7 @@ function createEMPackage {
         read -p "Enter different Package Version> " PACKAGE_VERSION
         export PACKAGE_VERSION
         echo "$PACKAGE_TYPE"
-        responseCurl=$(curl -X POST "$EM_PACKAGE_MANAGEMENT_URL" -H "accept: application/json" -H "Authorization: Bearer $EM_TENANT_TOKEN" -H "Predix-Zone-Id: predix-adoption" -H "Content-Type: application/json" -d "{ \"agentType\": \"EdgeAgent\", \"description\": \"$PACKAGE_DESCRIPTION\", \"name\": \"$PACKAGE_NAME\", \"totalBytes\": 0, \"type\": \"$PACKAGE_TYPE\", \"vendor\": \"predix-adoption\", \"version\": \"$PACKAGE_VERSION\"}");
+        responseCurl=$(curl -X POST "$EM_PACKAGE_MANAGEMENT_URL" -H "accept: application/json" -H "Authorization: Bearer $EM_TENANT_TOKEN" -H "Predix-Zone-Id: $EM_TENANT_ID" -H "Content-Type: application/json" -d "{ \"agentType\": \"EdgeAgent\", \"description\": \"$PACKAGE_DESCRIPTION\", \"name\": \"$PACKAGE_NAME\", \"totalBytes\": 0, \"type\": \"$PACKAGE_TYPE\", \"vendor\": \"$EM_TENANT_ID\", \"version\": \"$PACKAGE_VERSION\"}");
         echo "create package response : $responseCurl"
         ERROR_CODE=$( echo "$responseCurl" | jq -r .code)
         echo "$ERROR_CODE : $ERROR_CODE"
@@ -175,18 +195,14 @@ function uploadPackageContent {
 
   case "$PACKAGE_TYPE" in
     "application"|"multi-container-app" )
-      responseCurl=$(curl -X POST "$EM_PACKAGE_MANAGEMENT_URL/uploads/$UPLOAD_ID" -H "accept: application/json" -H "Authorization: Bearer $EM_TENANT_TOKEN" -H "Predix-Zone-Id: predix-adoption" -H "Content-Type: multipart/form-data" -F "binary=@$PACKAGE_CONTENT_FILE;type=application/x-gzip")
+      responseCurl=$(curl -X POST "$EM_PACKAGE_MANAGEMENT_URL/uploads/$UPLOAD_ID" -H "accept: application/json" -H "Authorization: Bearer $EM_TENANT_TOKEN" -H "Predix-Zone-Id: $EM_TENANT_ID" -H "Content-Type: multipart/form-data" -F "binary=@$PACKAGE_CONTENT_FILE;type=application/x-gzip")
       ;;
     "configuration" )
-      responseCurl=$(curl -X POST "$EM_PACKAGE_MANAGEMENT_URL/uploads/$UPLOAD_ID" -H "accept: application/json" -H "Authorization: Bearer $EM_TENANT_TOKEN" -H "Predix-Zone-Id: predix-adoption" -H "Content-Type: multipart/form-data" -F "binary=@$PACKAGE_CONTENT_FILE;type=application/zip")
+      responseCurl=$(curl -X POST "$EM_PACKAGE_MANAGEMENT_URL/uploads/$UPLOAD_ID" -H "accept: application/json" -H "Authorization: Bearer $EM_TENANT_TOKEN" -H "Predix-Zone-Id: $EM_TENANT_ID" -H "Content-Type: multipart/form-data" -F "binary=@$PACKAGE_CONTENT_FILE;type=application/zip")
       ;;
   esac
   echo "$responseCurl"
   getPackageUploadStatus $UPLOAD_ID
-  if [[ "$PACKAGE_UPLOAD_STATUS" == "complete" ]]; then
-    deployPackageToDevice
-  fi
-
 }
 
 function getEMUserToken() {
@@ -228,23 +244,11 @@ function getPackageUploadStatus {
   UPLOAD_ID="$1"
   status="pending"
   while [[ "$status" == "pending" ]]; do
-    responseCurl=$(curl --silent -X GET "$EM_PACKAGE_MANAGEMENT_URL/uploads/$UPLOAD_ID" -H "accept: application/json" -H "Authorization: Bearer $EM_TENANT_TOKEN" -H "Predix-Zone-Id: predix-adoption")
+    responseCurl=$(curl --silent -X GET "$EM_PACKAGE_MANAGEMENT_URL/uploads/$UPLOAD_ID" -H "accept: application/json" -H "Authorization: Bearer $EM_TENANT_TOKEN" -H "Predix-Zone-Id: $EM_TENANT_ID")
     status=$( echo "$responseCurl" | jq -r .status)
     echo "status : $status"
   done
   export PACKAGE_UPLOAD_STATUS="$status"
-}
-
-function deployPackageToDevice {
-  if [[ ! -n $EM_TENANT_TOKEN ]]; then
-    getEMUserToken
-    echo "$EM_TENANT_TOKEN"
-  fi
-  if [[ ! -n $DEVICE_ID ]]; then
-    read -p "Enter your Device ID> " DEVICE_ID
-    export DEVICE_ID
-  fi
-
 }
 
 function createPackages {
@@ -318,6 +322,9 @@ function startEnrollement {
     read -p "Enter your user password> " -s LOGIN_PASSWORD
     export LOGIN_PASSWORD
   fi
+  if [[ $(ssh-keygen -F $IP_ADDRESS | wc -l | tr -d " ") != 0 ]]; then
+		ssh-keygen -R $IP_ADDRESS
+	fi
   pwd
   expect -c "
     spawn scp -o \"StrictHostKeyChecking=no\" $rootDir/bash/scripts/edge-starter-enrollment.sh $LOGIN_USER@$IP_ADDRESS:/mnt/data/downloads

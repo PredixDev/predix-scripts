@@ -2,9 +2,10 @@
 
 REM This is a .bat script to enable and disable proxies for a Windows OS
 
-SET IZON_SH="https://raw.githubusercontent.com/PredixDev/izon/1.1.0/izon2.sh"
-SET ENABLE_XSL_URL="https://raw.githubusercontent.com/PredixDev/predix-scripts/master/bash/common/proxy/enable-proxy.xsl"
-SET DISABLE_XSL_URL="https://raw.githubusercontent.com/PredixDev/predix-scripts/master/bash/common/proxy/disable-proxy.xsl"
+REM SET IZON_SH="https://raw.githubusercontent.com/PredixDev/izon/1.2.0/izon2.sh"
+REM SET ENABLE_XSL_URL="https://raw.githubusercontent.com/PredixDev/predix-scripts/master/bash/common/proxy/enable-proxy.xsl"
+REM SET DISABLE_XSL_URL="https://raw.githubusercontent.com/PredixDev/predix-scripts/master/bash/common/proxy/disable-proxy.xsl"
+
 SET PROXY_HOST=""
 SET PROXY_PORT="8080"
 SET PROXY_HOST_AND_PORT=""
@@ -39,6 +40,13 @@ GOTO :eof
 :SET_PROXIES
   SET HTTP_PROXY=%PROXY%
   SET HTTPS_PROXY=%PROXY%
+GOTO :eof
+
+:MAVEN_PROXIES
+  ECHO If you want to set your proxy variables in your Maven settings file,
+  ECHO You need to download MSXSL processor for windows before running toggle-maven-proxies
+  ECHO Download the msxsl.msi installer - https://www.microsoft.com/en-us/download/details.aspx?id=19662
+  ECHO Download the msxsl.exe executable - https://www.microsoft.com/en-us/download/details.aspx?id=21714
 GOTO :eof
 
 :UNSET_PROXIES
@@ -84,7 +92,7 @@ GOTO :eof
     ECHO Please refer to the proxy tutorial to retrieve your proxy name/port- https://www.predix.io/resources/tutorials/tutorial-details.html?tutorial_id=1565
     ECHO
     ECHO Once you have found your proxy server name and port please enter it in the format shown below
-    ECHO You can enter - http://PROXY_HOST_NAME:PORT"
+    ECHO You can enter - http://PROXY_HOST_NAME:PORT
     ECHO
     SET /p PROXY=Which proxy do you want to use?  
     CALL :SET_PROXIES
@@ -99,6 +107,7 @@ GOTO :eof
   )
 
   :DONE
-	ECHO Your selected proxy value = %HTTP_PROXY%
+    ECHO Your selected proxy value = %HTTP_PROXY%
     ECHO Open a new terminal window for the changes to take effect
     ECHO
+    CALL :MAVEN_PROXIES

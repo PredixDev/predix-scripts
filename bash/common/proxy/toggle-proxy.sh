@@ -226,7 +226,7 @@ echo "This script will enable/disable proxy variables required for Predix develo
 echo "--------------------------------------------------------------------------------"
 echo ""
 
-IZON_SH="https://raw.githubusercontent.com/PredixDev/izon/1.1.0/izon2.sh"
+IZON_SH="https://raw.githubusercontent.com/PredixDev/izon/1.2.0/izon2.sh"
 ENABLE_XSL_URL="https://raw.githubusercontent.com/PredixDev/predix-scripts/master/bash/common/proxy/enable-proxy.xsl"
 DISABLE_XSL_URL="https://raw.githubusercontent.com/PredixDev/predix-scripts/master/bash/common/proxy/disable-proxy.xsl"
 PROXY_HOST=""
