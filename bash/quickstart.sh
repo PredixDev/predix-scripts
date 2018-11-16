@@ -19,9 +19,12 @@ source "$quickstartRootDir/bash/scripts/error_handling_funcs.sh"
 source "$quickstartRootDir/bash/scripts/files_helper_funcs.sh"
 source "$quickstartRootDir/bash/scripts/curl_helper_funcs.sh"
 source "$quickstartRootDir/bash/scripts/predix_funcs.sh"
-source "$quickstartRootDir/bash/common/verifymvn.sh"
 source "$rootDir/bash/scripts/local-setup-funcs.sh"
-#source "$quickstartRootDir/bash/common/proxy/verify-proxy.sh"
+source "$quickstartRootDir/bash/common/proxy/verify-proxy.sh"
+
+# verifymvn.sh functions have been updated and re-implemented in verify-proxy.sh
+# verifymvn.sh is obsolete
+#source "$quickstartRootDir/bash/common/verifymvn.sh"
 
 if [ "${TERM/term}" = "$TERM" ] ; then
   COLUMNS=50
@@ -169,10 +172,8 @@ if [[ ( $LOGIN == 1 ) ]]; then
 fi
 
 if [[ $VERIFY_MVN == 1 ]]; then
-  checkmvnsettings $MAVEN_SETTINGS_FILE
-  assertmvn $MAVEN_SETTINGS_FILE
   # Call to new function in verify-proxy.sh - Uncomment the source command at the top of file
-  #verify_maven $MAVEN_SETTINGS_FILE
+  verify_maven $MAVEN_SETTINGS_FILE
 fi
 source "$quickstartRootDir/bash/scripts/variables.sh"
 
