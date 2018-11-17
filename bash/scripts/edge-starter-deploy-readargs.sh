@@ -513,9 +513,13 @@ function processDockerCompose() {
     if [[ $count == 0 ]]; then
 	echo "Image not present. downloading"
 	getRepoURL $service dockerImageURL version.json
+	echo "docker tip: if docker pull fails, try adding proxy info to the docker daemon (if behind a proxy)"
+	echo "docker tip: if docker pull fails, try 'docker logout' if pulling from public hub.docker.com"
 	if [[ $dockerImageURL == *github* ]]; then
+	  echo "docker pull $image"
 	  docker pull $image
 	elif [[ -z $dockerImageURL || $dockerImageURL == null ]]; then
+	  echo "docker pull $image"
 	  docker pull $image
 	else
 	  echo "Pulling from artifactory"

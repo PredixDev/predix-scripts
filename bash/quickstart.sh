@@ -19,8 +19,8 @@ source "$quickstartRootDir/bash/scripts/error_handling_funcs.sh"
 source "$quickstartRootDir/bash/scripts/files_helper_funcs.sh"
 source "$quickstartRootDir/bash/scripts/curl_helper_funcs.sh"
 source "$quickstartRootDir/bash/scripts/predix_funcs.sh"
-source "$rootDir/bash/scripts/local-setup-funcs.sh"
-source "$quickstartRootDir/bash/common/proxy/verify-proxy.sh"
+source "$quickstartRootDir/bash/scripts/local-setup-funcs.sh"
+#source "$quickstartRootDir/bash/common/proxy/verify-proxy.sh"
 
 # verifymvn.sh functions have been updated and re-implemented in verify-proxy.sh
 # verifymvn.sh is obsolete
@@ -122,7 +122,6 @@ fi
 if [[ ( $LOGIN == 1 ) ]]; then
     #Check px login and target Space
     if [[ $(px target | grep FAILED | wc -l) -eq "1" ]]; then
-      px target
       echo "Please login to cloud using 'px login' or 'cf login'.  GE emails will use 'px login --sso' or 'cf login --sso' "
       exit 1
     fi
@@ -172,8 +171,9 @@ if [[ ( $LOGIN == 1 ) ]]; then
 fi
 
 if [[ $VERIFY_MVN == 1 ]]; then
-  # Call to new function in verify-proxy.sh - Uncomment the source command at the top of file
-  verify_maven $MAVEN_SETTINGS_FILE
+  # Call to new script to verify maven settings
+  chmod +x $quickstartRootDir/bash/common/proxy/verify-proxy.sh
+  $quickstartRootDir/bash/common/proxy/verify-proxy.sh --maven
 fi
 source "$quickstartRootDir/bash/scripts/variables.sh"
 
