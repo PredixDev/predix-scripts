@@ -46,28 +46,24 @@ function processEdgeStarterReadargsSwitch() {
         SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-cd | --create-device"
 				SWITCH_ARRAY[SWITCH_INDEX++]="-cd"
         PRINT_USAGE=0
-        LOGIN=1
-        ;;
+                ;;
 			-ed|--enroll-device)
 				RUN_START_ENROLLMENT=1
 				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-enroll-device|--enroll-device"
 				SWITCH_ARRAY[SWITCH_INDEX++]="-ed"
         PRINT_USAGE=0
-        LOGIN=1
 				;;
 			-em-device-id|--em-device-id)
         DEVICE_ID="$2"
         SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-em-device-id|--em-device-id"
  				SWITCH_ARRAY[SWITCH_INDEX++]="-em-device-id"
         PRINT_USAGE=0
-        LOGIN=1
         ;;
 			-em-device-secret|--em-device-secret)
         DEVICE_SECRET="$2"
         SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-em-device-secret|--em-device-secret"
  				SWITCH_ARRAY[SWITCH_INDEX++]="-em-device-secret"
         PRINT_USAGE=0
-        LOGIN=1
         ;;
 			-cp|--create-packages)
 				RUN_CREATE_PACKAGES=1
@@ -80,14 +76,12 @@ function processEdgeStarterReadargsSwitch() {
 				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-ca|--create-application"
 				SWITCH_ARRAY[SWITCH_INDEX++]="-ca"
 				PRINT_USAGE=0
-				LOGIN=1
 				;;
 			-cc|--create-configuration)
 			  RUN_CREATE_CONFIGIURATION=1
 				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-cc|--create-configuration"
 				SWITCH_ARRAY[SWITCH_INDEX++]="-cc"
 			  PRINT_USAGE=0
-			  LOGIN=1
 			  ;;
 			-em-tenant-id|--em-tenant-id)
 				EM_TENANT_ID="$2"
@@ -127,9 +121,14 @@ function processEdgeStarterReadargsSwitch() {
 				;;
 			-edge-app-name|--edge-app-name)
 				EDGE_APP_NAME="$2"
-				echo "1111 : EDGE_APP_NAME : $EDGE_APP_NAME"
 				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-edge-app-name|--edge-app-name"
 				SWITCH_ARRAY[SWITCH_INDEX++]="-edge-app-name"
+				PRINT_USAGE=0
+				;;
+			-asset-name|--asset-name)
+				ASSET_NAME="$2"
+				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-asset-name|--asset-name"
+				SWITCH_ARRAY[SWITCH_INDEX++]="-asset-name"
 				PRINT_USAGE=0
 				;;
 			-em-package-name|--em-package-name)
@@ -156,7 +155,6 @@ function processEdgeStarterReadargsSwitch() {
 				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-em-schedule-package|--em-schedule-package"
 				SWITCH_ARRAY[SWITCH_INDEX++]="-em-schedule-package"
 				PRINT_USAGE=0
-				LOGIN=1
 				;;
 			-?*)
 				doShift=0
@@ -177,6 +175,9 @@ function printEdgeStarterVariables() {
 	if [[ "$RUN_PRINT_VARIABLES" == "1" ]]; then
 		printBBAVariables
 	fi
+	echo "PREDIX SERVICES"
+	echo "  SKIP_PREDIX_SERVICES        : $SKIP_PREDIX_SERVICES"
+	echo "  LOGIN                       : $LOGIN"
 	echo "EDGE MANAGER:"
 	echo "  EM UAA CONFIGURATIONS"
 	echo "    EM_TENANT_ID              : $EM_TENANT_ID"
@@ -196,11 +197,12 @@ function printEdgeStarterVariables() {
 	echo "    PACKAGE_NAME              : $PACKAGE_NAME"
 	echo "    PACKAGE_DESCRIPTION       : $PACKAGE_DESCRIPTION"
 	echo "    PACKAGE_VERSION           : $PACKAGE_VERSION"
-	echo "  EM ENROLLMENT:"
+	echo "  EDGE MMANAGER ENROLLMENT:"
 	echo "    RUN_START_ENROLLMENT      : $RUN_START_ENROLLMENT"
 	echo " "
 
 	export EDGE_APP_NAME
+	export ASSET_NAME
 	export EM_TENANT_ID
 	export EM_UAA_ZONE_ID
 	export EM_CLIENT_ID

@@ -390,6 +390,7 @@ function getCurlArtifactory() {
 			fetchArtifactoryKey
 		fi
 	fi
+	echo "Downloading Artifact using getCurlArtifactory"
 	RESULT=$(curl -u $ARTIFACTORY_USERNAME:$ARTIFACTORY_APIKEY $ARTIFACT_URL -O)
 	if [[ -n $RESULT ]]; then
 		echo "Curl to artifact URL failed"

@@ -14,7 +14,8 @@ count=$(docker service ls --filter name=\'$APPLICATION_ID\' -q | wc -l)
 if [[ $count == 0 ]]; then
   echo "No services to delete"
 else
-  docker service rm $(docker service ls --filter name=\'$APPLICATION_ID\')
+  docker stack rm $APPLICATION_ID
+  #docker service rm $(docker service ls --filter name=\'$APPLICATION_ID\')
 fi
 
 

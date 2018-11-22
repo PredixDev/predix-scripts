@@ -180,6 +180,7 @@ function runEdgeStarterLocal() {
       __append_new_head_log "Edge Starter Local - Launch Predix Edge Data Broker" "-" "$quickstartLogDir"
     processDockerCompose "docker-compose-edge-broker.yml"
     docker service ls -f "name=predix-edge-broker_predix-edge-broker"
+    #docker stack rm predix-edge-broker
     echo "docker stack deploy --with-registry-auth --compose-file docker-compose-edge-broker.yml predix-edge-broker"
     docker stack deploy --with-registry-auth --compose-file docker-compose-edge-broker.yml predix-edge-broker
     echo "sleep for 30 seconds"
@@ -216,6 +217,7 @@ function runEdgeStarterLocal() {
     processDockerCompose "docker-compose-local.yml"
 
     echo "docker stack deploy --compose-file docker-compose-local.yml $APP_NAME"
+		docker stack rm $APP_NAME
     docker stack deploy --compose-file docker-compose-local.yml $APP_NAME
     echo "sleep for 60 seconds"
     sleep 90

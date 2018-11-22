@@ -273,3 +273,4 @@ DEFAULT_TIMESERIES_QUERY_URI="https://time-series-store-predix.run.aws-usw02-pr.
 
 EM_DEVICE_MANAGEMENT_URL="https://em-api-apidocs.run.aws-usw02-pr.ice.predix.io/emapi/beta/device-management/devices"
 EM_PACKAGE_MANAGEMENT_URL="https://em-api-apidocs.run.aws-usw02-pr.ice.predix.io/emapi/beta/package-management/packages"
+DEFAULT_EM_ENVIRONMENT_FILE="$HOME/.environ_em"
