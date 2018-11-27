@@ -73,7 +73,9 @@ if [[ ! "$SCRIPT_READARGS" == "" ]]; then
   source "$quickstartRootDir/bash/scripts/$SCRIPT_READARGS"
   processReadargs $@
   # Curl for Google Analytics
-  #curl -s -H "Cache-Control: no-cache" -L https://predix-beacon.appspot.com/UA-82773213-1/$REPO_NAME/readme?pixel
+  echo "Curling $REPO_NAME/readme for Google Analytics"
+  curl -s -H "Cache-Control: no-cache" -L https://predix-beacon.appspot.com/UA-82773213-1/$REPO_NAME/readme?pixel
+  echo
 else
   echo "unable to call SCRIPT_READARGS as nothing is defined"
 fi
@@ -114,6 +116,7 @@ vercomp () {
 }
 
 if [[ $PREDIX_CLI_MIN == 1 ]]; then
+  echo
   predixcliversion=`predix --version | cut -d' ' -f3 | cut -d'-' -f3`
   echo "-->> Predix CLI Version : $predixcliversion"
   pxcliversion=`px --version | cut -d' ' -f3 | cut -d'-' -f3`
