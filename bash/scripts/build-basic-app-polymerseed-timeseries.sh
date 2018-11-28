@@ -85,8 +85,11 @@ function build-basic-app-polymerseed-timeseries-main() {
     sed -i -e 's/uaa_service_label : predix-uaa/uaa_service_label : predix-uaa-training/' manifest.yml
   fi
 
+  echo "npm install"
   npm install
+  echo "bower install"
   bower install
+  echo "gulp dist"
   gulp dist
 
 
