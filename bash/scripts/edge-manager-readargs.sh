@@ -10,7 +10,7 @@ source "$rootDir/bash/scripts/predix_services_setup.sh"
 RUN_CREATE_DEVICE=0
 RUN_CREATE_APPLICATION=0
 RUN_CREATE_CONFIGIURATION=0
-
+SKIP_ENROLLMENT=0
 source "$rootDir/bash/scripts/build-basic-app-readargs.sh"
 
 
@@ -47,8 +47,8 @@ function processEdgeStarterReadargsSwitch() {
 				SWITCH_ARRAY[SWITCH_INDEX++]="-cd"
         PRINT_USAGE=0
                 ;;
-			-ed|--enroll-device)
-				RUN_START_ENROLLMENT=1
+			-sed|--skip-enroll-device)
+				SKIP_ENROLLMENT=1
 				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-enroll-device|--enroll-device"
 				SWITCH_ARRAY[SWITCH_INDEX++]="-ed"
         PRINT_USAGE=0
@@ -198,7 +198,7 @@ function printEdgeStarterVariables() {
 	echo "    PACKAGE_DESCRIPTION       : $PACKAGE_DESCRIPTION"
 	echo "    PACKAGE_VERSION           : $PACKAGE_VERSION"
 	echo "  EDGE MMANAGER ENROLLMENT:"
-	echo "    RUN_START_ENROLLMENT      : $RUN_START_ENROLLMENT"
+	echo "    SKIP_ENROLLMENT           : $SKIP_ENROLLMENT"
 	echo " "
 
 	export EDGE_APP_NAME

@@ -142,10 +142,10 @@ function verify_docker() {
 
 function verify_bash() {
   if [[ -z "${HTTP_PROXY}" ]]; then
-    echo "Proxies not set -> Failed"
+    echo "Proxies not set -> "
     echo
-    echo "Please run toggle_proxy.sh to enable/disable your proxies for Bash and Maven"
-    echo "The toggle proxy script can be found in predix-scripts/bash/common/proxy"
+    echo "If needed, please run toggle_proxy.sh to enable/disable your proxies for Bash and Maven"
+    echo "The toggle proxy script can be found in current directory or predix-scripts/bash/common/proxy"
     echo "./toggle-proxy.sh --enable"
     echo "OR"
     echo "./toggle-proxy.sh --disable"

@@ -68,7 +68,7 @@ function main() {
     PACKAGE_CONTENT_FILE="$EDGE_APP_NAME-$ASSET_NAME-config.zip"
     createEMPackage "configuration"
   fi
-  if [[ $RUN_START_ENROLLMENT == 1 ]]; then
+  if [[ $SKIP_ENROLLMENT == 0 ]]; then
     echo "Starting Enrollment"
     startEnrollement
   fi
@@ -158,10 +158,7 @@ function edgeEdgeManagerCreateDevice() {
     __append_new_line_log "Device $DEVICE_ID not found. Creating the device now..." "$logDir"
     echo "Device $DEVICE_ID not found. Creating the device now..." >> $SUMMARY_TEXTFILE
     getDeviceSecret
-    set -x
     responseCurl=$(curl -X POST "$EM_DEVICE_MANAGEMENT_URL" -H "accept: */*" -H "Authorization: Bearer $EM_TENANT_TOKEN" -H "Predix-Zone-Id: $EM_TENANT_ID" -H "Content-Type: application/json" -d "{ \"description\": \"Edge OS Device\", \"deviceId\": \"$DEVICE_ID\", \"dockerEnabled\": true, \"platform\": \"Predix Edge\", \"modelId\": \"PredixEdge\", \"name\": \"$DEVICE_ID\", \"sharedSecret\": \"$DEVICE_SECRET\"}")
-    set -e
-    echo ""
     __append_new_line_log "responseCurl : $responseCurl" "$logDir"
   else
     echo "Other error Check the reponse"
