@@ -144,7 +144,11 @@ function verify_bash() {
   if [[ -z "${HTTP_PROXY}" ]]; then
     echo "Proxies not set -> "
     echo
-    echo "If needed, please run toggle_proxy.sh to enable/disable your proxies for Bash and Maven"
+    echo "If this is the first time you are setting your proxies,"
+    echo "Then run the following command to set proxy environment varibales (For Bash only)"
+    echo "./toggle-proxy.sh --setup"
+    echo
+    echo "If needed, please run toggle_proxy.sh to enable/disable your proxies for both Bash and Maven"
     echo "The toggle proxy script can be found in current directory or predix-scripts/bash/common/proxy"
     echo "./toggle-proxy.sh --enable"
     echo "OR"

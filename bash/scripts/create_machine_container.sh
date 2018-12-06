@@ -12,7 +12,7 @@ trap "trap_ctrlc" 2
 
 PROGNAME=$(basename $0)
 ROOT_DIR=$(pwd)
-
+CUSTOM_IMAGES_DIR="$rootDir/predix-machine-images/images"
 function create_machine_container-main() {
   rm -rf $MACHINE_SDK*
   echo "Generating Machine container from $MACHINE_SDK"

@@ -14,23 +14,26 @@ MACHINE_HOME="$1"
 CURRENT_DIR=$(pwd)
 echo "CURRENT_DIR : $CURRENT_DIR"
 echo "MAVEN_SETTINGS_FILE : $MAVEN_SETTINGS_FILE"
-if [[ $RUN_COMPILE_REPO -eq 1 ]]; then
-  __echo_run mvn -q clean install -U -Dmaven.compiler.source=1.8 -Dmaven.compiler.target=1.8 -f pom.xml -s $MAVEN_SETTINGS_FILE
-else
-  __echo_run mvn clean dependency:copy -B -Dmdep.useBaseVersion=true -s $MAVEN_SETTINGS_FILE
-fi
-
+echo "Fetching project name"
+PROJECT_GROUP_ID=$(printf 'VER\t${project.groupId}' | mvn help:evaluate | grep '^VER' | cut -f2)
+echo "PROJECT_GROUP_ID : $PROJECT_GROUP_ID"
 echo "Fetching project name"
 PROJECT_ARTIFACT_ID=$(printf 'VER\t${project.artifactId}' | mvn help:evaluate | grep '^VER' | cut -f2)
 echo "PROJECT_ARTIFACT_ID : $PROJECT_ARTIFACT_ID"
 echo "Fetching project version"
 PROJECT_VERSION=$(printf 'VER\t${project.version}' | mvn help:evaluate | grep '^VER' | cut -f2)
 echo "PROJECT_VERSION : $PROJECT_VERSION"
-
+set -x
+if [[ $RUN_COMPILE_REPO -eq 1 ]]; then
+  __echo_run mvn -q clean install -U -Dmaven.compiler.source=1.8 -Dmaven.compiler.target=1.8 -f pom.xml -s $MAVEN_SETTINGS_FILE
+else
+  __echo_run mvn clean dependency:copy -B -Dmdep.useBaseVersion=true -s $MAVEN_SETTINGS_FILE -Dartifact=$PROJECT_GROUP_ID:$PROJECT_ARTIFACT_ID:$PROJECT_VERSION
+fi
+set -e
 MACHINE_BUNDLE="$PROJECT_ARTIFACT_ID-$PROJECT_VERSION.jar"
 echo "MACHINE_BUNDLE_JAR : $MACHINE_BUNDLE"
 __find_and_replace_string "{MACHINE_BUNDLE_VERSION}" "$PROJECT_VERSION" "config/solution.ini" "$buildBasicAppLogDir" "$MACHINE_HOME/machine/bin/vms/solution.ini"
-__echo_run cp target/$MACHINE_BUNDLE "$MACHINE_HOME/machine/bundles"
+__echo_run cp target/dependency/$MACHINE_BUNDLE "$MACHINE_HOME/machine/bundles"
 echo "Copied custom $MACHINE_BUNDLE to $MACHINE_HOME/machine/bundles" >> "$SUMMARY_TEXTFILE"
 
 echo "Deploying predix-machine-template-processor"
@@ -41,22 +44,25 @@ rm -rf predix-machine-template-processor
 #echo "git repo version : $branch"
 
 cd ..
-__echo_run getGitRepo "predix-machine-template-processor"
+getRepoURL "predix-machine-template-processor" git_url version.json
+__echo_run getGitRepo "$git_url"
 
 cd predix-machine-template-processor
 echo "CURRENT_DIR $(pwd)"
-if [[ $RUN_COMPILE_REPO -eq 1 ]]; then
-  __echo_run mvn -q clean install -U -Dmaven.compiler.source=1.8 -Dmaven.compiler.target=1.8 -f pom.xml -s $MAVEN_SETTINGS_FILE
-else
-  __echo_run mvn clean dependency:copy -B -Dmdep.useBaseVersion=true -s $MAVEN_SETTINGS_FILE
-fi
-
+echo "Fetching project name"
+PROJECT_GROUP_ID=$(printf 'VER\t${project.groupId}' | mvn help:evaluate | grep '^VER' | cut -f2)
+echo "PROJECT_GROUP_ID : $PROJECT_GROUP_ID"
 echo "Fetching project name"
 PROJECT_ARTIFACT_ID=$(printf 'VER\t${project.artifactId}' | mvn help:evaluate | grep '^VER' | cut -f2)
 echo "PROJECT_ARTIFACT_ID : $PROJECT_ARTIFACT_ID"
 echo "Fetching project version"
 PROJECT_VERSION=$(printf 'VER\t${project.version}' | mvn help:evaluate | grep '^VER' | cut -f2)
 echo "PROJECT_VERSION : $PROJECT_VERSION"
+if [[ $RUN_COMPILE_REPO -eq 1 ]]; then
+  __echo_run mvn -q clean install -U -Dmaven.compiler.source=1.8 -Dmaven.compiler.target=1.8 -f pom.xml -s $MAVEN_SETTINGS_FILE
+else
+  __echo_run mvn clean dependency:copy -B -Dmdep.useBaseVersion=true -s $MAVEN_SETTINGS_FILE -Dartifact=$PROJECT_GROUP_ID:$PROJECT_ARTIFACT_ID:$PROJECT_VERSION
+fi
 
 MACHINE_BUNDLE="$PROJECT_ARTIFACT_ID-$PROJECT_VERSION.jar"
 echo "MACHINE_BUNDLE_JAR : $MACHINE_BUNDLE"

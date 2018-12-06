@@ -244,12 +244,12 @@ PREDIX_CACHE_SERVICE_PLAN="Shared-R30"
 ENABLE_MODBUS_SIMULATOR="true"
 
 #Predix Machine SDK related variables
-ECLIPSE_WINDOWS_32BIT="http://mirror.cc.columbia.edu/pub/software/eclipse/technology/epp/downloads/release/mars/R/eclipse-jee-mars-R-win32.zip"
-ECLIPSE_WINDOWS_64BIT="http://mirror.cc.columbia.edu/pub/software/eclipse/technology/epp/downloads/release/mars/R/eclipse-jee-mars-R-win32-x86_64.zip"
+ECLIPSE_WINDOWS_32BIT="http://mirrors.xmission.com/eclipse/technology/epp/downloads/release/neon/3/eclipse-jee-neon-3-win32.zip"
+ECLIPSE_WINDOWS_64BIT="http://ftp.osuosl.org/pub/eclipse/technology/epp/downloads/release/neon/3/eclipse-jee-neon-3-win32-x86_64.zip"
 
-ECLIPSE_MAC_64BIT="http://mirror.cc.columbia.edu/pub/software/eclipse/technology/epp/downloads/release/mars/R/eclipse-jee-mars-R-macosx-cocoa-x86_64.tar.gz"
-ECLIPSE_LINUX_32BIT="http://mirror.cc.columbia.edu/pub/software/eclipse/technology/epp/downloads/release/mars/R/eclipse-jee-mars-R-linux-gtk.tar.gz"
-ECLIPSE_LINUX_64BIT="http://mirror.cc.columbia.edu/pub/software/eclipse/technology/epp/downloads/release/mars/R/eclipse-jee-mars-R-linux-gtk-x86_64.tar.gz"
+ECLIPSE_MAC_64BIT="http://mirrors.xmission.com/eclipse/technology/epp/downloads/release/neon/3/eclipse-jee-neon-3-macosx-cocoa-x86_64.tar.gz"
+ECLIPSE_LINUX_32BIT="http://ftp.osuosl.org/pub/eclipse/technology/epp/downloads/release/neon/3/eclipse-jee-neon-3-linux-gtk.tar.gz"
+ECLIPSE_LINUX_64BIT="http://mirrors.xmission.com/eclipse/technology/epp/downloads/release/neon/3/eclipse-jee-neon-3-linux-gtk-x86_64.tar.gz"
 
 ECLIPSE_TAR_FILENAME="eclipse.tar.gz"
 

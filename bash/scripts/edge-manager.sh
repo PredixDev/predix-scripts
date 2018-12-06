@@ -340,7 +340,11 @@ function createPackages {
         TIMESERIES_QUERY_URI="https://time-series-store-predix.run.aws-usw02-pr.ice.predix.io/v1/datapoints"
       fi
       if [[ "$TIMESERIES_ZONE_ID" == "" ]]; then
-        read -p "Enter Timeseries Zone Id>" TIMESERIES_ZONE_ID
+        read -p "Enter Timeseries Zone Id($DEFAULT_TIMESERIES_ZONE_ID)> " TIMESERIES_ZONE_ID
+        TIMESERIES_ZONE_ID=${TIMESERIES_ZONE_ID:-$DEFAULT_TIMESERIES_ZONE_ID}
+        DEFAULT_TIMESERIES_ZONE_ID=$TIMESERIES_ZONE_ID
+        export TIMESERIES_ZONE_ID
+        declare -p DEFAULT_TIMESERIES_ZONE_ID >> $ENVIRONMENT_FILE
       fi
       echo "TIMESERIES_ZONE_ID : $TIMESERIES_ZONE_ID"
       __find_and_replace ".*predix_zone_id\":.*" "          \"predix_zone_id\": \"$TIMESERIES_ZONE_ID\"," "config/config-cloud-gateway.json" "$quickstartLogDir"
