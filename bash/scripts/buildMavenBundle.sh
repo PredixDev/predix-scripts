@@ -23,30 +23,30 @@ echo "PROJECT_ARTIFACT_ID : $PROJECT_ARTIFACT_ID"
 echo "Fetching project version"
 PROJECT_VERSION=$(printf 'VER\t${project.version}' | mvn help:evaluate | grep '^VER' | cut -f2)
 echo "PROJECT_VERSION : $PROJECT_VERSION"
-set -x
 if [[ $RUN_COMPILE_REPO -eq 1 ]]; then
   __echo_run mvn -q clean install -U -Dmaven.compiler.source=1.8 -Dmaven.compiler.target=1.8 -f pom.xml -s $MAVEN_SETTINGS_FILE
 else
   __echo_run mvn clean dependency:copy -B -Dmdep.useBaseVersion=true -s $MAVEN_SETTINGS_FILE -Dartifact=$PROJECT_GROUP_ID:$PROJECT_ARTIFACT_ID:$PROJECT_VERSION
 fi
-set -e
 MACHINE_BUNDLE="$PROJECT_ARTIFACT_ID-$PROJECT_VERSION.jar"
 echo "MACHINE_BUNDLE_JAR : $MACHINE_BUNDLE"
 __find_and_replace_string "{MACHINE_BUNDLE_VERSION}" "$PROJECT_VERSION" "config/solution.ini" "$buildBasicAppLogDir" "$MACHINE_HOME/machine/bin/vms/solution.ini"
 __echo_run cp target/dependency/$MACHINE_BUNDLE "$MACHINE_HOME/machine/bundles"
 echo "Copied custom $MACHINE_BUNDLE to $MACHINE_HOME/machine/bundles" >> "$SUMMARY_TEXTFILE"
 
+mkdir -p processor
+cd processor
+getRepoURL "predix-machine-template-processor" git_url version.json
 echo "Deploying predix-machine-template-processor"
 rm -rf predix-machine-template-processor
 #getRepoURL "predix-machine-template-processor" git_url version.json
 #echo "git url : $git_url"
 #getRepoVersion "predix-machine-template-processor" branch version.json
 #echo "git repo version : $branch"
+pwd
 
-cd ..
-getRepoURL "predix-machine-template-processor" git_url version.json
-__echo_run getGitRepo "$git_url"
-
+__echo_run getGitRepo "predix-machine-template-processor"
+pwd
 cd predix-machine-template-processor
 echo "CURRENT_DIR $(pwd)"
 echo "Fetching project name"
@@ -73,8 +73,8 @@ __find_and_replace_string "{MACHINE_PROCESSOR_VERSION}" "$PROJECT_VERSION" "$MAC
 #sed -i -e "s#<name>{MACHINE_BUNDLE_JAR}</name>#<name>$MACHINE_BUNDLE</name>#" config/solution.ini
 #__echo_run cp config/solution.ini $MACHINE_HOME/machine/bin/vms/solution.ini
 __echo_run cp target/$MACHINE_BUNDLE "$MACHINE_HOME/machine/bundles"
-cd ..
-rm -rf predix-machine-template-processor
+cd ../..
+rm -rf processor
 
 echo "#################### Build and setup the adatper end ####################"
 
