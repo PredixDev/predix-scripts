@@ -237,6 +237,7 @@ function getGitRepo() {
 		branch="$BRANCH"
 	fi
 	if [[ -n $GITHUB_BUILD_TOKEN && $git_url = *"github.build.ge"* ]]; then
+		echo "adding GITHUB_BUILD_TOKEN"
 		git_url=https://$GITHUB_BUILD_TOKEN@$(echo "$git_url" | awk -F"//" '{print $2}')
 	fi
 	echo "Cloning $1 repo ... $git_url $branch"
