@@ -65,10 +65,16 @@ function runEdgeStarterLocal() {
   if [[ -e docker-compose-edge-broker.yml ]]; then
     __append_new_head_log "Edge Starter Local - Launch Predix Edge Data Broker" "-" "$quickstartLogDir"
     processDockerCompose "docker-compose-edge-broker.yml"
-    docker service ls -f "name=predix-edge-broker_predix-edge-broker"
-    #docker stack rm predix-edge-broker
+    docker network ls
+    echo "docker stack rm $APP_NAME"
     docker stack rm $APP_NAME
-    docker stack rm "predix-edge-broker"
+    docker stack ls
+    docker service ls -f "name=predix-edge-broker_predix-edge-broker"
+    if [[  $(docker service ls -f "name=predix-edge-broker" | grep 1/1 | wc -l) == "1" ]]; then
+      echo "docker stack rm predix-edge-broker"
+      docker stack rm "predix-edge-broker"
+    fi
+    docker network ls
     echo "docker stack deploy --compose-file docker-compose-edge-broker.yml predix-edge-broker"
     docker stack deploy --compose-file docker-compose-edge-broker.yml predix-edge-broker
     echo "sleep for 30 seconds"
@@ -203,10 +209,10 @@ function dockerLogin {
 	DTR_NAME="$1"
 
 	read -p "Enter the username for dtr $DTR_NAME> " DTR_LOGIN_USER
-	export LOGIN_USER
+	export DTR_LOGIN_USER
 
 	read -p "Enter your user password> " -s DTR_LOGIN_PASSWORD
-	export LOGIN_PASSWORD
+	export DTR_LOGIN_PASSWORD
 
 	if [[ $(docker login $DTR_NAME -u $DTR_LOGIN_USER -p $DTR_LOGIN_PASSWORD) ]]; then
 		echo "Docker login successful"
@@ -267,21 +273,21 @@ function deployToEdge {
   if [[ -e .environ ]]; then
     source .environ
   fi
-  read -p "Enter the IP Address of Edge OS($DEFAULT_IP_ADDRESS)> " IP_ADDRESS
-  IP_ADDRESS=${IP_ADDRESS:-$DEFAULT_IP_ADDRESS}
-  export IP_ADDRESS
-  DEFAULT_IP_ADDRESS=$IP_ADDRESS
+  read -p "Enter the IP Address of Edge OS($DEFAULT_IP_ADDRESS)> " DEVICE_IP_ADDRESS
+  DEVICE_IP_ADDRESS=${DEVICE_IP_ADDRESS:-$DEFAULT_IP_ADDRESS}
+  export DEVICE_IP_ADDRESS
+  DEFAULT_IP_ADDRESS=$DEVICE_IP_ADDRESS
   declare -p DEFAULT_IP_ADDRESS > .environ
-  if [[ ! -n $LOGIN_USER ]]; then
-    read -p "Enter the username for Edge OS(root)> " LOGIN_USER
-    LOGIN_USER=${LOGIN_USER:-root}
-    export LOGIN_USER
+  if [[ ! -n $DEVICE_LOGIN_USER ]]; then
+    read -p "Enter the username for Edge OS(root)> " DEVICE_LOGIN_USER
+    DEVICE_LOGIN_USER=${DEVICE_LOGIN_USER:-root}
+    export DEVICE_LOGIN_USER
   fi
-  if [[ ! -n $LOGIN_PASSWORD ]]; then
-    read -p "Enter your user password(root)> " -s LOGIN_PASSWORD
-    LOGIN_PASSWORD=${LOGIN_PASSWORD:-root}
-    export LOGIN_PASSWORD
-    echo Login=$LOGIN_PASSWORD
+  if [[ ! -n $DEVICE_LOGIN_PASSWORD ]]; then
+    read -p "Enter your user password(root)> " -s DEVICE_LOGIN_PASSWORD
+    DEVICE_LOGIN_PASSWORD=${DEVICE_LOGIN_PASSWORD:-root}
+    export DEVICE_LOGIN_PASSWORD
+    echo Login=$DEVICE_LOGIN_PASSWORD
   fi
   if [[ "$SKIP_PREDIX_SERVICES" == "false" ]]; then
     pwd
@@ -293,17 +299,17 @@ function deployToEdge {
     cat data/access_token
     cd ..
   fi
-	if [[ $(ssh-keygen -F $IP_ADDRESS | wc -l | tr -d " ") != 0 ]]; then
-		ssh-keygen -R $IP_ADDRESS
+	if [[ $(ssh-keygen -F $DEVICE_IP_ADDRESS | wc -l | tr -d " ") != 0 ]]; then
+		ssh-keygen -R $DEVICE_IP_ADDRESS
 	fi
   expect -c "
     set timeout -1
-		spawn scp -o \"StrictHostKeyChecking=no\" $APP_NAME_TAR $APP_NAME_CONFIG $rootDir/bash/scripts/edge-starter-deploy-run.sh $REPO_NAME/data/access_token $LOGIN_USER@$IP_ADDRESS:/mnt/data/downloads
+		spawn scp -o \"StrictHostKeyChecking=no\" $APP_NAME_TAR $APP_NAME_CONFIG $rootDir/bash/scripts/edge-starter-deploy-run.sh $REPO_NAME/data/access_token $DEVICE_LOGIN_USER@$DEVICE_IP_ADDRESS:/mnt/data/downloads
     expect {
       \"Are you sure you want to continue connecting\" {
         send \"yes\r\"
         expect \"assword:\"
-        send "$LOGIN_PASSWORD\r"
+        send "$DEVICE_LOGIN_PASSWORD\r"
       }
       \"assword:\" {
         send \"$LOGIN_PASSWORD\r\"
@@ -311,16 +317,16 @@ function deployToEdge {
     }
 		set timeout -1
     expect \"*# \"
-    spawn ssh -o \"StrictHostKeyChecking=no\" $LOGIN_USER@$IP_ADDRESS
+    spawn ssh -o \"StrictHostKeyChecking=no\" $DEVICE_LOGIN_USER@$DEVICE_IP_ADDRESS
     set timeout -1
     expect {
       \"Are you sure you want to continue connecting\" {
         send \"yes\r\"
         expect \"assword:\"
-        send \"$LOGIN_PASSWORD\r\"
+        send \"$DEVICE_LOGIN_PASSWORD\r\"
       }
       "assword:" {
-        send \"$LOGIN_PASSWORD\r\"
+        send \"$DEVICE_LOGIN_PASSWORD\r\"
       }
     }
     set timeout -1
@@ -349,7 +355,7 @@ function deployToEdge {
     }
   "
   echo "exit code=$?"
-  echo "Copied files to $LOGIN_USER@$IP_ADDRESS:/mnt/data/downloads"  >> $SUMMARY_TEXTFILE
+  echo "Copied files to $DEVICE_LOGIN_USER@$DEVICE_IP_ADDRESS:/mnt/data/downloads"  >> $SUMMARY_TEXTFILE
   echo "Ran /mnt/data/downloads/edge-starter-deploy-run.sh"  >> $SUMMARY_TEXTFILE
   echo "Launched $REPO_NAME"  >> $SUMMARY_TEXTFILE
 

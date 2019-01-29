@@ -10,7 +10,7 @@ source "$rootDir/bash/scripts/predix_services_setup.sh"
 RUN_CREATE_DEVICE=0
 RUN_CREATE_APPLICATION=0
 RUN_CREATE_CONFIGIURATION=0
-SKIP_ENROLLMENT=0
+
 source "$rootDir/bash/scripts/build-basic-app-readargs.sh"
 
 
@@ -47,8 +47,8 @@ function processEdgeStarterReadargsSwitch() {
 				SWITCH_ARRAY[SWITCH_INDEX++]="-cd"
         PRINT_USAGE=0
                 ;;
-			-sed|--skip-enroll-device)
-				SKIP_ENROLLMENT=1
+			-ed|--enroll-device)
+				RUN_START_ENROLLMENT=1
 				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-enroll-device|--enroll-device"
 				SWITCH_ARRAY[SWITCH_INDEX++]="-ed"
         PRINT_USAGE=0
@@ -63,6 +63,24 @@ function processEdgeStarterReadargsSwitch() {
         DEVICE_SECRET="$2"
         SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-em-device-secret|--em-device-secret"
  				SWITCH_ARRAY[SWITCH_INDEX++]="-em-device-secret"
+        PRINT_USAGE=0
+        ;;
+			-em-device-ip-address|--em-device-ip-address)
+        DEVICE_IP_ADDRESS="$2"
+        SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-em-device-ip-address|--em-device-ip-address"
+ 				SWITCH_ARRAY[SWITCH_INDEX++]="-em-device-ip-address"
+        PRINT_USAGE=0
+        ;;
+			-em-device-login-user|--em-device-login-user)
+        DEVICE_LOGIN_USER="$2"
+        SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-em-device-login-user|--em-device-login-user"
+ 				SWITCH_ARRAY[SWITCH_INDEX++]="-em-device-login-user"
+        PRINT_USAGE=0
+        ;;
+			-em-device-login-password|--em-device-login-password)
+        DEVICE_LOGIN_PASSWORD="$2"
+        SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-em-device-login-pass|--em-device-login-password"
+ 				SWITCH_ARRAY[SWITCH_INDEX++]="-em-device-login-password"
         PRINT_USAGE=0
         ;;
 			-cp|--create-packages)
@@ -190,6 +208,9 @@ function printEdgeStarterVariables() {
 	echo "    RUN_CREATE_DEVICE_ID      : $RUN_CREATE_DEVICE_ID"
 	echo "    DEVICE_ID                 : $DEVICE_ID"
 	echo "    DEVICE_SECRET             :	$DEVICE_SECRET"
+	echo "    DEVICE_IP_ADDRESS         :	$DEVICE_IP_ADDRESS"
+	echo "    DEVICE_LOGIN_USER         :	$DEVICE_LOGIN_USER"
+	echo "    DEVICE_LOGIN_PASSWORD     :	$DEVICE_LOGIN_PASSWORD"
 	echo "  PACKAGE CONFIGURATIONS:"
 	echo "    RUN_SCHEDULE_PACKAGE      : $RUN_SCHEDULE_PACKAGE"
 	echo "    RUN_CREATE_APPLICATION    : $RUN_CREATE_APPLICATION"
@@ -198,7 +219,7 @@ function printEdgeStarterVariables() {
 	echo "    PACKAGE_DESCRIPTION       : $PACKAGE_DESCRIPTION"
 	echo "    PACKAGE_VERSION           : $PACKAGE_VERSION"
 	echo "  EDGE MMANAGER ENROLLMENT:"
-	echo "    SKIP_ENROLLMENT           : $SKIP_ENROLLMENT"
+	echo "    RUN_START_ENROLLMENT      : $RUN_START_ENROLLMENT"
 	echo " "
 
 	export EDGE_APP_NAME
@@ -212,6 +233,9 @@ function printEdgeStarterVariables() {
 	export RUN_CREATE_DEVICE_ID
 	export DEVICE_ID
 	export DEVICE_SECRET
+	export DEVICE_IP_ADDRESS
+	export DEVICE_LOGIN_USER
+	export DEVICE_LOGIN_PASSWORD
 	export PACKAGE_NAME
 	export PACKAGE_DESCRIPTION
 	export PACKAGE_VERSION

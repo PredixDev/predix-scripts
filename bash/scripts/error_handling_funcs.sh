@@ -40,24 +40,6 @@ __print_center() {
 #		Accepts 2 argument:
 #			string containing descriptive error message
 #     string containing the root path of where the log will output
-#	----------------------------------------------------------------
-function __error_exit-deprecated
-{
-	echo "********************************************"
-	echo "Failure to run quickstart script"
-	echo "View logs at $2/quickstart.log"
-	echo "${PROGNAME}: ${1:-"Unknown Error"}" 1>&2
-	echo "********************************************"
-	echo -e $(timestamp): " --- ERROR:" "$1"  >> "$2/quickstartlog.log"
-	echo -e $(timestamp): " --- Running the clean up script..." "$1"  >> "$2/quickstartlog.log"
-	exit 1
-}
-
-#	----------------------------------------------------------------
-#	Function for exit due to fatal program error
-#		Accepts 2 argument:
-#			string containing descriptive error message
-#     string containing the root path of where the log will output
 #	-
 function __error_exit ()
 {

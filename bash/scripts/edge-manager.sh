@@ -68,7 +68,7 @@ function main() {
     PACKAGE_CONTENT_FILE="$EDGE_APP_NAME-$ASSET_NAME-config.zip"
     createEMPackage "configuration"
   fi
-  if [[ $SKIP_ENROLLMENT == 0 ]]; then
+  if [[ $RUN_START_ENROLLMENT == 1 ]]; then
     echo "Starting Enrollment"
     startEnrollement
   fi
@@ -158,7 +158,10 @@ function edgeEdgeManagerCreateDevice() {
     __append_new_line_log "Device $DEVICE_ID not found. Creating the device now..." "$logDir"
     echo "Device $DEVICE_ID not found. Creating the device now..." >> $SUMMARY_TEXTFILE
     getDeviceSecret
+    set -x
     responseCurl=$(curl -X POST "$EM_DEVICE_MANAGEMENT_URL" -H "accept: */*" -H "Authorization: Bearer $EM_TENANT_TOKEN" -H "Predix-Zone-Id: $EM_TENANT_ID" -H "Content-Type: application/json" -d "{ \"description\": \"Edge OS Device\", \"deviceId\": \"$DEVICE_ID\", \"dockerEnabled\": true, \"platform\": \"Predix Edge\", \"modelId\": \"PredixEdge\", \"name\": \"$DEVICE_ID\", \"sharedSecret\": \"$DEVICE_SECRET\"}")
+    set -e
+    echo ""
     __append_new_line_log "responseCurl : $responseCurl" "$logDir"
   else
     echo "Other error Check the reponse"
@@ -340,11 +343,7 @@ function createPackages {
         TIMESERIES_QUERY_URI="https://time-series-store-predix.run.aws-usw02-pr.ice.predix.io/v1/datapoints"
       fi
       if [[ "$TIMESERIES_ZONE_ID" == "" ]]; then
-        read -p "Enter Timeseries Zone Id($DEFAULT_TIMESERIES_ZONE_ID)> " TIMESERIES_ZONE_ID
-        TIMESERIES_ZONE_ID=${TIMESERIES_ZONE_ID:-$DEFAULT_TIMESERIES_ZONE_ID}
-        DEFAULT_TIMESERIES_ZONE_ID=$TIMESERIES_ZONE_ID
-        export TIMESERIES_ZONE_ID
-        declare -p DEFAULT_TIMESERIES_ZONE_ID >> $ENVIRONMENT_FILE
+        read -p "Enter Timeseries Zone Id>" TIMESERIES_ZONE_ID
       fi
       echo "TIMESERIES_ZONE_ID : $TIMESERIES_ZONE_ID"
       __find_and_replace ".*predix_zone_id\":.*" "          \"predix_zone_id\": \"$TIMESERIES_ZONE_ID\"," "config/config-cloud-gateway.json" "$quickstartLogDir"
@@ -392,56 +391,56 @@ function startEnrollement {
 
   getDeviceSecret
 
-  if [[ ! -n $IP_ADDRESS ]]; then
-    read -p "Enter the IP Address of Edge OS($DEFAULT_IP_ADDRESS)> " IP_ADDRESS
-    IP_ADDRESS=${IP_ADDRESS:-$DEFAULT_IP_ADDRESS}
-    DEFAULT_IP_ADDRESS=$IP_ADDRESS
-    export IP_ADDRESS
+  if [[ ! -n $DEVICE_IP_ADDRESS ]]; then
+    read -p "Enter the IP Address of Edge OS ($DEFAULT_IP_ADDRESS)> " IP_ADDRESS
+    DEVICE_IP_ADDRESS=${DEVICE_IP_ADDRESS:-$DEFAULT_IP_ADDRESS}
+    DEFAULT_IP_ADDRESS=$DEVICE_IP_ADDRESS
+    export DEVICE_IP_ADDRESS
     declare -p DEFAULT_IP_ADDRESS >> $ENVIRONMENT_FILE
   fi
-  if [[ ! -n $LOGIN_USER ]]; then
-    read -p "Enter the username for Edge OS($DEFAULT_LOGIN_USER)> " LOGIN_USER
-    LOGIN_USER=${LOGIN_USER:-$DEFAULT_LOGIN_USER}
-    DEFAULT_LOGIN_USER=$LOGIN_USER
-    export LOGIN_USER
+  if [[ ! -n $DEVICE_LOGIN_USER ]]; then
+    read -p "Enter the username for Edge OS($DEFAULT_LOGIN_USER)> " DEVICE_LOGIN_USER
+    DEVICE_LOGIN_USER=${DEVICE_LOGIN_USER:-$DEFAULT_LOGIN_USER}
+    DEFAULT_LOGIN_USER=$DEVICE_LOGIN_USER
+    export DEVICE_LOGIN_USER
     declare -p DEFAULT_LOGIN_USER >> $ENVIRONMENT_FILE
   fi
-  if [[ ! -n $LOGIN_PASSWORD ]]; then
-    read -p "Enter your user password($DEFAULT_LOGIN_PASSWORD)> " -s LOGIN_PASSWORD
-    LOGIN_PASSWORD=${LOGIN_PASSWORD:-$DEFAULT_LOGIN_PASSWORD}
-    DEFAULT_LOGIN_PASSWORD=$LOGIN_PASSWORD
-    export LOGIN_PASSWORD
+  if [[ ! -n $DEVICE_LOGIN_PASSWORD ]]; then
+    read -p "Enter your user password($DEFAULT_LOGIN_PASSWORD)> " -s DEVICE_LOGIN_PASSWORD
+    DEVICE_LOGIN_PASSWORD=${LOGIN_PASSWORD:-$DEFAULT_LOGIN_PASSWORD}
+    DEFAULT_LOGIN_PASSWORD=$DEVICE_LOGIN_PASSWORD
+    export DEVICE_LOGIN_PASSWORD
     declare -p DEFAULT_LOGIN_PASSWORD >> $ENVIRONMENT_FILE
   fi
-  echo "$IP_ADDRESS : $IP_ADDRESS"
-  if [[ $(ssh-keygen -F $IP_ADDRESS | wc -l | tr -d " ") != 0 ]]; then
-		ssh-keygen -R $IP_ADDRESS
+  echo "DEVICE_IP_ADDRESS : $DEVICE_IP_ADDRESS"
+  if [[ $(ssh-keygen -F $DEVICE_IP_ADDRESS | wc -l | tr -d " ") != 0 ]]; then
+		ssh-keygen -R $DEVICE_IP_ADDRESS
 	fi
   pwd
   expect -c "
-    spawn scp -o \"StrictHostKeyChecking=no\" $rootDir/bash/scripts/edge-starter-enrollment.sh $LOGIN_USER@$IP_ADDRESS:/mnt/data/downloads
+    spawn scp -o \"StrictHostKeyChecking=no\" $rootDir/bash/scripts/edge-starter-enrollment.sh $DEVICE_LOGIN_USER@$DEVICE_IP_ADDRESS:/mnt/data/downloads
     set timeout 50
     expect {
       \"Are you sure you want to continue connecting\" {
         send \"yes\r\"
         expect \"assword:\"
-        send "$LOGIN_PASSWORD\r"
+        send "$DEVICE_LOGIN_PASSWORD\r"
       }
       \"assword:\" {
-        send \"$LOGIN_PASSWORD\r\"
+        send \"$DEVICE_LOGIN_PASSWORD\r\"
       }
     }
     expect \"*\# \"
-    spawn ssh -o \"StrictHostKeyChecking=no\" $LOGIN_USER@$IP_ADDRESS
+    spawn ssh -o \"StrictHostKeyChecking=no\" $DEVICE_LOGIN_USER@$DEVICE_IP_ADDRESS
     set timeout 5
     expect {
       \"Are you sure you want to continue connecting\" {
         send \"yes\r\"
         expect \"assword:\"
-        send \"$LOGIN_PASSWORD\r\"
+        send \"$DEVICE_LOGIN_PASSWORD\r\"
       }
       "assword:" {
-        send \"$LOGIN_PASSWORD\r\"
+        send \"$DEVICE_LOGIN_PASSWORD\r\"
       }
     }
     expect \"*\# \"
