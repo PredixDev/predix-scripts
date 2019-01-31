@@ -115,6 +115,7 @@ function runEdgeStarterLocal() {
     docker stack deploy --compose-file docker-compose-local.yml $APP_NAME
     echo "sleep for 60 seconds"
     sleep 60
+    docker stack ps $APP_NAME
     if [[  $(docker service ls -f "name=$APP_NAME" | grep 0/1 | wc -l) == "1" ]]; then
       docker service ls
       echo 'Error: One of the $APP_NAME services did not launch.  Try re-running again, maybe we did not give it enough time to come up.  See the image github README for troubleshooting details.'
