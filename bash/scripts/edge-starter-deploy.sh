@@ -111,7 +111,7 @@ function runEdgeStarterLocal() {
     processDockerCompose "docker-compose-local.yml"
 
     echo "docker stack deploy --compose-file docker-compose-local.yml $APP_NAME"
-		docker stack rm $APP_NAME
+    docker stack rm $APP_NAME
     docker stack deploy --compose-file docker-compose-local.yml $APP_NAME
     echo "sleep for 60 seconds"
     sleep 60
