@@ -8,8 +8,8 @@ source "$rootDir/bash/scripts/predix_services_setup.sh"
 
 # Reset all variables that might be set
 RUN_CREATE_DEVICE=0
-RUN_CREATE_APPLICATION=0
-RUN_CREATE_CONFIGIURATION=0
+RUN_UPLOAD_APPLICATION=0
+RUN_UPLOAD_CONFIGIURATION=0
 
 source "$rootDir/bash/scripts/build-basic-app-readargs.sh"
 
@@ -89,15 +89,15 @@ function processEdgeStarterReadargsSwitch() {
 				SWITCH_ARRAY[SWITCH_INDEX++]="-cp"
 				PRINT_USAGE=0
 				;;
-			-ca|--create-application)
-				RUN_CREATE_APPLICATION=1
-				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-ca|--create-application"
+			-ca|--upload-application)
+				RUN_UPLOAD_APPLICATION=1
+				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-ca|--upload-application"
 				SWITCH_ARRAY[SWITCH_INDEX++]="-ca"
 				PRINT_USAGE=0
 				;;
-			-cc|--create-configuration)
-			  RUN_CREATE_CONFIGIURATION=1
-				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-cc|--create-configuration"
+			-cc|--upload-configuration)
+			  RUN_UPLOAD_CONFIGIURATION=1
+				SWITCH_DESC_ARRAY[SWITCH_DESC_INDEX++]="-cc|--upload-configuration"
 				SWITCH_ARRAY[SWITCH_INDEX++]="-cc"
 			  PRINT_USAGE=0
 			  ;;
@@ -213,8 +213,8 @@ function printEdgeStarterVariables() {
 	echo "    DEVICE_LOGIN_PASSWORD     :	$DEVICE_LOGIN_PASSWORD"
 	echo "  PACKAGE CONFIGURATIONS:"
 	echo "    RUN_SCHEDULE_PACKAGE      : $RUN_SCHEDULE_PACKAGE"
-	echo "    RUN_CREATE_APPLICATION    : $RUN_CREATE_APPLICATION"
-	echo "    RUN_CREATE_CONFIGIURATION : $RUN_CREATE_CONFIGIURATION"
+	echo "    RUN_UPLOAD_APPLICATION    : $RUN_UPLOAD_APPLICATION"
+	echo "    RUN_UPLOAD_CONFIGIURATION : $RUN_UPLOAD_CONFIGIURATION"
 	echo "    PACKAGE_NAME              : $PACKAGE_NAME"
 	echo "    PACKAGE_DESCRIPTION       : $PACKAGE_DESCRIPTION"
 	echo "    PACKAGE_VERSION           : $PACKAGE_VERSION"
@@ -275,8 +275,8 @@ function runFunctionsForEdgeStarter() {
             createDeviceService $1
             break
             ;;
-					-ca|--create-application)
-					 echo "calling -ca|--create-application"
+					-ca|--upload-application)
+					 echo "calling -ca|--upload-application"
             uploadApplicationToEMRepository $1
             break
           	;;

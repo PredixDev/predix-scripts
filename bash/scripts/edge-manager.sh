@@ -42,9 +42,6 @@ function main() {
   source $ENVIRONMENT_FILE
   echo "EDGE_APP_NAME : $EDGE_APP_NAME"
   echo "ASSET_NAME : $ASSET_NAME"
-  if [[ ! -n $EM_TENANT_TOKEN ]]; then
-    getEMUserToken
-  fi
   if [[ $RUN_CREATE_DEVICE == 1 ]]; then
     echo "Create Device"
     edgeEdgeManagerCreateDevice
@@ -61,7 +58,7 @@ function main() {
     PACKAGE_CONTENT_FILE="$EDGE_APP_NAME.tar.gz"
     createEMPackage "multi-container-app"
   fi
-  if [[ $RUN_CREATE_CONFIGIURATION == 1 ]]; then
+  if [[ $RUN_UPLOAD_CONFIGIURATION == 1 ]]; then
     echo "Upload Configuration package"
     PACKAGE_NAME="$EDGE_APP_NAME-$ASSET_NAME-config"
     PACKAGE_DESCRIPTION="Package for configuration for $EDGE_APP_NAME, Asset $ASSET_NAME"
@@ -171,10 +168,6 @@ function edgeEdgeManagerCreateDevice() {
 
 function createEMPackage {
   __validate_num_arguments 1 $# "\"createEMPackage()\" expected in order:  Package Type." "$logDir"
-  if [[ ! -n $EM_TENANT_TOKEN ]]; then
-    getEMUserToken
-    echo "$EM_TENANT_TOKEN"
-  fi
   PACKAGE_TYPE="$1"
   if [[ ! -n $PACKAGE_TYPE ]]; then
     read -p "Enter Package Type (application|configuration)> " PACKAGE_TYPE
@@ -327,7 +320,7 @@ function getPackageUploadStatus {
 function createPackages {
   pwd
   if [[ ! -e $REPO_NAME ]]; then
-    echo "directory=$REPO_NAME is not there.  You should run this script after running the quickstart-edge-ref-app-local.sh script"
+    echo "directory=$REPO_NAME is not there.  You should run this script after running the quickstart-edge-xxx-local.sh script"
     exit 1
   fi
   cd $REPO_NAME
@@ -370,10 +363,12 @@ function createPackages {
     rm -rf $APP_NAME_CONFIG
     echo "Compressing the configurations."
     cd config
-    zip -X -r ../$APP_NAME_CONFIG *.json
+    zip -X -r ../$APP_NAME_CONFIG *
     cd ../
+  else
+    echo "config dir does not exist"
   fi
-  ls -lrt
+  echo "Created $APP_NAME_TAR and $APP_NAME_CONFIG in predix-scripts/$REPO_NAME" >> $SUMMARY_TEXTFILE
 }
 
 function startEnrollement {
