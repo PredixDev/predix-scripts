@@ -73,8 +73,9 @@ if [[ ! "$SCRIPT_READARGS" == "" ]]; then
   source "$quickstartRootDir/bash/scripts/$SCRIPT_READARGS"
   processReadargs $@
   # Curl for Google Analytics
-  echo "Curling $REPO_NAME/readme for Google Analytics"
-  curl -s -H "Cache-Control: no-cache" -L https://predix-beacon.appspot.com/UA-82773213-1/$REPO_NAME/readme?pixel
+  SCRIPT=`echo "$SCRIPT_NAME" | sed 's|\.||'`
+  echo "Curling $REPO_NAME/$SCRIPT for Google Analytics"
+  curl -s -H "Cache-Control: no-cache" -L https://predix-beacon.appspot.com/UA-82773213-1/$REPO_NAME/$SCRIPT?pixel
   echo
 else
   echo "unable to call SCRIPT_READARGS as nothing is defined"

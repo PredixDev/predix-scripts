@@ -51,7 +51,7 @@ function main() {
     createPackages $EDGE_APP_NAME
   fi
   PACKAGE_VERSION=$(jq -r '.version' version.json)
-  if [[ $RUN_CREATE_APPLICATION == 1 ]]; then
+  if [[ $RUN_UPLOAD_APPLICATION == 1 ]]; then
     echo "Upload Application package"
     PACKAGE_NAME="$EDGE_APP_NAME"
     PACKAGE_DESCRIPTION="Package for Application $EDGE_APP_NAME"
@@ -355,7 +355,7 @@ function createPackages {
   docker save -o images.tar $IMAGES_LIST
   rm -rf "$APP_NAME_TAR"
   echo "Creating $APP_NAME_TAR with docker-compose.yml"
-  tar -czvf $APP_NAME_TAR images.tar docker-compose.yml
+  #tar -czvf $APP_NAME_TAR images.tar docker-compose.yml
 
   APP_NAME_CONFIG="$EDGE_APP_NAME-$ASSET_NAME-config.zip"
 
@@ -363,7 +363,19 @@ function createPackages {
     rm -rf $APP_NAME_CONFIG
     echo "Compressing the configurations."
     cd config
-    zip -X -r ../$APP_NAME_CONFIG *
+    extensions=''
+    #no extensions
+    for file in `find . -type f -depth 1 ! -name '*.*' | grep -v '\./\.' | sed 's|\./||' | sort -u`;  do
+      echo "file=$file"
+      extensions="$extensions $file"
+    done
+    #files with extensions
+    for extension in `find . -type f -depth 1 -name '*.*' | grep -v '\./\.' | sed 's|.*\.||' | sort -u`;  do
+      echo "extension=$extension"
+      extensions="$extensions *.$extension"
+    done
+    echo $extensions
+    zip -X -r ../$APP_NAME_CONFIG $extensions
     cd ../
   else
     echo "config dir does not exist"

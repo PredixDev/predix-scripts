@@ -259,7 +259,19 @@ function createPackages {
       rm -rf $APP_NAME_CONFIG
       echo "Compressing the configurations."
       cd $REPO_NAME/config
-      zip -X -r ../../$APP_NAME_CONFIG *.json
+      extensions=''
+      #no extensions
+      for file in `find . -type f -depth 1 ! -name '*.*' | grep -v '\./\.' | sed 's|\./||' | sort -u`;  do
+        echo "file=$file"
+        extensions="$extensions $file"
+      done
+      #files with extensions
+      for extension in `find . -type f -depth 1 -name '*.*' | grep -v '\./\.' | sed 's|.*\.||' | sort -u`;  do
+        echo "extension=$extension"
+        extensions="$extensions *.$extension"
+      done
+      echo $extensions
+      zip -X -r ../$APP_NAME_CONFIG $extensions
       cd ../..
     fi
   fi
