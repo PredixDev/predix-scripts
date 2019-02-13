@@ -300,7 +300,8 @@ function deployToEdge {
     read -p "Enter your user password(root)> " -s DEVICE_LOGIN_PASSWORD
     DEVICE_LOGIN_PASSWORD=${DEVICE_LOGIN_PASSWORD:-root}
     export DEVICE_LOGIN_PASSWORD
-    echo Login=$DEVICE_LOGIN_PASSWORD
+    echo ""
+    #echo Login=$DEVICE_LOGIN_PASSWORD
   fi
   if [[ "$SKIP_PREDIX_SERVICES" == "false" ]]; then
     pwd
@@ -325,7 +326,7 @@ function deployToEdge {
         send "$DEVICE_LOGIN_PASSWORD\r"
       }
       \"assword:\" {
-        send \"$LOGIN_PASSWORD\r\"
+        send \"$DEVICE_LOGIN_PASSWORD\r\"
       }
     }
 		set timeout -1

@@ -355,7 +355,7 @@ function createPackages {
   docker save -o images.tar $IMAGES_LIST
   rm -rf "$APP_NAME_TAR"
   echo "Creating $APP_NAME_TAR with docker-compose.yml"
-  #tar -czvf $APP_NAME_TAR images.tar docker-compose.yml
+  tar -czvf $APP_NAME_TAR images.tar docker-compose.yml
 
   APP_NAME_CONFIG="$EDGE_APP_NAME-$ASSET_NAME-config.zip"
 
@@ -414,7 +414,7 @@ function startEnrollement {
   fi
   if [[ ! -n $DEVICE_LOGIN_PASSWORD ]]; then
     read -p "Enter your user password($DEFAULT_LOGIN_PASSWORD)> " -s DEVICE_LOGIN_PASSWORD
-    DEVICE_LOGIN_PASSWORD=${LOGIN_PASSWORD:-$DEFAULT_LOGIN_PASSWORD}
+    DEVICE_LOGIN_PASSWORD=${DEVICE_LOGIN_PASSWORD:-$DEFAULT_LOGIN_PASSWORD}
     DEFAULT_LOGIN_PASSWORD=$DEVICE_LOGIN_PASSWORD
     export DEVICE_LOGIN_PASSWORD
     declare -p DEFAULT_LOGIN_PASSWORD >> $ENVIRONMENT_FILE
