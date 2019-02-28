@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-EDGE_APP_NAME="predix-edge"
+EDGE_APP_NAME="predix-edge-broker"
 #get the script that reads version.json
 LOCAL_SETUP_FUNCTIONS="https://raw.githubusercontent.com/PredixDev/predix-scripts/master/bash/scripts/local-setup-funcs.sh"
 dockerImageURL="https://artifactory.predix.io/artifactory/PREDIX-EXT/predix-edge/2_2_0/os/predix-edge-broker-amd64-20181120-1.1.0.signed.tar.gz"
