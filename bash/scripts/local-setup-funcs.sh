@@ -251,7 +251,7 @@ function getGitRepo() {
 # method to fetch API KEY for artifactory
 function fetchArtifactoryKey(){
 	validate_num_arguments 0 $# "\"local-setup-funcs:getArtifactoryKey\" calls artifactory with user credentails to get API Key" "$localSetupLogDir"
-	read -p "Enter your predix.io cloud username (usually your email address) >" INPUT
+	read -p "Enter your predix.io cloud username (usually your email address)>" INPUT
 	export ARTIFACTORY_USERNAME="${INPUT:-$ARTIFACTORY_USERNAME}"
 
 	if [[ $ARTIFACTORY_USERNAME = *"ge.com"* ]]; then
@@ -306,14 +306,22 @@ function fetchArtifactoryKey(){
 	echo
 	echo "Artifactory username $ARTIFACTORY_USERNAME with API Key $ARTIFACTORY_APIKEY" >> summary.txt
 
-	echo -n "Do you want to add these credentials to your maven settings file (y/n) > "
-	read answer
-	echo
-	if [[ ${answer:0:1} == "y" ]] || [[ ${answer:0:1} == "Y" ]]; then
-		echo "Setting the Artifactory credentials in the maven settings.xml file"
-		addApiKeytoMaven
+	# Checking if maven settings file exitsts
+	if [[ -e ~/.m2/settings.xml ]]; then
+		echo "We found a maven settings file on your machine at ~/.m2/settings.xml"
+		echo -n "Do you want to add these credentials to your maven settings file (y/n) > "
+		read answer
+		echo
+		if [[ ${answer:0:1} == "y" ]] || [[ ${answer:0:1} == "Y" ]]; then
+			echo "Setting the Artifactory credentials in the maven settings.xml file"
+			addApiKeytoMaven
+		else
+			echo "Maven settings file (~/.m2/settings.xml) not updated"
+			echo
+		fi
 	else
-		echo "Maven settings file (~/.m2/settings.xml) not updated"
+		echo "Maven settings file does not exist"
+		echo "We suggest adding one later for future reference in the following location : (~/.m2/settings.xml)"
 		echo
 	fi
 }
