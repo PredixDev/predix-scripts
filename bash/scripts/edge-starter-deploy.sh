@@ -66,12 +66,13 @@ function runEdgeStarterLocal() {
     __append_new_head_log "Edge Starter Local - Launch Predix Edge Data Broker" "-" "$quickstartLogDir"
     processDockerCompose "docker-compose-edge-broker.yml"
     docker network ls
-    echo "docker stack rm $APP_NAME"
+    docker stack ls
+    echo "remove $APP_NAME - docker stack rm $APP_NAME"
     docker stack rm $APP_NAME
     docker stack ls
     docker service ls -f "name=predix-edge-broker_predix-edge-broker"
     if [[  $(docker service ls -f "name=predix-edge-broker" | grep 1/1 | wc -l) == "1" ]]; then
-      echo "docker stack rm predix-edge-broker"
+      echo "removing broker - docker stack rm predix-edge-broker"
       docker stack rm "predix-edge-broker"
     fi
     docker network ls
