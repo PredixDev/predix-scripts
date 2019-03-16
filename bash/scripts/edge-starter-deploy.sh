@@ -37,6 +37,12 @@ __append_new_head_log "Build & Deploy Predix Edge Application" "#" "$logDir"
 #			string of app name used to bind to services so we can get VCAP info
 #	----------------------------------------------------------------
 function main() {
+  for ((switchIndex = 0; switchIndex < ${#SWITCH_ARRAY[@]}; switchIndex++))
+  do
+      switch="${SWITCH_ARRAY[$switchIndex]}"
+      runFunctionsForBasicApp $1 $switch
+  done
+  echo "runFunctionsForBasicApp done"
   if [[ $RUN_EDGE_APP_LOCAL == 1 ]]; then
     echo ""
     runEdgeStarterLocal

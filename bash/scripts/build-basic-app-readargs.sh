@@ -82,6 +82,7 @@ function __print_out_usage
   echo "[-psuaa|   --polymer-seed-uaa]             => Install the build-a-basic polymer-seed front-end web app with UAA to visualize the data"
   echo "[-psasset| --polymer-seed-asset]           => Install the build-a-basic polymer-seed front-end web app with Asset and UAA to visualize the data"
   echo "[-psts|    --polymer-seed-timeseries]      => Install the build-a-basic polymer-seed front-end web app with Time Series and UAA to visualize the data"
+  echo "[-psmodel| --polymer-seed-model]           => Use a specific asset model file"
   echo "[-psrmd|   --polymer-seed-rmd-refapp]      => Install the build-a-basic polymer-seed front-end web app with UAA, Asset, Timeseries, Websocket Server, Data Exchange, Data Simulator, and RMD Datasource to visualize the data"
   echo "[-dxui|    --data-exchange-ui]             => Install the rmd-ref-app data-exchange-ui front-end web app to visualize the saved data sets"
   echo "machine:"
@@ -535,6 +536,16 @@ function processBuildBasicAppReadargsSwitch() {
 					SWITCH_ARRAY[SWITCH_INDEX++]="-psts"
 		      PRINT_USAGE=0
 		      LOGIN=1
+		      ;;
+		    -psmodel|--polymer-seed-model)
+		      if [ -n "$2" ]; then
+		        PS_ASSET_MODEL=$2
+		        doShift=1
+		        shift
+		      else
+		        printf 'ERROR: "-ps-model" requires a 2nd argument with file name of model.\n' >&2
+		        exit 1
+		      fi
 		      ;;
 		    -psrmd|--polymer-seed-rmd-refapp)
 		      USE_POLYMER_SEED_RMD=1

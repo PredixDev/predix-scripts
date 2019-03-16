@@ -62,6 +62,12 @@ function build-basic-app-polymerseed-timeseries-main() {
   else
     __find_and_replace "timeSeriesOnly: .*" "timeSeriesOnly: false" "manifest.yml" "$logDir"
   fi
+  if [[ $USE_TRAINING_UAA -eq 1 ]]; then
+    sed -i -e 's/uaa_service_label : predix-uaa/uaa_service_label : predix-uaa-training/' manifest.yml
+  fi
+  if [[ -n "$PS_ASSET_MODEL" ]]; then
+    __find_and_replace ".*assetModel:.*" "    assetModel: $PS_ASSET_MODEL" "manifest.yml" "$logDir"
+  fi
 
   cat manifest.yml
 
@@ -78,12 +84,14 @@ function build-basic-app-polymerseed-timeseries-main() {
   else
     __find_and_replace ".*timeSeriesOnly\":.*" "    \"timeSeriesOnly\": \"false\"" "server/localConfig.json" "$logDir"
   fi
+
+  if [[ -n "$PS_ASSET_MODEL" ]]; then
+    __find_and_replace ".*assetModel\":.*" "    \"assetModel\": \"$PS_ASSET_MODEL\"" "server/localConfig.json" "$logDir"
+  fi
+
   cat server/localConfig.json
 
   # Push the application
-  if [[ $USE_TRAINING_UAA -eq 1 ]]; then
-    sed -i -e 's/uaa_service_label : predix-uaa/uaa_service_label : predix-uaa-training/' manifest.yml
-  fi
 
   echo "npm install"
   npm install

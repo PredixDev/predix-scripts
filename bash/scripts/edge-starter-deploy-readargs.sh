@@ -82,7 +82,7 @@ function processEdgeDeployReadargsSwitch() {
 			UNKNOWN_SWITCH=0
 			processBuildBasicAppReadargsSwitch $@
 			if [[ $UNKNOWN_SWITCH == 1 ]]; then
-				echo "unknown Edge Manager switch=$1"
+				echo "unknown Edge Starter switch=$1"
 			fi
       ;;
 		*)               # Default case: If no more options then break out of the loop.
@@ -95,7 +95,7 @@ function processEdgeDeployReadargsSwitch() {
 
 
 function printEdgeStarterVariables() {
-	if [[ "$RUN_PRINT_VARIABLES" == "1" ]]; then
+	if [[ "$RUN_PRINT_VARIABLES" == "0" ]]; then
 		printBBAVariables
 	fi
 	echo "EDGE STARTER APP:"
