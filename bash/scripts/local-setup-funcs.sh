@@ -300,6 +300,7 @@ function fetchArtifactoryKey(){
 
 	echo
 	echo
+	echo "Exporting Artifactory environment variables"
 	echo "Artifactory ID is set to - $ARTIFACTORY_ID"
 	echo "Artifactory username is set to - $ARTIFACTORY_USERNAME"
 	echo "Artifactory API key is set to - $ARTIFACTORY_APIKEY"
@@ -320,8 +321,8 @@ function fetchArtifactoryKey(){
 			echo
 		fi
 	else
-		echo "Maven settings file does not exist"
-		echo "We suggest adding one later for future reference in the following location : (~/.m2/settings.xml)"
+		echo "Maven settings file does not exist. To save time in future, you may store your Artifactory key there in the following location : (~/.m2/settings.xml)"
+		echo "An example file is located at https://github.com/PredixDev/predix-rmd-ref-app/blob/master/docs/settings.xml"
 		echo
 	fi
 }
@@ -388,14 +389,21 @@ function getCurlArtifactory() {
 	if [[ -z $ARTIFACTORY_USERNAME && -z $ARTIFACTORY_APIKEY ]]; then
 		echo
 		echo "Artifactory Credentials not set in environment variables"
-		echo -n "Would you like to extract artifactory credentials from maven settings file (~/.m2/settings.xml) (y/n) > "
-		read answer
 		echo
-		if [[ ${answer:0:1} == "y" ]] || [[ ${answer:0:1} == "Y" ]]; then
-			echo "Reading ~/.m2/settings.xml"
-			getArtifactoryFromMaven ~/.m2/settings.xml
+		if [[ -e ~/.m2/settings.xml ]]; then
+			echo "Found a maven settings file on your machine at ~/.m2/settings.xml"
+			echo -n "Would you like to extract artifactory credentials from maven settings file (~/.m2/settings.xml) (y/n) > "
+			read answer
+			echo
+			if [[ ${answer:0:1} == "y" ]] || [[ ${answer:0:1} == "Y" ]]; then
+				echo "Reading ~/.m2/settings.xml"
+				getArtifactoryFromMaven ~/.m2/settings.xml
+			else
+				echo "Calling fetchApiKey"
+				fetchArtifactoryKey
+			fi
 		else
-			echo "Calling fetchApiKey"
+			echo "Did not find a maven settings file on your machine at ~/.m2/settings.xml, calling fetchApiKey"
 			fetchArtifactoryKey
 		fi
 	fi
