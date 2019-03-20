@@ -99,9 +99,11 @@ function checkmvnsettings() {
   local mvn_setting_file=$1
 
   if [ ! -f $mvn_setting_file ]; then
+    echo
     echo "Maven setting File missing at $mvn_setting_file location."
     echo "Please configure your maven settings file to continue."
     echo "Detailed instructions are in tutorial at: https://www.predix.io/resources/tutorials/tutorial-details.html?tutorial_id=1560"
+    echo 
   fi
   echo "Using Maven settings file from $mvn_setting_file"
   verifymvnsettings $mvn_setting_file
