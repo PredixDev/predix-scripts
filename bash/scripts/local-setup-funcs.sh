@@ -392,7 +392,7 @@ function getCurlArtifactory() {
 		echo
 		if [[ -e ~/.m2/settings.xml ]]; then
 			echo "Found a maven settings file on your machine at ~/.m2/settings.xml"
-			echo -n "Would you like to extract_ artifactory credentials from maven settings file (~/.m2/settings.xml) (y/n) > "
+			echo -n "Would you like to extract artifactory credentials from maven settings file (~/.m2/settings.xml) (y/n) > "
 			read answer
 			echo
 			if [[ ${answer:0:1} == "y" ]] || [[ ${answer:0:1} == "Y" ]]; then
