@@ -155,7 +155,6 @@ function edgeEdgeManagerCreateDevice() {
     __append_new_line_log "Device $DEVICE_ID not found. Creating the device now..." "$logDir"
     echo "Device $DEVICE_ID not found. Creating the device now..." >> $SUMMARY_TEXTFILE
     getDeviceSecret
-    set -x
     responseCurl=$(curl -X POST "$EM_DEVICE_MANAGEMENT_URL" -H "accept: */*" -H "Authorization: Bearer $EM_TENANT_TOKEN" -H "Predix-Zone-Id: $EM_TENANT_ID" -H "Content-Type: application/json" -d "{ \"description\": \"Edge OS Device\", \"deviceId\": \"$DEVICE_ID\", \"dockerEnabled\": true, \"platform\": \"Predix Edge\", \"modelId\": \"PredixEdge\", \"name\": \"$DEVICE_ID\", \"sharedSecret\": \"$DEVICE_SECRET\"}")
     set -e
     echo ""
@@ -315,72 +314,6 @@ function getPackageUploadStatus {
     echo "status : $status"
   done
   export PACKAGE_UPLOAD_STATUS="$status"
-}
-
-function createPackages {
-  pwd
-  if [[ ! -e $REPO_NAME ]]; then
-    echo "directory=$REPO_NAME is not there.  You should run this script after running the quickstart-edge-xxx-local.sh script"
-    exit 1
-  fi
-  cd $REPO_NAME
-  pwd
-  echo "Creating Packages for EdgeManager Repository for $EDGE_APP_NAME"
-  APP_NAME_TAR="$EDGE_APP_NAME.tar.gz"
-  if [[ -e config/config-cloud-gateway.json ]]; then
-    if [[ "$SKIP_PREDIX_SERVICES" == "false" ]]; then
-      if [[ "$TIMESERIES_INGEST_URI" == "" ]]; then
-        TIMESERIES_INGEST_URI="wss://gateway-predix-data-services.run.aws-usw02-pr.ice.predix.io/v1/stream/messages"
-      fi
-      if [[ "$TIMESERIES_QUERY_URI" == "" ]]; then
-        TIMESERIES_QUERY_URI="https://time-series-store-predix.run.aws-usw02-pr.ice.predix.io/v1/datapoints"
-      fi
-      if [[ "$TIMESERIES_ZONE_ID" == "" ]]; then
-        read -p "Enter Timeseries Zone Id>" TIMESERIES_ZONE_ID
-      fi
-      echo "TIMESERIES_ZONE_ID : $TIMESERIES_ZONE_ID"
-      __find_and_replace ".*predix_zone_id\":.*" "          \"predix_zone_id\": \"$TIMESERIES_ZONE_ID\"," "config/config-cloud-gateway.json" "$quickstartLogDir"
-      echo "proxy_url : $http_proxy"
-      __find_and_replace ".*proxy_url\":.*" "          \"proxy_url\": \"$http_proxy\"" "config/config-cloud-gateway.json" "$quickstartLogDir"
-    fi
-  fi
-  echo "Creating a images.tar with required images"
-  rm -rf images.tar
-  IMAGES_LIST=""
-  for img in $(cat docker-compose.yml | grep image: | awk -F" " '{print $2}' | tr -d "\"");
-  do
-    IMAGES_LIST="$IMAGES_LIST $img"
-  done
-  echo "$IMAGES_LIST"
-  docker save -o images.tar $IMAGES_LIST
-  rm -rf "$APP_NAME_TAR"
-  echo "Creating $APP_NAME_TAR with docker-compose.yml"
-  tar -czvf $APP_NAME_TAR images.tar docker-compose.yml
-
-  APP_NAME_CONFIG="$EDGE_APP_NAME-$ASSET_NAME-config.zip"
-
-  if [[ -e config ]]; then
-    rm -rf $APP_NAME_CONFIG
-    echo "Compressing the configurations."
-    cd config
-    extensions=''
-    #no extensions
-    for file in `find . -type f -depth 1 ! -name '*.*' | grep -v '\./\.' | sed 's|\./||' | sort -u`;  do
-      echo "file=$file"
-      extensions="$extensions $file"
-    done
-    #files with extensions
-    for extension in `find . -type f -depth 1 -name '*.*' | grep -v '\./\.' | sed 's|.*\.||' | sort -u`;  do
-      echo "extension=$extension"
-      extensions="$extensions *.$extension"
-    done
-    echo $extensions
-    zip -X -r ../$APP_NAME_CONFIG $extensions
-    cd ../
-  else
-    echo "config dir does not exist"
-  fi
-  echo "Created $APP_NAME_TAR and $APP_NAME_CONFIG in predix-scripts/$REPO_NAME" >> $SUMMARY_TEXTFILE
 }
 
 function startEnrollement {

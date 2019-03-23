@@ -126,6 +126,12 @@ function build-basic-app-polymerseed-timeseries-main() {
          # Windows
          start "" $apphost
          ;;
+       
+       *)
+        if [[ $(uname -a | grep devbox | wc -l) > 0 ]]; then
+          xdg-open $apphost
+        fi
+       ;;
     esac
 fi
 

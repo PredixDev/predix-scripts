@@ -131,6 +131,11 @@ npm install passport-predix-oauth --save
          # Windows
          start "" $apphost
          ;;
+       *)
+         if [[ $(uname -a | grep devbox | wc -l) > 0 ]]; then
+          xdg-open $apphost
+         fi
+       ;;
     esac
 fi
 

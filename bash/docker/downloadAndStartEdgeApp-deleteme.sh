@@ -7,7 +7,7 @@ LOCAL_SETUP_FUNCTIONS="https://raw.githubusercontent.com/PredixDev/predix-script
 dockerImageURL="$1"
 imageTarFile=$(echo "$dockerImageURL" | awk -F"/" '{print $NF}')
 eval "$(curl -s -L $LOCAL_SETUP_FUNCTIONS)"
-getCurlArtifactory $dockerImageURL
+getCurlArtifactory2 $dockerImageURL
 mkdir -p temp
 cd temp
 tar xvfz ../$imageTarFile

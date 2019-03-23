@@ -20,7 +20,7 @@ source "$quickstartRootDir/bash/scripts/files_helper_funcs.sh"
 source "$quickstartRootDir/bash/scripts/curl_helper_funcs.sh"
 source "$quickstartRootDir/bash/scripts/predix_funcs.sh"
 source "$quickstartRootDir/bash/scripts/local-setup-funcs.sh"
-source "$quickstartRootDir/bash/docker/dockerfunctions.sh"
+source "$quickstartRootDir/bash/docker/docker_functions.sh"
 #source "$quickstartRootDir/bash/common/proxy/verify-proxy.sh"
 
 # verifymvn.sh functions have been updated and re-implemented in verify-proxy.sh

@@ -7,7 +7,7 @@ LOCAL_SETUP_FUNCTIONS="https://raw.githubusercontent.com/PredixDev/predix-script
 dockerImageURL="https://artifactory.predix.io/artifactory/PREDIX-EXT/predix-edge/2_2_0/os/predix-edge-broker-amd64-20181120-1.1.0.signed.tar.gz"
 imageTarFile=$(echo "$dockerImageURL" | awk -F"/" '{print $NF}')
 eval "$(curl -s -L $LOCAL_SETUP_FUNCTIONS)"
-getCurlArtifactory $dockerImageURL
+getCurlArtifactory2 $dockerImageURL
 mkdir -p temp
 cd temp
 tar xvfz ../$imageTarFile
