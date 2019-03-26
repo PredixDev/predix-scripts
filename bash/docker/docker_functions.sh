@@ -2,6 +2,10 @@
 set -e
 source "$rootDir/bash/scripts/artifactory-functions.sh"
 
+# Using artifactory-functions.sh instead of local-setup-funcs.sh for getCurlArtifactory2
+#LOCAL_SETUP_FUNCTIONS="https://raw.githubusercontent.com/PredixDev/predix-scripts/master/bash/scripts/local-setup-funcs.sh"
+#eval "$(curl -s -L $LOCAL_SETUP_FUNCTIONS)"
+
 function checkDockerLogin {
   DOCKER_CONFIG="$HOME/.docker/config.json"
   echo "DOCKER_CONFIG=$DOCKER_CONFIG"
@@ -55,8 +59,6 @@ function pullDockerImageFromArtifactory() {
   echo "Running pullDockerImageFromArtifactory"
   dockerImageKey="$1"
   dockerImageURL="$2"
-  LOCAL_SETUP_FUNCTIONS="https://raw.githubusercontent.com/PredixDev/predix-scripts/master/bash/scripts/local-setup-funcs.sh"
-  eval "$(curl -s -L $LOCAL_SETUP_FUNCTIONS)"
   echo "dockerImageKey : $dockerImageKey"
   echo "dockerImageURL : $dockerImageURL"
   if [[ -z $dockerImageURL || $dockerImageURL == null ]]; then
